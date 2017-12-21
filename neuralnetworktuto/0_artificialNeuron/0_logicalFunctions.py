@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # see : https://www.anyflo.com/bret/cours/rn/rn3.htm
 # imports
-from numpy import heaviside, array, transpose, newaxis
+from numpy import heaviside, array
 # constants
 WA=-.75 # weight for input 'a'
 WB=-.75 # weight for input 'b'
@@ -13,7 +13,7 @@ def neuron(a,b):
     INPUT_ARRAY=array((a,b,-1))
     WEIGHTED_INPUT=THRESHOLD.dot(INPUT_ARRAY.transpose())
     # compute & return OUT
-    OUTPUT=heaviside(WEIGHTED_INPUT, 0)
+    OUTPUT=heaviside(WEIGHTED_INPUT, 1)
     return OUTPUT
 # logical functions
 nand = lambda a, b : neuron(a,b)
