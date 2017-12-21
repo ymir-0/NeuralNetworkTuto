@@ -2,11 +2,10 @@
 # see : https://www.anyflo.com/bret/cours/rn/rn3.htm
 # imports
 from numpy import heaviside, array, append
-# neuron
+# neurons
 class Neuron():
     def __init__(self,weights,threshold):
         self.thresholdedWeights=append(weights,-threshold)
-        pass
     def activate(self,inputs):
         # sum weighted input
         thresholdedInputs=append(inputs,1)
@@ -25,7 +24,6 @@ def xorNetwork(a,b):
     xorInput=append(andInput,andOutput)
     xorOutput=xorNeuron.activate(xorInput)
     return xorOutput
-pass
 # test
 print("xor 0 0 : " + str(xorNetwork(0,0)))
 print("xor 0 1 : " + str(xorNetwork(0,1)))

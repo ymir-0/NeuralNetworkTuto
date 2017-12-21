@@ -21,7 +21,7 @@ not_ = lambda a : nand(a,a)
 and_ = lambda a, b : nand(nand(a,b),nand(a,b))
 or_ = lambda a, b : nand(not_(a),not_(b))
 nor_ = lambda a, b : not_(or_(a,b))
-xor = lambda a, b : and_(or_(a,b),not_(and_(a,b)))
+xor = lambda a, b : and_(or_(a,b),nand(a,b))
 # ... we can build all logical functions
 # test
 print("nand 0 0 : " + str(nand(0,0)))
@@ -46,4 +46,3 @@ print("xor 0 0 : " + str(xor(0,0)))
 print("xor 0 1 : " + str(xor(0,1)))
 print("xor 1 0 : " + str(xor(1,0)))
 print("xor 1 1 : " + str(xor(1,1)))
-pass
