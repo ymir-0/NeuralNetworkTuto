@@ -36,9 +36,6 @@ class Neuron():
             actualLoopNumber = actualLoopNumber + 1
             if actualLoopNumber >= Neuron.computeLimitLoop:
                 raise ("Sorry, random choices are too long to adjust. Better to retry")
-            pass
-        pass
-    pass
     def activate(self,inputs):
         # sum weighted input
         thresholdedInputs = append(inputs, 1)
