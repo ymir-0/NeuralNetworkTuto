@@ -7,7 +7,7 @@ from copy import copy
 # neuron
 class Neuron():
     def __init__(self,neuronsInputSize):
-        weights=rand(neuronsInputSize)
+        weights=2*rand(neuronsInputSize)/32767-1
         threshold=rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
         self.thresholdedWeights=append(weights,-threshold)
         pass
@@ -21,8 +21,8 @@ class Neuron():
 # neuron network
 class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
-    correctionStep=0.9
-    correctionFactor=0.5
+    correctionStep=0.1 # 0.9
+    correctionFactor=1 # 0.5
     def __init__(self,trainings):
         # randomize initial neuron network
         originalTrainingIndexes=tuple(trainings.keys())
@@ -55,13 +55,13 @@ class Perceptron():
         currentTrainingValues = list(originalTrainingIndexes)
         shuffle(currentTrainingValues)
         currentTrainingValues = tuple(currentTrainingValues)
-        for currentTrainingIndex, currentTrainingValue in enumerate(currentTrainingValues):
-            # get expected output
+        for currentTrainingValue in currentTrainingValues:
+            # construct expected output
             expectedOutput = [0] * neuronsNumber
-            expectedOutput[currentTrainingIndex] = 1
+            expectedOutput[currentTrainingValue] = 1
             expectedOutput = tuple(expectedOutput)
             # get implied neuron
-            impliedNeuron = self.neurons[currentTrainingIndex]
+            impliedNeuron = self.neurons[currentTrainingValue]
             # get corresponding training
             correspondingTraining = trainings[currentTrainingValue]
             # compute actual output for actual training data
