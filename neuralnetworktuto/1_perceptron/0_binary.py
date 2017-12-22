@@ -49,39 +49,36 @@ class Perceptron():
         for neuronIndex in range(0,neuronsNumber):
             self.neurons.append(Neuron(neuronsInputSize))
     def trainRandomizedFullSet(self,originalTrainingIndexes,neuronsNumber,currentCorrectionStep):
-        # assume network is trained
-        trained = True
         # for each random input data
         currentTrainingValues = list(originalTrainingIndexes)
         shuffle(currentTrainingValues)
         currentTrainingValues = tuple(currentTrainingValues)
         for currentTrainingValue in currentTrainingValues:
-            # construct expected output
-            expectedOutput = [0] * neuronsNumber
-            expectedOutput[currentTrainingValue] = 1
-            expectedOutput = tuple(expectedOutput)
-            # get implied neuron
-            impliedNeuron = self.neurons[currentTrainingValue]
-            # get corresponding training
-            correspondingTraining = trainings[currentTrainingValue]
-            # compute actual output for actual training data
-            actualOutput = self.execute(correspondingTraining)
-            # correct weights if necessary
-            if actualOutput != expectedOutput:
-                # network is not trained
-                trained = False
-                # for input data
-                thresholdedInputs = append(correspondingTraining, 1)
-                for currentInputIndex, currentInputValue in enumerate(thresholdedInputs):
-                    # for each neuron
-                    for currentNeuronIndex in range(0, neuronsNumber):
-                        # input data must be active
-                        if currentInputValue == 1:
-                            # compute related correction value
-                            neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
-                            # correct if needed
-                            if neuronDifference != 0:
-                                impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + currentCorrectionStep * neuronDifference
+            trained = self.computeCurrentTrainingValue(neuronsNumber, currentTrainingValue, currentCorrectionStep)
+        # return
+        return trained
+    def computeCurrentTrainingValue(self,neuronsNumber,currentTrainingValue,currentCorrectionStep):
+        # assume network is trained
+        trained = True
+        # construct expected output
+        expectedOutput = [0] * neuronsNumber
+        expectedOutput[currentTrainingValue] = 1
+        expectedOutput = tuple(expectedOutput)
+        # get implied neuron
+        impliedNeuron = self.neurons[currentTrainingValue]
+        # get corresponding training
+        correspondingTraining = trainings[currentTrainingValue]
+        # compute actual output for actual training data
+        actualOutput = self.execute(correspondingTraining)
+        # correct weights if necessary
+        if actualOutput != expectedOutput:
+            # network is not trained
+            trained = False
+            # for each input data
+            thresholdedInputs = enumerate(append(correspondingTraining, 1))
+            for currentInputIndex, currentInputValue in thresholdedInputs:
+                # correct each neuron
+                self.correctAllNeurons(neuronsNumber, impliedNeuron, currentInputIndex, currentInputValue,expectedOutput, actualOutput, currentCorrectionStep)
         # return
         return trained
     def execute(self,inputs):
@@ -93,7 +90,19 @@ class Perceptron():
             outputs.append(currentOutput)
         # return
         return tuple(outputs)
-    pass
+    def correctAllNeurons(self,neuronsNumber,impliedNeuron,currentInputIndex,currentInputValue,expectedOutput,actualOutput,currentCorrectionStep):
+        # for each neuron
+        for currentNeuronIndex in range(0, neuronsNumber):
+            # input data must be active
+            if currentInputValue == 1:
+                # correct this neuron
+                self.correctSingleNeuron(impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentCorrectionStep,currentNeuronIndex)
+    def correctSingleNeuron(self,impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentCorrectionStep,currentNeuronIndex):
+        # compute related correction value
+        neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
+        # correct if needed
+        if neuronDifference != 0:
+            impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + currentCorrectionStep * neuronDifference
 # set training data
 completeTrainings={
     0:
@@ -167,15 +176,17 @@ completeTrainings={
                0, 0, 0, 0, 1,
                1, 1, 1, 1, 1] ),
 }
-testDigits=[0,1,2,3,4,5,6]
 trainings={
-    testDigits[0]: completeTrainings[testDigits[0]],
-    testDigits[1]: completeTrainings[testDigits[1]],
-    testDigits[2]: completeTrainings[testDigits[2]],
-    testDigits[3]: completeTrainings[testDigits[3]],
-    testDigits[4]: completeTrainings[testDigits[4]],
-    testDigits[5]: completeTrainings[testDigits[5]],
-    #testDigits[6]: completeTrainings[testDigits[6]],
+    0: completeTrainings[0],
+    1: completeTrainings[1],
+    2: completeTrainings[2],
+    3: completeTrainings[3],
+    4: completeTrainings[4],
+    5: completeTrainings[5],
+    #6: completeTrainings[6],
+    #7: completeTrainings[7],
+    #8: completeTrainings[8],
+    #9: completeTrainings[9],
 }
 # train neuron network
 perceptron=Perceptron(trainings)
