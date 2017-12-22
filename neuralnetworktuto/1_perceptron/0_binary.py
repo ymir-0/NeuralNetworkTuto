@@ -7,7 +7,7 @@ from copy import copy
 # neuron
 class Neuron():
     def __init__(self,neuronsInputSize):
-        weights=2*rand(neuronsInputSize)/32767-1
+        weights=2*rand(neuronsInputSize)/32767-1 # TODO: explain magic number
         threshold=rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
         self.thresholdedWeights=append(weights,-threshold)
         pass
@@ -21,8 +21,8 @@ class Neuron():
 # neuron network
 class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
-    correctionStep=0.1 # 0.9
-    correctionFactor=1 # 0.5
+    correctionStep=0.1 # TODO: explain magic number
+    correctionFactor=1 # TODO: explain magic number
     def __init__(self,trainings):
         # randomize initial neuron network
         originalTrainingIndexes=tuple(trainings.keys())
@@ -167,15 +167,20 @@ completeTrainings={
                0, 0, 0, 0, 1,
                1, 1, 1, 1, 1] ),
 }
-testDigits=[0,1]
+testDigits=[0,1,2,3,4,5,6]
 trainings={
     testDigits[0]: completeTrainings[testDigits[0]],
     testDigits[1]: completeTrainings[testDigits[1]],
+    testDigits[2]: completeTrainings[testDigits[2]],
+    testDigits[3]: completeTrainings[testDigits[3]],
+    testDigits[4]: completeTrainings[testDigits[4]],
+    testDigits[5]: completeTrainings[testDigits[5]],
+    #testDigits[6]: completeTrainings[testDigits[6]],
 }
 # train neuron network
 perceptron=Perceptron(trainings)
 # test results
-print("N ->  0    1")
+print("N ->  0    1    2    3    4    5")
 for inputValue, inputImage in trainings.items():
     outputValues=perceptron.execute(inputImage)
     print(str(inputValue) + " -> " + str(outputValues))
