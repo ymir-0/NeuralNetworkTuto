@@ -78,7 +78,7 @@ class Perceptron():
             # check loops number
             actualLoopNumber = actualLoopNumber + 1
             if actualLoopNumber >= Perceptron.computeLimitLoop:
-                raise ("Sorry, random choices are too long to adjust. Better to retry")
+                raise Exception("Sorry, random choices are too long to adjust. Better to retry")
             # adjust correction step
             currentCorrectionStep=currentCorrectionStep*Perceptron.correctionFactor
             pass
