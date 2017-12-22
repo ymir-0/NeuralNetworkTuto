@@ -18,7 +18,6 @@ class Neuron():
         # compute & return OUT
         output = heaviside(weightedInputs, 1)
         return output
-    pass
 # neuron network
 class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
@@ -37,59 +36,54 @@ class Perceptron():
         # training as many time as needed
         actualLoopNumber=0
         while not trained:
-            # assume network is trained
-            trained=True
-            # for each random input data
-            currentTrainingValues=list(originalTrainingIndexes)
-            shuffle(currentTrainingValues)
-            currentTrainingValues=tuple(currentTrainingValues)
-            for currentTrainingIndex,currentTrainingValue in enumerate(currentTrainingValues):
-                # get expected output
-                expectedOutput=[0]*neuronsNumber
-                expectedOutput[currentTrainingIndex]=1
-                expectedOutput=tuple(expectedOutput)
-                # get implied neuron
-                impliedNeuron=self.neurons[currentTrainingIndex]
-                # get corresponding training
-                correspondingTraining=trainings[currentTrainingValue]
-                # compute actual output for actual training data
-                actualOutput=self.execute(correspondingTraining)
-                # correct weights if necessary
-                if actualOutput!=expectedOutput:
-                    # network is not trained
-                    trained = False
-                    # for input data
-                    thresholdedInputs = append(correspondingTraining, 1)
-                    for currentInputIndex, currentInputValue in enumerate(thresholdedInputs):
-                        # for each neuron
-                        for currentNeuronIndex in range(0,neuronsNumber):
-                            # input data must be active
-                            if currentInputValue==1:
-                                # compute related correction value
-                                neuronDifference=expectedOutput[currentNeuronIndex]-actualOutput[currentNeuronIndex]
-                                # correct if needed
-                                if neuronDifference!=0:
-                                    impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + currentCorrectionStep*neuronDifference
-                                pass
-                            pass
-                        pass
-                    pass
-                pass
+            #
+            trained = self.trainRandomizedFullSet(originalTrainingIndexes,neuronsNumber,currentCorrectionStep)
             # check loops number
             actualLoopNumber = actualLoopNumber + 1
             if actualLoopNumber >= Perceptron.computeLimitLoop:
                 raise Exception("Sorry, random choices are too long to adjust. Better to retry")
             # adjust correction step
-            currentCorrectionStep=currentCorrectionStep*Perceptron.correctionFactor
-            pass
-        #
-        pass
+            currentCorrectionStep = currentCorrectionStep * Perceptron.correctionFactor
     def randomizeNetwork(self,neuronsNumber,neuronsInputSize):
         self.neurons=list()
         for neuronIndex in range(0,neuronsNumber):
             self.neurons.append(Neuron(neuronsInputSize))
-            pass
-        pass
+    def trainRandomizedFullSet(self,originalTrainingIndexes,neuronsNumber,currentCorrectionStep):
+        # assume network is trained
+        trained = True
+        # for each random input data
+        currentTrainingValues = list(originalTrainingIndexes)
+        shuffle(currentTrainingValues)
+        currentTrainingValues = tuple(currentTrainingValues)
+        for currentTrainingIndex, currentTrainingValue in enumerate(currentTrainingValues):
+            # get expected output
+            expectedOutput = [0] * neuronsNumber
+            expectedOutput[currentTrainingIndex] = 1
+            expectedOutput = tuple(expectedOutput)
+            # get implied neuron
+            impliedNeuron = self.neurons[currentTrainingIndex]
+            # get corresponding training
+            correspondingTraining = trainings[currentTrainingValue]
+            # compute actual output for actual training data
+            actualOutput = self.execute(correspondingTraining)
+            # correct weights if necessary
+            if actualOutput != expectedOutput:
+                # network is not trained
+                trained = False
+                # for input data
+                thresholdedInputs = append(correspondingTraining, 1)
+                for currentInputIndex, currentInputValue in enumerate(thresholdedInputs):
+                    # for each neuron
+                    for currentNeuronIndex in range(0, neuronsNumber):
+                        # input data must be active
+                        if currentInputValue == 1:
+                            # compute related correction value
+                            neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
+                            # correct if needed
+                            if neuronDifference != 0:
+                                impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + currentCorrectionStep * neuronDifference
+        # return
+        return trained
     def execute(self,inputs):
         # initialise outputs
         outputs=list()
@@ -103,75 +97,75 @@ class Perceptron():
 # set training data
 completeTrainings={
     0:
-        tuple([1, 1, 1, 1,
-               1, 0, 0, 1,
-               1, 0, 0, 1,
-               1, 0, 0, 1,
-               1, 0, 0, 1,
-               1, 1, 1, 1] ),
+        tuple([1, 1, 1, 1, 1,
+               1, 0, 0, 0, 1,
+               1, 0, 0, 0, 1,
+               1, 0, 0, 0, 1,
+               1, 0, 0, 0, 1,
+               1, 1, 1, 1, 1]),
     1:
-        tuple([0, 0, 1, 1,
-               0, 1, 1, 1,
-               1, 0, 1, 0,
-               0, 0, 1, 0,
-               0, 0, 1, 0,
-               0, 1, 1, 1]),
+        tuple([0, 0, 1, 0, 0,
+               0, 0, 1, 0, 0,
+               0, 0, 1, 0, 0,
+               0, 0, 1, 0, 0,
+               0, 0, 1, 0, 0,
+               0, 0, 1, 0, 0]),
     2:
-        tuple([1, 1, 1, 1,
-               0, 0, 0, 1,
-               0, 0, 1, 0,
-               0, 1, 0, 0,
-               1, 0, 0, 0,
-               1, 1, 1, 1]),
+        tuple([1, 1, 1, 1, 1,
+               0, 0, 0, 0, 1,
+               1, 1, 1, 1, 1,
+               1, 0, 0, 0, 0,
+               1, 0, 0, 0, 0,
+               1, 1, 1, 1, 1]),
     3:
-        tuple([1, 1, 1, 1,
-               0, 0, 0, 1,
-               0, 0, 0, 1,
-               1, 1, 1, 1,
-               0, 0, 0, 1,
-               1, 1, 1, 1] ),
+        tuple([1, 1, 1, 1, 1,
+               0, 0, 0, 0, 1,
+               1, 1, 1, 1, 1,
+               0, 0, 0, 0, 1,
+               0, 0, 0, 0, 1,
+               1, 1, 1, 1, 1] ),
     4:
-        tuple([0, 0, 1, 0,
-               0, 1, 1, 0,
-               1, 0, 1, 0,
-               1, 1, 1, 1,
-               0, 0, 1, 0,
-               0, 0, 1, 0] ),
+        tuple([0, 1, 0, 0, 0,
+               0, 1, 0, 0, 0,
+               0, 1, 0, 0, 0,
+               0, 1, 0, 1, 0,
+               0, 1, 1, 1, 1,
+               0, 0, 0, 1, 0] ),
     5:
-        tuple([1, 1, 1, 1,
-               1, 0, 0, 0,
-               1, 1, 1, 1,
-               0, 0, 0, 1,
-               0, 0, 0, 1,
-               1, 1, 1, 1] ),
+        tuple([1, 1, 1, 1, 1,
+               1, 0, 0, 0, 0,
+               1, 0, 0, 0, 0,
+               1, 1, 1, 1, 1,
+               0, 0, 0, 0, 1,
+               1, 1, 1, 1, 1] ),
     6:
-        tuple([1, 1, 1, 1,
-               1, 0, 0, 0,
-               1, 1, 1, 1,
-               1, 0, 0, 1,
-               1, 0, 0, 1,
-               1, 1, 1, 1] ),
+        tuple([1, 1, 1, 1, 1,
+               1, 0, 0, 0, 0,
+               1, 0, 0, 0, 0,
+               1, 1, 1, 1, 1,
+               1, 0, 0, 0, 1,
+               1, 1, 1, 1, 1] ),
     7:
-        tuple([1, 1, 1, 1,
-               0, 0, 0, 1,
-               0, 0, 1, 0,
-               1, 1, 1, 1,
-               0, 1, 0, 0,
-               1, 0, 0, 0] ),
+        tuple([1, 1, 1, 1, 0,
+               0, 0, 0, 1, 0,
+               0, 0, 0, 1, 0,
+               0, 0, 1, 1, 1,
+               0, 0, 0, 1, 0,
+               0, 0, 0, 1, 0] ),
     8:
-        tuple([1, 1, 1, 1,
-               1, 0, 0, 1,
-               1, 0, 0, 1,
-               1, 1, 1, 1,
-               1, 0, 0, 1,
-               1, 1, 1, 1]),
+        tuple([1, 1, 1, 1, 1,
+               1, 0, 0, 0, 1,
+               1, 1, 1, 1, 1,
+               1, 0, 0, 0, 1,
+               1, 0, 0, 0, 1,
+               1, 1, 1, 1, 1]),
     9:
-        tuple([1, 1, 1, 1,
-               1, 0, 0, 1,
-               1, 0, 0, 1,
-               1, 1, 1, 1,
-               0, 0, 0, 1,
-               1, 1, 1, 1] ),
+        tuple([1, 1, 1, 1, 1,
+               1, 0, 0, 0, 1,
+               1, 1, 1, 1, 1,
+               0, 0, 0, 0, 1,
+               0, 0, 0, 0, 1,
+               1, 1, 1, 1, 1] ),
 }
 testDigits=[0,1]
 trainings={
@@ -185,5 +179,3 @@ print("N ->  0    1")
 for inputValue, inputImage in trainings.items():
     outputValues=perceptron.execute(inputImage)
     print(str(inputValue) + " -> " + str(outputValues))
-    pass
-pass
