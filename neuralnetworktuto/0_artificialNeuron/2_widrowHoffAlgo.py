@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # imports
 from numpy import heaviside, array, append
 from numpy.random import rand
