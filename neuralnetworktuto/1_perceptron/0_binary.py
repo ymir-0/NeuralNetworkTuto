@@ -23,31 +23,32 @@ class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
     correctionStep=0.1 # TODO: explain magic number
     correctionFactor=1 # TODO: explain magic number
-    def __init__(self,trainings):
+
+    def __init__(self, trainings):
         # randomize initial neuron network
-        originalTrainingIndexes=tuple(trainings.keys())
-        self.neuronsNumber=len(originalTrainingIndexes) # we want one neuron for each input test data
-        neuronsInputSize=len(trainings[originalTrainingIndexes[0]]) # we can length of first training input
-        self.randomizeNetwork(neuronsInputSize)
+        originalTrainingIndexes = tuple(trainings.keys())
+        self.neuronsNumber = len(originalTrainingIndexes)  # we want one neuron for each input test data
+        self.neuronsInputSize = len(trainings[originalTrainingIndexes[0]])  # we can length of first training input
+        self.randomizeNetwork()
         # initialize correction step
-        currentCorrectionStep=Perceptron.correctionStep
+        currentCorrectionStep = Perceptron.correctionStep
         # assume network is not trained
-        trained=False
+        trained = False
         # training as many time as needed
-        actualLoopNumber=0
+        actualLoopNumber = 0
         while not trained:
             #
-            trained = self.trainRandomizedFullSet(originalTrainingIndexes,currentCorrectionStep)
+            trained = self.trainRandomizedFullSet(originalTrainingIndexes, currentCorrectionStep)
             # check loops number
             actualLoopNumber = actualLoopNumber + 1
             if actualLoopNumber >= Perceptron.computeLimitLoop:
                 raise Exception("Sorry, random choices are too long to adjust. Better to retry")
             # adjust correction step
             currentCorrectionStep = currentCorrectionStep * Perceptron.correctionFactor
-    def randomizeNetwork(self,neuronsInputSize):
-        self.neurons=list()
-        for neuronIndex in range(0,self.neuronsNumber):
-            self.neurons.append(Neuron(neuronsInputSize))
+    def randomizeNetwork(self):
+        self.neurons = list()
+        for neuronIndex in range(0, self.neuronsNumber):
+            self.neurons.append(Neuron(self.neuronsInputSize))
     def trainRandomizedFullSet(self,originalTrainingIndexes,currentCorrectionStep):
         # for each random input data
         currentTrainingValues = list(originalTrainingIndexes)
