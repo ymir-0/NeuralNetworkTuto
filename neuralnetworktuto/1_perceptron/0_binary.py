@@ -37,7 +37,9 @@ class Perceptron():
         actualLoopNumber = 0
         while not trained:
             #
-            trained = self.trainRandomizedFullSet(originalTrainingIndexes)
+            trained, trainingIssues = self.trainRandomizedFullSet(originalTrainingIndexes)
+            # print report
+            print("loop #"+str(actualLoopNumber)+"   number of issues : " + str(len(trainingIssues))+"   issues : " + str(trainingIssues))
             # check loops number
             actualLoopNumber = actualLoopNumber + 1
             if actualLoopNumber >= Perceptron.computeLimitLoop:
@@ -55,11 +57,16 @@ class Perceptron():
         currentTrainingValues = list(originalTrainingIndexes)
         shuffle(currentTrainingValues)
         currentTrainingValues = tuple(currentTrainingValues)
+        # store training issues
+        trainingIssues=list()
         # for each random input data
         for currentTrainingValue in currentTrainingValues:
-            trained = trained & self.computeCurrentTrainingValue(currentTrainingValue)
+            currentTrainResult=self.computeCurrentTrainingValue(currentTrainingValue)
+            trained = trained & currentTrainResult
+            # compute training errors
+            trainingIssues.append(currentTrainingValue)
         # return
-        return trained
+        return trained, tuple(sorted(trainingIssues))
     def computeCurrentTrainingValue(self,currentTrainingValue):
         # assume network is trained
         trained = True
