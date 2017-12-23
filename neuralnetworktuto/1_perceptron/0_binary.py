@@ -77,8 +77,10 @@ class Perceptron():
             # for each input data
             thresholdedInputs = enumerate(append(correspondingTraining, 1))
             for currentInputIndex, currentInputValue in thresholdedInputs:
-                # correct each neuron
-                self.correctAllNeurons( impliedNeuron, currentInputIndex, currentInputValue,expectedOutput, actualOutput)
+                # input data must be active
+                if currentInputValue == 1:
+                    # correct each neuron
+                    self.correctAllNeurons( impliedNeuron, currentInputIndex,expectedOutput, actualOutput)
         # return
         return trained
     def execute(self,inputs):
@@ -90,11 +92,9 @@ class Perceptron():
             outputs.append(currentOutput)
         # return
         return tuple(outputs)
-    def correctAllNeurons(self,impliedNeuron,currentInputIndex,currentInputValue,expectedOutput,actualOutput):
+    def correctAllNeurons(self,impliedNeuron,currentInputIndex,expectedOutput,actualOutput):
         # for each neuron
         for currentNeuronIndex in range(0, self.neuronsNumber):
-            # input data must be active
-            if currentInputValue == 1:
                 # compute related correction value
                 neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
                 # correct this neuron if needed
