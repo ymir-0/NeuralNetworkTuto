@@ -23,7 +23,6 @@ class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
     correctionStep=0.1 # TODO: explain magic number
     correctionFactor=1 # TODO: explain magic number
-
     def __init__(self, trainings):
         # randomize initial neuron network
         originalTrainingIndexes = tuple(trainings.keys())
@@ -31,34 +30,34 @@ class Perceptron():
         self.neuronsInputSize = len(trainings[originalTrainingIndexes[0]])  # we can length of first training input
         self.randomizeNetwork()
         # initialize correction step
-        currentCorrectionStep = Perceptron.correctionStep
+        self.currentCorrectionStep = Perceptron.correctionStep
         # assume network is not trained
         trained = False
         # training as many time as needed
         actualLoopNumber = 0
         while not trained:
             #
-            trained = self.trainRandomizedFullSet(originalTrainingIndexes, currentCorrectionStep)
+            trained = self.trainRandomizedFullSet(originalTrainingIndexes)
             # check loops number
             actualLoopNumber = actualLoopNumber + 1
             if actualLoopNumber >= Perceptron.computeLimitLoop:
                 raise Exception("Sorry, random choices are too long to adjust. Better to retry")
             # adjust correction step
-            currentCorrectionStep = currentCorrectionStep * Perceptron.correctionFactor
+                self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
     def randomizeNetwork(self):
         self.neurons = list()
         for neuronIndex in range(0, self.neuronsNumber):
             self.neurons.append(Neuron(self.neuronsInputSize))
-    def trainRandomizedFullSet(self,originalTrainingIndexes,currentCorrectionStep):
+    def trainRandomizedFullSet(self,originalTrainingIndexes):
         # for each random input data
         currentTrainingValues = list(originalTrainingIndexes)
         shuffle(currentTrainingValues)
         currentTrainingValues = tuple(currentTrainingValues)
         for currentTrainingValue in currentTrainingValues:
-            trained = self.computeCurrentTrainingValue(currentTrainingValue, currentCorrectionStep)
+            trained = self.computeCurrentTrainingValue(currentTrainingValue)
         # return
         return trained
-    def computeCurrentTrainingValue(self,currentTrainingValue,currentCorrectionStep):
+    def computeCurrentTrainingValue(self,currentTrainingValue):
         # assume network is trained
         trained = True
         # construct expected output
@@ -79,7 +78,7 @@ class Perceptron():
             thresholdedInputs = enumerate(append(correspondingTraining, 1))
             for currentInputIndex, currentInputValue in thresholdedInputs:
                 # correct each neuron
-                self.correctAllNeurons( impliedNeuron, currentInputIndex, currentInputValue,expectedOutput, actualOutput, currentCorrectionStep)
+                self.correctAllNeurons( impliedNeuron, currentInputIndex, currentInputValue,expectedOutput, actualOutput)
         # return
         return trained
     def execute(self,inputs):
@@ -91,19 +90,19 @@ class Perceptron():
             outputs.append(currentOutput)
         # return
         return tuple(outputs)
-    def correctAllNeurons(self,impliedNeuron,currentInputIndex,currentInputValue,expectedOutput,actualOutput,currentCorrectionStep):
+    def correctAllNeurons(self,impliedNeuron,currentInputIndex,currentInputValue,expectedOutput,actualOutput):
         # for each neuron
         for currentNeuronIndex in range(0, self.neuronsNumber):
             # input data must be active
             if currentInputValue == 1:
                 # correct this neuron
-                self.correctSingleNeuron(impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentCorrectionStep,currentNeuronIndex)
-    def correctSingleNeuron(self,impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentCorrectionStep,currentNeuronIndex):
+                self.correctSingleNeuron(impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentNeuronIndex)
+    def correctSingleNeuron(self,impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentNeuronIndex):
         # compute related correction value
         neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
         # correct if needed
         if neuronDifference != 0:
-            impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + currentCorrectionStep * neuronDifference
+            impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + self.currentCorrectionStep * neuronDifference
 # set training data
 completeTrainings={
     0:
