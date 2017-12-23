@@ -43,18 +43,21 @@ class Perceptron():
             if actualLoopNumber >= Perceptron.computeLimitLoop:
                 raise Exception("Sorry, random choices are too long to adjust. Better to retry")
             # adjust correction step
-                self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
+            self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
     def randomizeNetwork(self):
         self.neurons = list()
         for neuronIndex in range(0, self.neuronsNumber):
             self.neurons.append(Neuron(self.neuronsInputSize))
     def trainRandomizedFullSet(self,originalTrainingIndexes):
-        # for each random input data
+        # assume network is trained
+        trained = True
+        # shuffle inputs
         currentTrainingValues = list(originalTrainingIndexes)
         shuffle(currentTrainingValues)
         currentTrainingValues = tuple(currentTrainingValues)
+        # for each random input data
         for currentTrainingValue in currentTrainingValues:
-            trained = self.computeCurrentTrainingValue(currentTrainingValue)
+            trained = trained & self.computeCurrentTrainingValue(currentTrainingValue)
         # return
         return trained
     def computeCurrentTrainingValue(self,currentTrainingValue):
