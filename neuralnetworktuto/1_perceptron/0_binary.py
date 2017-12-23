@@ -3,6 +3,7 @@
 from numpy import heaviside, array, append
 from numpy.random import rand
 from os import linesep
+from random import shuffle
 # neuron
 class Neuron():
     def __init__(self,name,neuronInputLength):
@@ -11,38 +12,143 @@ class Neuron():
         # initialize random weights
         weights=rand(neuronInputLength) # TODO: explain magic number
         threshold=rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
-        self.thresholdedWeights=tuple(append(weights,-threshold))
-    def activate(self,inputs):
+        self.thresholdedWeights=append(weights,-threshold)
+    def activate(self,input):
         # sum weighted input
-        thresholdedInputs = append(inputs, 1)
-        weightedInputs = self.thresholdedWeights.dot(array(thresholdedInputs).transpose())
+        thresholdedInputs = array(append(input, 1))
+        weightedInputs = self.thresholdedWeights.dot(thresholdedInputs.transpose())
         # compute & return OUT
         output = heaviside(weightedInputs, 1)
         return output
+    def correct(self,input,delta):
+        # new thresholded weights
+        newThresholdedWeights = list()
+        # for each input
+        thresholdedInputs = append(input, 1)
+        for currentIndex,currentInput in enumerate(thresholdedInputs):
+            currentWeight=self.thresholdedWeights[currentIndex]
+            print("current input : " + str(currentInput) + "    current weight : " + str(currentWeight))
+            # apply correction if needed
+            if currentInput==1:
+                newWeight=currentWeight+delta
+                newThresholdedWeights.append(newWeight)
+                print("new weight : "+str(newThresholdedWeights))
+                pass
+            else:
+                print("no correction needed for input value 0")
+                newThresholdedWeights.append(currentWeight)
+            pass
+        # reset neuron weights
+        self.thresholdedWeights=array(newThresholdedWeights)
+        print("new neurons weights : " + str(self))
     def __str__(self):
         representation =self.name +" : "+str(dict(enumerate(self.thresholdedWeights)))
         return representation
 class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
-    initialCorrectionStep=1 # TODO: explain magic number
+    initialCorrectionStep=0.9 # TODO: explain magic number
     correctionFactor=0.75 # TODO: explain magic number
     def __init__(self, trainings):
+        # set trainings
+        self.trainings=trainings
         # set number of neurons & neuron input length
-        trainingKeys = tuple(trainings.keys())
-        neuronsNumbers=len(trainings)
-        neuronInputLength=len(trainings[trainingKeys[0]])
-        # initialize neurons
-        self.initializeNeurons( neuronsNumbers, neuronInputLength)
-        print("Neurons initialized"+linesep+str(self))
+        trainingKeys = tuple(self.trainings.keys())
+        neuronsNumbers=len(self.trainings)
+        neuronInputLength=len(self.trainings[trainingKeys[0]])
+        # initialize network
+        self.initializeNetwork( neuronsNumbers, neuronInputLength)
+        print("neurons initialized"+linesep+str(self))
+        # assume network is not trained
+        trained=False
+        # initialize correction step
+        self.currentCorrectionStep = Perceptron.initialCorrectionStep
+        # initialize training conter
+        trainingCounter=0
+        # train while necessary
+        while not trained:
+            print("training #"+str(trainingCounter)+"   correction step : " + str(self.currentCorrectionStep))
+            trainingCounter=trainingCounter+1
+            # train all neurons
+            trained=self.playAllRandomTrainings()
+            # compute next correction step
+            self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
+            pass
         pass
-    def initializeNeurons(self,neuronsNumbers,neuronInputLength):
+    def initializeNetwork(self,neuronsNumbers,neuronInputLength):
         # initialize neurons collection
         self.neurons=list()
         # initialize each neurons with random values
         for neuronIndex in range(0,neuronsNumbers):
             neuronName="neuron#"+str(neuronIndex)
-            self.neurons.append(Neuron(neuronName,neuronInputLength))
+            currentNeuron=Neuron(neuronName,neuronInputLength)
+            self.neurons.append(currentNeuron)
         pass
+    def playAllRandomTrainings(self):
+        # assume network is trained
+        trained=True
+        # shuffle trainings
+        shuffledTrainingKeys = list(self.trainings.keys())
+        shuffle(shuffledTrainingKeys)
+        shuffledTrainingKeys=tuple(shuffledTrainingKeys)
+        print("training order : "+str(shuffledTrainingKeys))
+        # for each shuffled training
+        for currentTrainingKey in shuffledTrainingKeys:
+            print("current training value : " + str(currentTrainingKey))
+            # play current training
+            trained=trained and self.playOneTraining(currentTrainingKey)
+            pass
+        # return
+        return trained
+    def playOneTraining(self, trainingKey):
+        # assume network is trained
+        trained=True
+        # compute network outputs
+        expectedOutput = [0] * len(self.neurons)
+        expectedOutput[trainingKey] = 1
+        expectedOutput = tuple(expectedOutput)
+        print("expected output : " + str(expectedOutput))
+        training = self.trainings[trainingKey]
+        print("input : "+str(trainingKey)+" -> "+str(training))
+        actualOutput = self.execute(training)
+        print("actual output : " + str(actualOutput))
+        # compare output
+        if expectedOutput!=actualOutput:
+            print("this output implies corrections")
+            # neuron is not trained
+            trained=False
+            # check all neurons for correction
+            self.checkAllNeuronsCorrection(training,expectedOutput, actualOutput)
+            pass
+        else:
+            print("this output is fine")
+        # return
+        return trained #TODO : remove killswitch
+    def execute(self,inputs):
+        # initialise outputs
+        outputs=list()
+        # compute each neuron output
+        for neuronIndex in range(0, len(self.neurons)):
+            currentOutput = self.neurons[neuronIndex].activate(inputs)
+            outputs.append(currentOutput)
+        # return
+        return tuple(outputs)
+    def checkAllNeuronsCorrection(self,input,expectedOutput,actualOutput):
+        # for each expected output
+        for neuronIndex, neuronExpectedOutput in enumerate(expectedOutput):
+            # get actual output
+            neuronActualOutput=actualOutput[neuronIndex]
+            # check if this neuron need correction
+            impliedNeuron = self.neurons[neuronIndex]
+            print("implied neuron : "+str(impliedNeuron))
+            if neuronExpectedOutput!=neuronActualOutput:
+                # compute delta
+                delta=self.currentCorrectionStep*(neuronExpectedOutput-neuronActualOutput)
+                print("this neuron need corrections delta : "+str(delta))
+                # correct this neuron
+                impliedNeuron.correct(input,delta)
+                pass
+            else:
+                print("this neuron is fine")
     def __str__(self):
         representation =""
         for currentNeuron in self.neurons:
@@ -123,7 +229,7 @@ completeTrainings={
 }
 trainings={
     0: completeTrainings[0],
-    #1: completeTrainings[1],
+    1: completeTrainings[1],
     #2: completeTrainings[2],
     #3: completeTrainings[3],
     #4: completeTrainings[4],
