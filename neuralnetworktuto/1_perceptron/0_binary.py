@@ -95,13 +95,12 @@ class Perceptron():
         for currentNeuronIndex in range(0, self.neuronsNumber):
             # input data must be active
             if currentInputValue == 1:
-                # correct this neuron
-                self.correctSingleNeuron(impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentNeuronIndex)
-    def correctSingleNeuron(self,impliedNeuron,currentInputIndex,expectedOutput,actualOutput,currentNeuronIndex):
-        # compute related correction value
-        neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
-        # correct if needed
-        if neuronDifference != 0:
+                # compute related correction value
+                neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
+                # correct this neuron if needed
+                if neuronDifference != 0:
+                    self.correctSingleNeuron(impliedNeuron, currentInputIndex, neuronDifference)
+    def correctSingleNeuron(self,impliedNeuron,currentInputIndex,neuronDifference):
             impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + self.currentCorrectionStep * neuronDifference
 # set training data
 completeTrainings={
