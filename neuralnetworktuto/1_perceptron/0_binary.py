@@ -73,7 +73,8 @@ class Perceptron():
             # compute next correction step
             self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
             pass
-        pass
+        # print completed training
+        print("TRAINED in "+str(trainingCounter) + " steps :"+linesep+str(self))
     def initializeNetwork(self,neuronsNumbers,neuronInputLength):
         # initialize neurons collection
         self.neurons=list()
@@ -230,7 +231,7 @@ completeTrainings={
 trainings={
     0: completeTrainings[0],
     1: completeTrainings[1],
-    #2: completeTrainings[2],
+    2: completeTrainings[2],
     #3: completeTrainings[3],
     #4: completeTrainings[4],
     #5: completeTrainings[5],
@@ -243,6 +244,6 @@ trainings={
 perceptron=Perceptron(trainings)
 # test results
 print("N ->  0    1    2    3    4    5")
-#for inputValue, inputImage in trainings.items():
-#    outputValues=perceptron.execute(inputImage)
-#    print(str(inputValue) + " -> " + str(outputValues))
+for inputValue, inputImage in trainings.items():
+    outputValues=perceptron.execute(inputImage)
+    print(str(inputValue) + " -> " + str(outputValues))
