@@ -2,15 +2,16 @@
 # imports
 from numpy import heaviside, array, append
 from numpy.random import rand
-from random import shuffle
-from copy import copy
+from os import linesep
 # neuron
 class Neuron():
-    def __init__(self,neuronsInputSize):
-        weights=2*rand(neuronsInputSize)/32767-1 # TODO: explain magic number
+    def __init__(self,name,neuronInputLength):
+        # set name
+        self.name=name
+        # initialize random weights
+        weights=rand(neuronInputLength) # TODO: explain magic number
         threshold=rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
-        self.thresholdedWeights=append(weights,-threshold)
-        pass
+        self.thresholdedWeights=tuple(append(weights,-threshold))
     def activate(self,inputs):
         # sum weighted input
         thresholdedInputs = append(inputs, 1)
@@ -18,100 +19,35 @@ class Neuron():
         # compute & return OUT
         output = heaviside(weightedInputs, 1)
         return output
-# neuron network
+    def __str__(self):
+        representation =self.name +" : "+str(dict(enumerate(self.thresholdedWeights)))
+        return representation
 class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
-    correctionStep=0.1 # TODO: explain magic number
-    correctionFactor=1 # TODO: explain magic number
+    initialCorrectionStep=1 # TODO: explain magic number
+    correctionFactor=0.75 # TODO: explain magic number
     def __init__(self, trainings):
-        # randomize initial neuron network
-        originalTrainingIndexes = tuple(trainings.keys())
-        self.neuronsNumber = len(originalTrainingIndexes)  # we want one neuron for each input test data
-        self.neuronsInputSize = len(trainings[originalTrainingIndexes[0]])  # we can length of first training input
-        self.randomizeNetwork()
-        # initialize correction step
-        self.currentCorrectionStep = Perceptron.correctionStep
-        # assume network is not trained
-        trained = False
-        # training as many time as needed
-        actualLoopNumber = 0
-        while not trained:
-            #
-            trained, trainingIssues = self.trainRandomizedFullSet(originalTrainingIndexes)
-            # print report
-            print("loop #"+str(actualLoopNumber)+"   number of issues : " + str(len(trainingIssues))+"   issues : " + str(trainingIssues))
-            # check loops number
-            actualLoopNumber = actualLoopNumber + 1
-            if actualLoopNumber >= Perceptron.computeLimitLoop:
-                raise Exception("Sorry, random choices are too long to adjust. Better to retry")
-            # adjust correction step
-            self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
-    def randomizeNetwork(self):
-        self.neurons = list()
-        for neuronIndex in range(0, self.neuronsNumber):
-            self.neurons.append(Neuron(self.neuronsInputSize))
-    def trainRandomizedFullSet(self,originalTrainingIndexes):
-        # assume network is trained
-        trained = True
-        # shuffle inputs
-        currentTrainingValues = list(originalTrainingIndexes)
-        shuffle(currentTrainingValues)
-        currentTrainingValues = tuple(currentTrainingValues)
-        # store training issues
-        trainingIssues=list()
-        # for each random input data
-        for currentTrainingValue in currentTrainingValues:
-            currentTrainResult=self.computeCurrentTrainingValue(currentTrainingValue)
-            trained = trained & currentTrainResult
-            # compute training errors
-            trainingIssues.append(currentTrainingValue)
-        # return
-        return trained, tuple(sorted(trainingIssues))
-    def computeCurrentTrainingValue(self,currentTrainingValue):
-        # assume network is trained
-        trained = True
-        # construct expected output
-        expectedOutput = [0] * self.neuronsNumber
-        expectedOutput[currentTrainingValue] = 1
-        expectedOutput = tuple(expectedOutput)
-        # get implied neuron
-        impliedNeuron = self.neurons[currentTrainingValue]
-        # get corresponding training
-        correspondingTraining = trainings[currentTrainingValue]
-        # compute actual output for actual training data
-        actualOutput = self.execute(correspondingTraining)
-        # correct weights if necessary
-        if actualOutput != expectedOutput:
-            # network is not trained
-            trained = False
-            # for each input data
-            thresholdedInputs = enumerate(append(correspondingTraining, 1))
-            for currentInputIndex, currentInputValue in thresholdedInputs:
-                # input data must be active
-                if currentInputValue == 1:
-                    # correct each neuron
-                    self.correctAllNeurons( impliedNeuron, currentInputIndex,expectedOutput, actualOutput)
-        # return
-        return trained
-    def execute(self,inputs):
-        # initialise outputs
-        outputs=list()
-        # compute each output (for each neuron)
-        for neuronIndex in range(0, len(self.neurons)):
-            currentOutput = self.neurons[neuronIndex].activate(inputs)
-            outputs.append(currentOutput)
-        # return
-        return tuple(outputs)
-    def correctAllNeurons(self,impliedNeuron,currentInputIndex,expectedOutput,actualOutput):
-        # for each neuron
-        for currentNeuronIndex in range(0, self.neuronsNumber):
-                # compute related correction value
-                neuronDifference = expectedOutput[currentNeuronIndex] - actualOutput[currentNeuronIndex]
-                # correct this neuron if needed
-                if neuronDifference != 0:
-                    self.correctSingleNeuron(impliedNeuron, currentInputIndex, neuronDifference)
-    def correctSingleNeuron(self,impliedNeuron,currentInputIndex,neuronDifference):
-            impliedNeuron.thresholdedWeights[currentInputIndex] = impliedNeuron.thresholdedWeights[currentInputIndex] + self.currentCorrectionStep * neuronDifference
+        # set number of neurons & neuron input length
+        trainingKeys = tuple(trainings.keys())
+        neuronsNumbers=len(trainings)
+        neuronInputLength=len(trainings[trainingKeys[0]])
+        # initialize neurons
+        self.initializeNeurons( neuronsNumbers, neuronInputLength)
+        print("Neurons initialized"+linesep+str(self))
+        pass
+    def initializeNeurons(self,neuronsNumbers,neuronInputLength):
+        # initialize neurons collection
+        self.neurons=list()
+        # initialize each neurons with random values
+        for neuronIndex in range(0,neuronsNumbers):
+            neuronName="neuron#"+str(neuronIndex)
+            self.neurons.append(Neuron(neuronName,neuronInputLength))
+        pass
+    def __str__(self):
+        representation =""
+        for currentNeuron in self.neurons:
+            representation=representation+str(currentNeuron)+linesep
+        return representation
 # set training data
 completeTrainings={
     0:
@@ -187,11 +123,11 @@ completeTrainings={
 }
 trainings={
     0: completeTrainings[0],
-    1: completeTrainings[1],
-    2: completeTrainings[2],
-    3: completeTrainings[3],
-    4: completeTrainings[4],
-    5: completeTrainings[5],
+    #1: completeTrainings[1],
+    #2: completeTrainings[2],
+    #3: completeTrainings[3],
+    #4: completeTrainings[4],
+    #5: completeTrainings[5],
     #6: completeTrainings[6],
     #7: completeTrainings[7],
     #8: completeTrainings[8],
@@ -201,6 +137,6 @@ trainings={
 perceptron=Perceptron(trainings)
 # test results
 print("N ->  0    1    2    3    4    5")
-for inputValue, inputImage in trainings.items():
-    outputValues=perceptron.execute(inputImage)
-    print(str(inputValue) + " -> " + str(outputValues))
+#for inputValue, inputImage in trainings.items():
+#    outputValues=perceptron.execute(inputImage)
+#    print(str(inputValue) + " -> " + str(outputValues))
