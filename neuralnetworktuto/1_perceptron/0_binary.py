@@ -45,8 +45,8 @@ class Neuron():
         representation =self.name +" : "+str(dict(enumerate(self.thresholdedWeights)))
         return representation
 class Perceptron():
-    computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
-    initialCorrectionStep=0.1 # TODO: explain magic number
+    computeLimitLoop=100 # sometimes, random choices are too long to adjust. better to retry
+    initialCorrectionStep=0.125 # TODO: explain magic number
     correctionFactor=0.9375 # TODO: explain magic number
     def __init__(self, trainings):
         # set trainings
