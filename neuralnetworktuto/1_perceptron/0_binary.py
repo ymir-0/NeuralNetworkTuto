@@ -28,9 +28,9 @@ class Neuron():
         thresholdedInputs = append(input, 1)
         for currentIndex,currentInput in enumerate(thresholdedInputs):
             currentWeight=self.thresholdedWeights[currentIndex]
-            print("current input : " + str(currentInput) + "    current weight : " + str(currentWeight))
             # apply correction if needed
             if currentInput==1:
+                print("correction needed -> current input : " + str(currentInput) + "    current weight : " + str(currentWeight))
                 newWeight=currentWeight+delta
                 newThresholdedWeights.append(newWeight)
                 print("new weight : "+str(newThresholdedWeights))
@@ -53,9 +53,9 @@ class Perceptron():
         # set trainings
         self.trainings=trainings
         # set number of neurons & neuron input length
-        trainingKeys = tuple(self.trainings.keys())
-        neuronsNumbers=len(self.trainings)
-        neuronInputLength=len(self.trainings[trainingKeys[0]])
+        trainingKeys = tuple(self.trainings.data.keys())
+        neuronsNumbers=len(self.trainings.data)
+        neuronInputLength=len(self.trainings.data[trainingKeys[0]])
         # initialize network
         self.initializeNetwork( neuronsNumbers, neuronInputLength)
         print("neurons initialized"+linesep+str(self))
@@ -89,7 +89,7 @@ class Perceptron():
         # assume network is trained
         trained=True
         # shuffle trainings
-        shuffledTrainingKeys = list(self.trainings.keys())
+        shuffledTrainingKeys = list(self.trainings.data.keys())
         shuffle(shuffledTrainingKeys)
         shuffledTrainingKeys=tuple(shuffledTrainingKeys)
         print("training order : "+str(shuffledTrainingKeys))
@@ -109,8 +109,8 @@ class Perceptron():
         expectedOutput[trainingKey] = 1
         expectedOutput = tuple(expectedOutput)
         print("expected output : " + str(expectedOutput))
-        training = self.trainings[trainingKey]
-        print("input : "+str(trainingKey)+" -> "+str(training))
+        training = self.trainings.data[trainingKey]
+        print("input : "+str(trainingKey)+" -> "+linesep+self.trainings.stringValue(trainingKey))
         actualOutput = self.execute(training)
         print("actual output : " + str(actualOutput))
         # compare output
@@ -157,82 +157,110 @@ class Perceptron():
             representation=representation+str(currentNeuron)+linesep
         return representation
 # set training data
-trainings={
-    0:
-        tuple([1, 1, 1, 1, 1,
-               1, 0, 0, 0, 1,
-               1, 0, 0, 0, 1,
-               1, 0, 0, 0, 1,
-               1, 0, 0, 0, 1,
-               1, 1, 1, 1, 1]),
-    1:
-        tuple([0, 0, 1, 0, 0,
-               0, 0, 1, 0, 0,
-               0, 0, 1, 0, 0,
-               0, 0, 1, 0, 0,
-               0, 0, 1, 0, 0,
-               0, 0, 1, 0, 0]),
-    2:
-        tuple([1, 1, 1, 1, 1,
-               0, 0, 0, 0, 1,
-               1, 1, 1, 1, 1,
-               1, 0, 0, 0, 0,
-               1, 0, 0, 0, 0,
-               1, 1, 1, 1, 1]),
-    3:
-        tuple([1, 1, 1, 1, 1,
-               0, 0, 0, 0, 1,
-               1, 1, 1, 1, 1,
-               0, 0, 0, 0, 1,
-               0, 0, 0, 0, 1,
-               1, 1, 1, 1, 1] ),
-    4:
-        tuple([0, 1, 0, 0, 0,
-               0, 1, 0, 0, 0,
-               0, 1, 0, 0, 0,
-               0, 1, 0, 1, 0,
-               0, 1, 1, 1, 1,
-               0, 0, 0, 1, 0] ),
-    5:
-        tuple([1, 1, 1, 1, 1,
-               1, 0, 0, 0, 0,
-               1, 0, 0, 0, 0,
-               1, 1, 1, 1, 1,
-               0, 0, 0, 0, 1,
-               1, 1, 1, 1, 1] ),
-    6:
-        tuple([1, 1, 1, 1, 1,
-               1, 0, 0, 0, 0,
-               1, 0, 0, 0, 0,
-               1, 1, 1, 1, 1,
-               1, 0, 0, 0, 1,
-               1, 1, 1, 1, 1] ),
-    7:
-        tuple([1, 1, 1, 1, 0,
-               0, 0, 0, 1, 0,
-               0, 0, 0, 1, 0,
-               0, 0, 1, 1, 1,
-               0, 0, 0, 1, 0,
-               0, 0, 0, 1, 0] ),
-    8:
-        tuple([1, 1, 1, 1, 1,
-               1, 0, 0, 0, 1,
-               1, 1, 1, 1, 1,
-               1, 0, 0, 0, 1,
-               1, 0, 0, 0, 1,
-               1, 1, 1, 1, 1]),
-    9:
-        tuple([1, 1, 1, 1, 1,
-               1, 0, 0, 0, 1,
-               1, 1, 1, 1, 1,
-               0, 0, 0, 0, 1,
-               0, 0, 0, 0, 1,
-               1, 1, 1, 1, 1] ),
-}
+class Trainings():
+    rowNumber = 6
+    columnNumber = 5
+    def __init__(self):
+        self.data = {
+            0:
+                tuple([1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 1,
+                       1, 0, 0, 0, 1,
+                       1, 0, 0, 0, 1,
+                       1, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1]),
+            1:
+                tuple([0, 0, 1, 0, 0,
+                       0, 0, 1, 0, 0,
+                       0, 0, 1, 0, 0,
+                       0, 0, 1, 0, 0,
+                       0, 0, 1, 0, 0,
+                       0, 0, 1, 0, 0]),
+            2:
+                tuple([1, 1, 1, 1, 1,
+                       0, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 0,
+                       1, 0, 0, 0, 0,
+                       1, 1, 1, 1, 1]),
+            3:
+                tuple([1, 1, 1, 1, 1,
+                       0, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1,
+                       0, 0, 0, 0, 1,
+                       0, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1]),
+            4:
+                tuple([0, 1, 0, 0, 0,
+                       0, 1, 0, 0, 0,
+                       0, 1, 0, 0, 0,
+                       0, 1, 0, 1, 0,
+                       0, 1, 1, 1, 1,
+                       0, 0, 0, 1, 0]),
+            5:
+                tuple([1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 0,
+                       1, 0, 0, 0, 0,
+                       1, 1, 1, 1, 1,
+                       0, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1]),
+            6:
+                tuple([1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 0,
+                       1, 0, 0, 0, 0,
+                       1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1]),
+            7:
+                tuple([1, 1, 1, 1, 0,
+                       0, 0, 0, 1, 0,
+                       0, 0, 0, 1, 0,
+                       0, 0, 1, 1, 1,
+                       0, 0, 0, 1, 0,
+                       0, 0, 0, 1, 0]),
+            8:
+                tuple([1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 1,
+                       1, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1]),
+            9:
+                tuple([1, 1, 1, 1, 1,
+                       1, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1,
+                       0, 0, 0, 0, 1,
+                       0, 0, 0, 0, 1,
+                       1, 1, 1, 1, 1]),
+        }
+    def stringValue(self,key):
+        # initialize representation
+        imageRepresentation=""
+        # initialize column conter
+        columnCounter=0
+        # for all pixels in image
+        image=self.data[key]
+        for pixel in image:
+            # set pixel representation
+            if pixel==0:
+                pixelRepresentation=" "
+            else:
+                pixelRepresentation = "█"
+            # complete image representation
+            imageRepresentation=imageRepresentation+pixelRepresentation
+            # manage column
+            if columnCounter<Trainings.columnNumber-1:
+                columnCounter=columnCounter+1
+            else:
+                imageRepresentation = imageRepresentation +linesep
+                columnCounter=0
+        # return
+        return imageRepresentation
+    pass
 # train neuron network
+trainings=Trainings()
 perceptron=Perceptron(trainings)
 # test results
-print("N ->  0    1    2    3    4    5    6    7    8    9")
-for inputValue, inputImage in trainings.items():
+for inputValue, inputImage in trainings.data.items():
     outputValues=perceptron.execute(inputImage)
-    print(str(inputValue) + " -> " + str(outputValues))
+    print(str(inputImage) + linesep + " -> " + str(outputValues))
