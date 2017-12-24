@@ -12,7 +12,7 @@ class Neuron():
         # initialize random weights
         weightCoefficient=Perceptron.initialCorrectionStep*(Perceptron.correctionFactor**(41+1)) # INFO : we genraly solve the problem in ~41 steps
         weights=rand(neuronInputLength)*weightCoefficient-(weightCoefficient/2) # INFO : we want to balance weights around 0
-        threshold=0.5#rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
+        threshold=0.125 # INFO : found with a dichotomy between 1 and 0
         self.thresholdedWeights=append(weights,-threshold)
     def activate(self,input):
         # sum weighted input
