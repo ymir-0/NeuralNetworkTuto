@@ -10,8 +10,8 @@ class Neuron():
         # set name
         self.name=name
         # initialize random weights
-        weights=rand(neuronInputLength) # TODO: explain magic number
-        threshold=rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
+        weights=[0]*neuronInputLength#rand(neuronInputLength) # TODO: explain magic number
+        threshold=0.5#rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
         self.thresholdedWeights=append(weights,-threshold)
     def activate(self,input):
         # sum weighted input
@@ -46,8 +46,8 @@ class Neuron():
         return representation
 class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
-    initialCorrectionStep=0.9 # TODO: explain magic number
-    correctionFactor=0.75 # TODO: explain magic number
+    initialCorrectionStep=0.1 # TODO: explain magic number
+    correctionFactor=1 # TODO: explain magic number
     def __init__(self, trainings):
         # set trainings
         self.trainings=trainings
@@ -232,13 +232,13 @@ trainings={
     0: completeTrainings[0],
     1: completeTrainings[1],
     2: completeTrainings[2],
-    #3: completeTrainings[3],
-    #4: completeTrainings[4],
-    #5: completeTrainings[5],
-    #6: completeTrainings[6],
-    #7: completeTrainings[7],
-    #8: completeTrainings[8],
-    #9: completeTrainings[9],
+    3: completeTrainings[3],
+    4: completeTrainings[4],
+    5: completeTrainings[5],
+    6: completeTrainings[6],
+    7: completeTrainings[7],
+    8: completeTrainings[8],
+    9: completeTrainings[9],
 }
 # train neuron network
 perceptron=Perceptron(trainings)
