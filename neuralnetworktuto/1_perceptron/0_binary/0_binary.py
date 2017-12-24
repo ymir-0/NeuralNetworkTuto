@@ -2,8 +2,19 @@
 # imports
 from numpy import heaviside, array, append
 from numpy.random import rand
-from os import linesep
+from os import linesep, sep, listdir
+from os.path import realpath, join
 from random import shuffle
+# contants
+CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
+TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
+# tools functions
+def prettyStringOutput(output):
+    filteredOutput=list()
+    for neuronNumber,neuronActivation in enumerate(output):
+        if neuronActivation==1:
+            filteredOutput.append(neuronNumber)
+    return str(tuple(filteredOutput))
 # neuron
 class Neuron():
     def __init__(self,name,neuronInputLength):
@@ -161,79 +172,26 @@ class Perceptron():
 class Trainings():
     rowNumber = 6
     columnNumber = 5
-    def __init__(self):
-        self.data = {
-            0:
-                tuple([1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 1,
-                       1, 0, 0, 0, 1,
-                       1, 0, 0, 0, 1,
-                       1, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1]),
-            1:
-                tuple([0, 0, 1, 0, 0,
-                       0, 0, 1, 0, 0,
-                       0, 0, 1, 0, 0,
-                       0, 0, 1, 0, 0,
-                       0, 0, 1, 0, 0,
-                       0, 0, 1, 0, 0]),
-            2:
-                tuple([1, 1, 1, 1, 1,
-                       0, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 0,
-                       1, 0, 0, 0, 0,
-                       1, 1, 1, 1, 1]),
-            3:
-                tuple([1, 1, 1, 1, 1,
-                       0, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1,
-                       0, 0, 0, 0, 1,
-                       0, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1]),
-            4:
-                tuple([0, 1, 0, 0, 0,
-                       0, 1, 0, 0, 0,
-                       0, 1, 0, 0, 0,
-                       0, 1, 0, 1, 0,
-                       0, 1, 1, 1, 1,
-                       0, 0, 0, 1, 0]),
-            5:
-                tuple([1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 0,
-                       1, 0, 0, 0, 0,
-                       1, 1, 1, 1, 1,
-                       0, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1]),
-            6:
-                tuple([1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 0,
-                       1, 0, 0, 0, 0,
-                       1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1]),
-            7:
-                tuple([1, 1, 1, 1, 0,
-                       0, 0, 0, 1, 0,
-                       0, 0, 0, 1, 0,
-                       0, 0, 1, 1, 1,
-                       0, 0, 0, 1, 0,
-                       0, 0, 0, 1, 0]),
-            8:
-                tuple([1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 1,
-                       1, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1]),
-            9:
-                tuple([1, 1, 1, 1, 1,
-                       1, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1,
-                       0, 0, 0, 0, 1,
-                       0, 0, 0, 0, 1,
-                       1, 1, 1, 1, 1]),
-        }
+    def __init__(self,dataFolder):
+        # initialize delta
+        self.data=dict()
+        # for each data file
+        for dataFileShortName in listdir(dataFolder):
+            # extract data key
+            key=int(dataFileShortName.split(".")[0])
+            # read it
+            dataFileFullName=join(dataFolder,dataFileShortName)
+            dataFile = open(dataFileFullName)
+            rawData=dataFile.read()
+            dataFile.close()
+            # construct image
+            dataPivot=rawData.replace(linesep,"")
+            image=list()
+            for pixel in dataPivot:
+                image.append(int(pixel))
+                pass
+            # fill data
+            self.data[key]=tuple(image)
     def stringValue(self,key):
         # initialize representation
         imageRepresentation=""
@@ -257,19 +215,11 @@ class Trainings():
                 columnCounter=0
         # return
         return imageRepresentation
-    pass
-# tools functions
-def prettyStringOutput(output):
-    filteredOutput=list()
-    for neuronNumber,neuronActivation in enumerate(output):
-        if neuronActivation==1:
-            filteredOutput.append(neuronNumber)
-    return str(tuple(filteredOutput))
 # train neuron network
-trainings=Trainings()
+trainings=Trainings(TRAINING_FOLDER)
 perceptron=Perceptron(trainings)
 # check training
 for inputValue, inputImage in trainings.data.items():
-    outputValues=perceptron.execute(inputImage)
-    outputRepresentation=prettyStringOutput(outputValues)
+    output=perceptron.execute(inputImage)
+    outputRepresentation=prettyStringOutput(output)
     print("for image : "+linesep + trainings.stringValue(inputValue)+"corresponding numbers are : " + outputRepresentation)
