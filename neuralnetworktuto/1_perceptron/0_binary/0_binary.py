@@ -8,6 +8,7 @@ from random import shuffle
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
+TRAINING_REPORT=join(CURRENT_DIRECTORY,"output","trainingReport.txt")
 # tools functions
 def prettyStringOutput(output):
     filteredOutput=list()
@@ -15,6 +16,28 @@ def prettyStringOutput(output):
         if neuronActivation==1:
             filteredOutput.append(neuronNumber)
     return str(tuple(filteredOutput))
+def checkTraining(perceptron):
+    # initialize training report
+    trainingReport = ""
+    # for all training value
+    for inputValue, inputImage in perceptron.trainings.data.items():
+        # fill report
+        output = perceptron.execute(inputImage)
+        outputRepresentation = prettyStringOutput(output)
+        trainingReport = trainingReport+"for image : " + linesep + perceptron.trainings.stringValue(inputValue) + "corresponding numbers are : " + outputRepresentation + linesep
+        # write report
+        reportFile = open(TRAINING_REPORT,"wt")
+        reportFile.write(trainingReport)
+        reportFile.close()
+        pass
+    pass
+def main():
+    # train neuron network
+    trainings = Trainings(TRAINING_FOLDER)
+    perceptron = Perceptron(trainings)
+    # check training
+    checkTraining(perceptron)
+    pass
 # neuron
 class Neuron():
     def __init__(self,name,neuronInputLength):
@@ -215,11 +238,5 @@ class Trainings():
                 columnCounter=0
         # return
         return imageRepresentation
-# train neuron network
-trainings=Trainings(TRAINING_FOLDER)
-perceptron=Perceptron(trainings)
-# check training
-for inputValue, inputImage in trainings.data.items():
-    output=perceptron.execute(inputImage)
-    outputRepresentation=prettyStringOutput(output)
-    print("for image : "+linesep + trainings.stringValue(inputValue)+"corresponding numbers are : " + outputRepresentation)
+# run script
+main()
