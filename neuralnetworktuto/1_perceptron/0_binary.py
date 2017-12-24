@@ -124,7 +124,7 @@ class Perceptron():
         else:
             print("this output is fine")
         # return
-        return trained #TODO : remove killswitch
+        return trained
     def execute(self,inputs):
         # initialise outputs
         outputs=list()
@@ -157,7 +157,7 @@ class Perceptron():
             representation=representation+str(currentNeuron)+linesep
         return representation
 # set training data
-completeTrainings={
+trainings={
     0:
         tuple([1, 1, 1, 1, 1,
                1, 0, 0, 0, 1,
@@ -228,18 +228,6 @@ completeTrainings={
                0, 0, 0, 0, 1,
                0, 0, 0, 0, 1,
                1, 1, 1, 1, 1] ),
-}
-trainings={
-    0: completeTrainings[0],
-    1: completeTrainings[1],
-    2: completeTrainings[2],
-    3: completeTrainings[3],
-    4: completeTrainings[4],
-    5: completeTrainings[5],
-    6: completeTrainings[6],
-    7: completeTrainings[7],
-    8: completeTrainings[8],
-    9: completeTrainings[9],
 }
 # train neuron network
 perceptron=Perceptron(trainings)
