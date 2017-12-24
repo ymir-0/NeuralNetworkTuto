@@ -10,7 +10,8 @@ class Neuron():
         # set name
         self.name=name
         # initialize random weights
-        weights=[0]*neuronInputLength#rand(neuronInputLength) # TODO: explain magic number
+        weightCoefficient=Perceptron.initialCorrectionStep*(Perceptron.correctionFactor**(41+1)) # INFO : we genraly solve the problem in ~41 steps
+        weights=rand(neuronInputLength)*weightCoefficient-(weightCoefficient/2) # INFO : we want to balance weights around 0
         threshold=0.5#rand(1) # we assume threshold to be an weight so it can be adjust and condidere 'global threshold'=0
         self.thresholdedWeights=append(weights,-threshold)
     def activate(self,input):
@@ -46,8 +47,8 @@ class Neuron():
         return representation
 class Perceptron():
     computeLimitLoop=100 # sometimes, random choices are too long to adjust. better to retry
-    initialCorrectionStep=0.125 # TODO: explain magic number
-    correctionFactor=0.9375 # TODO: explain magic number
+    initialCorrectionStep=0.125 # INFO : found with a dichotomy between 1 and 0
+    correctionFactor=0.9375 # INFO : found with a dichotomy between 1 and 0.9
     def __init__(self, trainings):
         # set trainings
         self.trainings=trainings
