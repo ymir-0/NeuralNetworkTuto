@@ -45,6 +45,7 @@ class Neuron():
     def __str__(self):
         representation =self.name +" : "+str(dict(enumerate(self.thresholdedWeights)))
         return representation
+# Perceptron
 class Perceptron():
     computeLimitLoop=100 # sometimes, random choices are too long to adjust. better to retry
     initialCorrectionStep=0.125 # INFO : found with a dichotomy between 1 and 0
@@ -108,11 +109,11 @@ class Perceptron():
         expectedOutput = [0] * len(self.neurons)
         expectedOutput[trainingKey] = 1
         expectedOutput = tuple(expectedOutput)
-        print("expected output : " + str(expectedOutput))
+        print("expected output : " + str(dict(enumerate(expectedOutput))))
         training = self.trainings.data[trainingKey]
         print("input : "+str(trainingKey)+" -> "+linesep+self.trainings.stringValue(trainingKey))
         actualOutput = self.execute(training)
-        print("actual output : " + str(actualOutput))
+        print("actual output : " + str(dict(enumerate(actualOutput))))
         # compare output
         if expectedOutput!=actualOutput:
             print("this output implies corrections")
@@ -257,10 +258,18 @@ class Trainings():
         # return
         return imageRepresentation
     pass
+# tools functions
+def prettyStringOutput(output):
+    filteredOutput=list()
+    for neuronNumber,neuronActivation in enumerate(output):
+        if neuronActivation==1:
+            filteredOutput.append(neuronNumber)
+    return str(tuple(filteredOutput))
 # train neuron network
 trainings=Trainings()
 perceptron=Perceptron(trainings)
-# test results
+# check training
 for inputValue, inputImage in trainings.data.items():
     outputValues=perceptron.execute(inputImage)
-    print(str(inputImage) + linesep + " -> " + str(outputValues))
+    outputRepresentation=prettyStringOutput(outputValues)
+    print("for image : "+linesep + trainings.stringValue(inputValue)+"corresponding numbers are : " + outputRepresentation)
