@@ -47,7 +47,7 @@ class Neuron():
 class Perceptron():
     computeLimitLoop=10000 # sometimes, random choices are too long to adjust. better to retry
     initialCorrectionStep=0.1 # TODO: explain magic number
-    correctionFactor=1 # TODO: explain magic number
+    correctionFactor=0.9375 # TODO: explain magic number
     def __init__(self, trainings):
         # set trainings
         self.trainings=trainings
@@ -243,7 +243,7 @@ trainings={
 # train neuron network
 perceptron=Perceptron(trainings)
 # test results
-print("N ->  0    1    2    3    4    5")
+print("N ->  0    1    2    3    4    5    6    7    8    9")
 for inputValue, inputImage in trainings.items():
     outputValues=perceptron.execute(inputImage)
     print(str(inputValue) + " -> " + str(outputValues))
