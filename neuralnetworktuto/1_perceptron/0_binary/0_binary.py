@@ -8,6 +8,7 @@ from random import shuffle
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
+TRAINING_LOG=join(CURRENT_DIRECTORY,"output","training.log")
 TRAINING_REPORT=join(CURRENT_DIRECTORY,"output","trainingReport.txt")
 # tools functions
 def prettyStringOutput(output):
@@ -38,6 +39,19 @@ def main():
     # check training
     checkTraining(perceptron)
     pass
+# tools classes
+class Logger():
+    completeLog=""
+    @staticmethod
+    def append(level, message):
+        Logger.completeLog=Logger.completeLog+" "*(4*level)+message+linesep
+        pass
+    @staticmethod
+    def flush():
+        logFile = open(TRAINING_LOG,"wt")
+        logFile.write(Logger.completeLog)
+        logFile.close()
+    pass
 # neuron
 class Neuron():
     def __init__(self,name,neuronInputLength):
@@ -64,22 +78,22 @@ class Neuron():
             currentWeight=self.thresholdedWeights[currentIndex]
             # apply correction if needed
             if currentInput==1:
-                print("correction needed -> current input : " + str(currentInput) + "    current weight : " + str(currentWeight))
+                Logger.append(4,"correction needed -> current input : " + str(currentInput) + "    current weight : " + str(currentWeight))
                 newWeight=currentWeight+delta
                 newThresholdedWeights.append(newWeight)
-                print("new weight : "+str(newThresholdedWeights))
+                Logger.append(4,"new weight : "+str(newWeight))
                 pass
             else:
-                print("no correction needed for input value 0")
+                Logger.append(4,"no correction needed for input value 0")
                 newThresholdedWeights.append(currentWeight)
             pass
         # reset neuron weights
         self.thresholdedWeights=array(newThresholdedWeights)
-        print("new neurons weights : " + str(self))
+        Logger.append(4,"new neurons weights : " + str(self))
     def __str__(self):
         representation =self.name +" : "+str(dict(enumerate(self.thresholdedWeights)))
         return representation
-# Perceptron
+# perceptron
 class Perceptron():
     computeLimitLoop=100 # sometimes, random choices are too long to adjust. better to retry
     initialCorrectionStep=0.125 # INFO : found with a dichotomy between 1 and 0
@@ -93,7 +107,7 @@ class Perceptron():
         neuronInputLength=len(self.trainings.data[trainingKeys[0]])
         # initialize network
         self.initializeNetwork( neuronsNumbers, neuronInputLength)
-        print("neurons initialized"+linesep+str(self))
+        Logger.append(0,"neurons initialized"+linesep+str(self))
         # assume network is not trained
         trained=False
         # initialize correction step
@@ -102,7 +116,7 @@ class Perceptron():
         trainingCounter=0
         # train while necessary
         while not trained:
-            print("training #"+str(trainingCounter)+"   correction step : " + str(self.currentCorrectionStep))
+            Logger.append(0,"training #"+str(trainingCounter)+"   correction step : " + str(self.currentCorrectionStep))
             trainingCounter=trainingCounter+1
             # train all neurons
             trained=self.playAllRandomTrainings()
@@ -110,13 +124,14 @@ class Perceptron():
             self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
             pass
         # print completed training
-        print("TRAINED in "+str(trainingCounter) + " steps :"+linesep+str(self))
+        Logger.append(0,"TRAINED in "+str(trainingCounter) + " steps :"+linesep+str(self))
+        Logger.flush()
     def initializeNetwork(self,neuronsNumbers,neuronInputLength):
         # initialize neurons collection
         self.neurons=list()
         # initialize each neurons with random values
         for neuronIndex in range(0,neuronsNumbers):
-            neuronName="neuron#"+str(neuronIndex)
+            neuronName=" "*4+"neuron#"+str(neuronIndex)
             currentNeuron=Neuron(neuronName,neuronInputLength)
             self.neurons.append(currentNeuron)
         pass
@@ -127,10 +142,10 @@ class Perceptron():
         shuffledTrainingKeys = list(self.trainings.data.keys())
         shuffle(shuffledTrainingKeys)
         shuffledTrainingKeys=tuple(shuffledTrainingKeys)
-        print("training order : "+str(shuffledTrainingKeys))
+        Logger.append(1,"training order : "+str(shuffledTrainingKeys))
         # for each shuffled training
         for currentTrainingKey in shuffledTrainingKeys:
-            print("current training value : " + str(currentTrainingKey))
+            Logger.append(1,"current training value : " + str(currentTrainingKey))
             # play current training
             trained=trained and self.playOneTraining(currentTrainingKey)
             pass
@@ -143,21 +158,21 @@ class Perceptron():
         expectedOutput = [0] * len(self.neurons)
         expectedOutput[trainingKey] = 1
         expectedOutput = tuple(expectedOutput)
-        print("expected output : " + str(dict(enumerate(expectedOutput))))
+        Logger.append(2,"expected output : " + str(dict(enumerate(expectedOutput))))
         training = self.trainings.data[trainingKey]
-        print("input : "+str(trainingKey)+" -> "+linesep+self.trainings.stringValue(trainingKey))
+        Logger.append(2,"input : "+str(trainingKey)+" -> "+linesep+self.trainings.stringValue(trainingKey))
         actualOutput = self.execute(training)
-        print("actual output : " + str(dict(enumerate(actualOutput))))
+        Logger.append(2,"actual output : " + str(dict(enumerate(actualOutput))))
         # compare output
         if expectedOutput!=actualOutput:
-            print("this output implies corrections")
+            Logger.append(2,"this output implies corrections")
             # neuron is not trained
             trained=False
             # check all neurons for correction
             self.checkAllNeuronsCorrection(training,expectedOutput, actualOutput)
             pass
         else:
-            print("this output is fine")
+            Logger.append(2,"this output is fine")
         # return
         return trained
     def execute(self,inputs):
@@ -176,16 +191,16 @@ class Perceptron():
             neuronActualOutput=actualOutput[neuronIndex]
             # check if this neuron need correction
             impliedNeuron = self.neurons[neuronIndex]
-            print("implied neuron : "+str(impliedNeuron))
+            Logger.append(3,"implied neuron : "+str(impliedNeuron))
             if neuronExpectedOutput!=neuronActualOutput:
                 # compute delta
                 delta=self.currentCorrectionStep*(neuronExpectedOutput-neuronActualOutput)
-                print("this neuron need corrections delta : "+str(delta))
+                Logger.append(3,"this neuron need corrections delta : "+str(delta))
                 # correct this neuron
                 impliedNeuron.correct(input,delta)
                 pass
             else:
-                print("this neuron is fine")
+                Logger.append(3,"this neuron is fine")
     def __str__(self):
         representation =""
         for currentNeuron in self.neurons:
