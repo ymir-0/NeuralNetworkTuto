@@ -34,7 +34,7 @@ def checkTraining(perceptron):
     pass
 def main():
     # train neuron network
-    trainings = Trainings(TRAINING_FOLDER)
+    trainings = Data(TRAINING_FOLDER)
     perceptron = Perceptron(trainings)
     # check training
     checkTraining(perceptron)
@@ -52,6 +52,52 @@ class Logger():
         logFile.write(Logger.completeLog)
         logFile.close()
     pass
+class Data():
+    rowNumber = 6
+    columnNumber = 5
+    def __init__(self,dataFolder):
+        # initialize delta
+        self.data=dict()
+        # for each data file
+        for dataFileShortName in listdir(dataFolder):
+            # extract data key
+            key=int(dataFileShortName.split(".")[0])
+            # read it
+            dataFileFullName=join(dataFolder,dataFileShortName)
+            dataFile = open(dataFileFullName)
+            rawData=dataFile.read()
+            dataFile.close()
+            # construct image
+            dataPivot=rawData.replace(linesep,"")
+            image=list()
+            for pixel in dataPivot:
+                image.append(int(pixel))
+                pass
+            # fill data
+            self.data[key]=tuple(image)
+    def stringValue(self,key):
+        # initialize representation
+        imageRepresentation=""
+        # initialize column conter
+        columnCounter=0
+        # for all pixels in image
+        image=self.data[key]
+        for pixel in image:
+            # set pixel representation
+            if pixel==0:
+                pixelRepresentation=" "
+            else:
+                pixelRepresentation = "█"
+            # complete image representation
+            imageRepresentation=imageRepresentation+pixelRepresentation
+            # manage column
+            if columnCounter<Data.columnNumber-1:
+                columnCounter=columnCounter+1
+            else:
+                imageRepresentation = imageRepresentation +linesep
+                columnCounter=0
+        # return
+        return imageRepresentation
 # neuron
 class Neuron():
     def __init__(self,name,neuronInputLength):
@@ -206,52 +252,5 @@ class Perceptron():
         for currentNeuron in self.neurons:
             representation=representation+str(currentNeuron)+linesep
         return representation
-# set training data
-class Trainings():
-    rowNumber = 6
-    columnNumber = 5
-    def __init__(self,dataFolder):
-        # initialize delta
-        self.data=dict()
-        # for each data file
-        for dataFileShortName in listdir(dataFolder):
-            # extract data key
-            key=int(dataFileShortName.split(".")[0])
-            # read it
-            dataFileFullName=join(dataFolder,dataFileShortName)
-            dataFile = open(dataFileFullName)
-            rawData=dataFile.read()
-            dataFile.close()
-            # construct image
-            dataPivot=rawData.replace(linesep,"")
-            image=list()
-            for pixel in dataPivot:
-                image.append(int(pixel))
-                pass
-            # fill data
-            self.data[key]=tuple(image)
-    def stringValue(self,key):
-        # initialize representation
-        imageRepresentation=""
-        # initialize column conter
-        columnCounter=0
-        # for all pixels in image
-        image=self.data[key]
-        for pixel in image:
-            # set pixel representation
-            if pixel==0:
-                pixelRepresentation=" "
-            else:
-                pixelRepresentation = "█"
-            # complete image representation
-            imageRepresentation=imageRepresentation+pixelRepresentation
-            # manage column
-            if columnCounter<Trainings.columnNumber-1:
-                columnCounter=columnCounter+1
-            else:
-                imageRepresentation = imageRepresentation +linesep
-                columnCounter=0
-        # return
-        return imageRepresentation
 # run script
 main()
