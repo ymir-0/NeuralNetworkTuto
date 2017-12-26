@@ -8,8 +8,10 @@ from random import shuffle
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
+SANDBOX_FOLDER=join(CURRENT_DIRECTORY,"input","sandbox")
 TRAINING_LOG=join(CURRENT_DIRECTORY,"output","training.log")
 TRAINING_REPORT=join(CURRENT_DIRECTORY,"output","trainingReport.txt")
+SANDBOX_REPORT=join(CURRENT_DIRECTORY,"output","sandboxReport.txt")
 # tools functions
 def prettyStringOutput(output):
     filteredOutput=list()
@@ -17,27 +19,29 @@ def prettyStringOutput(output):
         if neuronActivation==1:
             filteredOutput.append(neuronNumber)
     return str(tuple(filteredOutput))
-def checkTraining(perceptron):
+def writeReport(perceptron,images,reportFileName):
     # initialize training report
     trainingReport = ""
     # for all training value
-    for inputValue, inputImage in perceptron.trainings.data.items():
+    for inputValue, inputImage in images.data.items():
         # fill report
         output = perceptron.execute(inputImage)
         outputRepresentation = prettyStringOutput(output)
-        trainingReport = trainingReport+"for image : " + linesep + perceptron.trainings.stringValue(inputValue) + "corresponding numbers are : " + outputRepresentation + linesep
+        trainingReport = trainingReport+"for image : " + linesep + images.stringValue(inputValue) + "corresponding numbers are : " + outputRepresentation + linesep
         # write report
-        reportFile = open(TRAINING_REPORT,"wt")
+        reportFile = open(reportFileName,"wt")
         reportFile.write(trainingReport)
         reportFile.close()
         pass
     pass
 def main():
-    # train neuron network
-    trainings = Data(TRAINING_FOLDER)
-    perceptron = Perceptron(trainings)
-    # check training
-    checkTraining(perceptron)
+    # train & check neuron network
+    images = Images(TRAINING_FOLDER)
+    perceptron = Perceptron(images)
+    writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
+    # play with sandbox
+    images = Images(SANDBOX_FOLDER)
+    writeReport(perceptron,images,SANDBOX_REPORT)
     pass
 # tools classes
 class Logger():
@@ -52,7 +56,7 @@ class Logger():
         logFile.write(Logger.completeLog)
         logFile.close()
     pass
-class Data():
+class Images():
     rowNumber = 6
     columnNumber = 5
     def __init__(self,dataFolder):
@@ -91,7 +95,7 @@ class Data():
             # complete image representation
             imageRepresentation=imageRepresentation+pixelRepresentation
             # manage column
-            if columnCounter<Data.columnNumber-1:
+            if columnCounter<Images.columnNumber-1:
                 columnCounter=columnCounter+1
             else:
                 imageRepresentation = imageRepresentation +linesep

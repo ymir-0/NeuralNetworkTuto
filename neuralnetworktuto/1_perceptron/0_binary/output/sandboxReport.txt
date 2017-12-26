@@ -1,0 +1,80 @@
+for image : 
+█████
+ █  █
+█████
+    █
+    █
+█████
+corresponding numbers are : ()
+for image : 
+█████
+    █
+   ██
+███  
+█    
+█████
+corresponding numbers are : ()
+for image : 
+████ 
+   █ 
+   ██
+ ███ 
+   █ 
+   █ 
+corresponding numbers are : (7,)
+for image : 
+  █  
+ ██  
+  █  
+  █  
+  █  
+ ███ 
+corresponding numbers are : (1,)
+for image : 
+████ 
+    █
+ ████
+    █
+    █
+████ 
+corresponding numbers are : ()
+for image : 
+█████
+█   █
+█ ███
+█   █
+█   █
+█████
+corresponding numbers are : (0,)
+for image : 
+ ███ 
+█   █
+█   █
+█   █
+█   █
+ ███ 
+corresponding numbers are : (0,)
+for image : 
+█████
+█    
+█   █
+█████
+    █
+█████
+corresponding numbers are : (5,)
+for image : 
+█████
+█    
+█    
+█████
+█  █ 
+█████
+corresponding numbers are : ()
+for image : 
+ █   
+ █   
+ █   
+ █   
+ ████
+     
+corresponding numbers are : (4,)
