@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # imports
-from numpy import heaviside, array, append
+from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid
+from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir
 from os.path import realpath, join
@@ -60,7 +61,7 @@ class Images():
     rowNumber = 6
     columnNumber = 5
     def __init__(self,dataFolder):
-        # initialize delta
+        # initialize data
         self.data=dict()
         # for each data file
         for dataFileShortName in listdir(dataFolder):
@@ -102,6 +103,29 @@ class Images():
                 columnCounter=0
         # return
         return imageRepresentation
+class ErrorsGraph():
+    errorsCounter=list()
+    @staticmethod
+    def reset():
+        ErrorsGraph.errorsCounter=list()
+        pass
+    @staticmethod
+    def append(errorNumber):
+        ErrorsGraph.errorsCounter.append(errorNumber)
+        pass
+    @staticmethod
+    def draw():
+        plot(ErrorsGraph.errorsCounter, "-o")
+        xticks(arange(0, len(ErrorsGraph.errorsCounter) + 1, 1))
+        yticks(arange(0, max(ErrorsGraph.errorsCounter) + 1, 1))
+        title("training evolution")
+        xlabel("training loop")
+        ylabel("errors")
+        grid(linestyle="-.", linewidth=.5)
+        show()
+        pass
+    pass
+pass
 # neuron
 class Neuron():
     def __init__(self,name,neuronInputLength):
@@ -151,6 +175,7 @@ class Perceptron():
     def __init__(self, trainings):
         # set trainings
         self.trainings=trainings
+        ErrorsGraph.reset()
         # set number of neurons & neuron input length
         trainingKeys = tuple(self.trainings.data.keys())
         neuronsNumbers=len(self.trainings.data)
@@ -176,18 +201,20 @@ class Perceptron():
         # print completed training
         Logger.append(0,"TRAINED in "+str(trainingCounter) + " steps :"+linesep+str(self))
         Logger.flush()
+        ErrorsGraph.draw()
     def initializeNetwork(self,neuronsNumbers,neuronInputLength):
         # initialize neurons collection
         self.neurons=list()
         # initialize each neurons with random values
         for neuronIndex in range(0,neuronsNumbers):
-            neuronName=" "*4+"neuron#"+str(neuronIndex)
+            neuronName="neuron#"+str(neuronIndex)
             currentNeuron=Neuron(neuronName,neuronInputLength)
             self.neurons.append(currentNeuron)
         pass
     def playAllRandomTrainings(self):
         # assume network is trained
         trained=True
+        errorConter=0
         # shuffle trainings
         shuffledTrainingKeys = list(self.trainings.data.keys())
         shuffle(shuffledTrainingKeys)
@@ -197,9 +224,13 @@ class Perceptron():
         for currentTrainingKey in shuffledTrainingKeys:
             Logger.append(1,"current training value : " + str(currentTrainingKey))
             # play current training
-            trained=trained and self.playOneTraining(currentTrainingKey)
+            currentTrained=self.playOneTraining(currentTrainingKey)
+            if not currentTrained:
+                errorConter=errorConter+1
+            trained=trained and currentTrained
             pass
-        # return
+        # coalesce errors & return
+        ErrorsGraph.append(errorConter)
         return trained
     def playOneTraining(self, trainingKey):
         # assume network is trained

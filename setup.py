@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # import generic modules
+# WARNING : need linux package python3-tk (ie shell command : apt-get install -y python3-tk)
 from os.path import join, dirname, isdir
 from setuptools import setup
 from importlib import import_module
@@ -32,7 +33,7 @@ setup(
     version=__version__,
     description="Neural network tutorial",
     packages=modules,
-    install_requires=["numpy"],
+    install_requires=["numpy","matplotlib"],
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
