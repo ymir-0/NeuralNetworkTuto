@@ -52,7 +52,7 @@ def drawWeightsDigit(perceptron, digit):
     graph = Graph()
     nodeColors = list()
     # add digit node
-    digitNode = str(digit)
+    digitNode = str(digit)+"*"
     graph.add_node(digitNode)
     nodeColors.append("yellow")
     # for each image pixel
@@ -78,9 +78,6 @@ def drawWeightsDigit(perceptron, digit):
             edgeColor = "purple"
         graph.add_edge(pixelNode, digitNode, color=edgeColor)
         pass
-    # DEBUG
-    print("min(edgeWeights)"+str(min(edgeWeights)))
-    print("max(edgeWeights)"+str(max(edgeWeights)))
     # coalesce edges weight & color
     egdeColors = [graph[u][v]["color"] for u, v in graph.edges()]
     # draw graph
