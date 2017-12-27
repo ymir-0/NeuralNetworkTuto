@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # imports
-from networkx import Graph, draw, draw_networkx_edge_labels, spring_layout
-from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid
+from networkx import Graph, draw, spring_layout
+from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid, figure
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir
 from os.path import realpath, join
-from random import shuffle, randint, randrange
+from random import shuffle
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
@@ -15,6 +15,12 @@ TRAINING_LOG=join(CURRENT_DIRECTORY,"output","training.log")
 TRAINING_REPORT=join(CURRENT_DIRECTORY,"output","trainingReport.txt")
 SANDBOX_REPORT=join(CURRENT_DIRECTORY,"output","sandboxReport.txt")
 # tools functions
+class FigureCounter():
+    figureCounter=-1
+    @staticmethod
+    def nextFigure():
+        FigureCounter.figureCounter=FigureCounter.figureCounter+1
+        return FigureCounter.figureCounter
 def prettyStringOutput(output):
     filteredOutput=list()
     for neuronNumber,neuronActivation in enumerate(output):
@@ -37,6 +43,8 @@ def writeReport(perceptron,images,reportFileName):
         pass
     pass
 def drawWeightsDigit(perceptron, digit):
+    # set dedicated figure
+    figure(FigureCounter.nextFigure())
     # get digit information
     digitRawInformation=perceptron.neurons[digit].thresholdedWeights
     weights=digitRawInformation[0:-1]
@@ -83,7 +91,6 @@ def drawWeightsDigit(perceptron, digit):
     # draw graph
     position = spring_layout(graph)
     draw(graph, pos=position, with_labels=True, node_color=nodeColors, edge_color=egdeColors, width=edgeWeights)
-    show()
     pass
 pass
 def main():
@@ -92,10 +99,13 @@ def main():
     perceptron = Perceptron(images)
     writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
     # draw weights/digits graphs
-    drawWeightsDigit(perceptron, 0)
+    for neuronIndex in range(0,len(perceptron.neurons)):
+        drawWeightsDigit(perceptron, neuronIndex)
     # play with sandbox
     images = Images(SANDBOX_FOLDER)
     writeReport(perceptron,images,SANDBOX_REPORT)
+    # display all graphs
+    show()
     pass
 # tools classes
 class Logger():
@@ -168,6 +178,9 @@ class ErrorsGraph():
         pass
     @staticmethod
     def draw():
+        # set dedicated figure
+        figure(FigureCounter.nextFigure())
+        # draw training evolution
         plot(ErrorsGraph.errorsCounter, "-o")
         xticks(arange(0, len(ErrorsGraph.errorsCounter) + 1, 1))
         yticks(arange(0, max(ErrorsGraph.errorsCounter) + 1, 1))
@@ -175,7 +188,6 @@ class ErrorsGraph():
         xlabel("training loop")
         ylabel("errors")
         grid(linestyle="-.", linewidth=.5)
-        show()
         pass
     pass
 pass
@@ -254,7 +266,7 @@ class Perceptron():
         # print completed training
         Logger.append(0,"TRAINED in "+str(trainingCounter) + " steps :"+linesep+str(self))
         Logger.flush()
-        #ErrorsGraph.draw() #TODO: enable this drawing
+        ErrorsGraph.draw() #TODO: enable this drawing
     def initializeNetwork(self,neuronsNumbers,neuronInputLength):
         # initialize neurons collection
         self.neurons=list()
