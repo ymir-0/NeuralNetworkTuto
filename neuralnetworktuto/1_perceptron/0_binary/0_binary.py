@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # imports
+from networkx import Graph, draw, draw_networkx_edge_labels, spring_layout
 from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir
 from os.path import realpath, join
-from random import shuffle
+from random import shuffle, randint, randrange
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
@@ -35,11 +36,66 @@ def writeReport(perceptron,images,reportFileName):
         reportFile.close()
         pass
     pass
+def drawWeightsDigit(perceptron, digit):
+    # get digit information
+    digitRawInformation=perceptron.neurons[digit].thresholdedWeights
+    weights=digitRawInformation[0:-1]
+    # prepare weights standardization
+    maximumCorrectedWeight=0.1
+    minimumCorrectedWeight=1
+    absoluteWeights=tuple(map(abs, weights))
+    absoluteMinimumWeight = min(absoluteWeights)
+    absoluteMaximumWeight = max(absoluteWeights)
+    weightCorrectorCoefficient = (maximumCorrectedWeight-minimumCorrectedWeight) / (absoluteMaximumWeight - absoluteMinimumWeight)
+    weightCorrectorOffset = (maximumCorrectedWeight+minimumCorrectedWeight - weightCorrectorCoefficient * (absoluteMaximumWeight + absoluteMinimumWeight)) / 2
+    # initialize graph
+    graph = Graph()
+    nodeColors = list()
+    # add digit node
+    digitNode = str(digit)
+    graph.add_node(digitNode)
+    nodeColors.append("yellow")
+    # for each image pixel
+    edgeWeights=list()
+    for pixelIndex in range(0, len(weights)):
+        # set node value
+        pixelValue = perceptron.trainings.data[digit][pixelIndex]
+        pixelNode = str(pixelIndex)
+        graph.add_node(pixelNode)
+        # set node color
+        if pixelValue == 0:
+            nodeColor = "cyan"
+        else:
+            nodeColor = "green"
+        nodeColors.append(nodeColor)
+        # set edge (with weight & color)
+        rawEights=weights[pixelIndex]
+        edgeWeight = abs(rawEights)*weightCorrectorCoefficient+weightCorrectorOffset
+        edgeWeights.append(edgeWeight)
+        if rawEights < 0:
+            edgeColor = "red"
+        else:
+            edgeColor = "purple"
+        graph.add_edge(pixelNode, digitNode, color=edgeColor)
+        pass
+    # DEBUG
+    print("min(edgeWeights)"+str(min(edgeWeights)))
+    print("max(edgeWeights)"+str(max(edgeWeights)))
+    # coalesce edges weight & color
+    egdeColors = [graph[u][v]["color"] for u, v in graph.edges()]
+    # draw graph
+    position = spring_layout(graph)
+    draw(graph, pos=position, with_labels=True, node_color=nodeColors, edge_color=egdeColors, width=edgeWeights)
+    show()
+    pass
+pass
 def main():
     # train & check neuron network
     images = Images(TRAINING_FOLDER)
     perceptron = Perceptron(images)
     writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
+    # draw weights/digits graphs
+    drawWeightsDigit(perceptron, 0)
     # play with sandbox
     images = Images(SANDBOX_FOLDER)
     writeReport(perceptron,images,SANDBOX_REPORT)
@@ -187,7 +243,7 @@ class Perceptron():
         trained=False
         # initialize correction step
         self.currentCorrectionStep = Perceptron.initialCorrectionStep
-        # initialize training conter
+        # initialize training counter
         trainingCounter=0
         # train while necessary
         while not trained:
@@ -201,7 +257,7 @@ class Perceptron():
         # print completed training
         Logger.append(0,"TRAINED in "+str(trainingCounter) + " steps :"+linesep+str(self))
         Logger.flush()
-        ErrorsGraph.draw()
+        #ErrorsGraph.draw() #TODO: enable this drawing
     def initializeNetwork(self,neuronsNumbers,neuronInputLength):
         # initialize neurons collection
         self.neurons=list()
