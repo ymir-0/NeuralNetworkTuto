@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # imports
-from networkx import Graph, draw, spring_layout
 from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir
 from os.path import realpath, join
 from random import shuffle
-from statistics import median, mean, pstdev
+from statistics import median, mean
 from csv import writer
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
@@ -41,59 +40,18 @@ def writeReport(perceptron,images,reportFileName):
         reportFile.close()
         pass
     pass
-def statisticDrawWeightDigit(perceptron, digit,statisticWriter):
+def computeStatistics(perceptron, digit,statisticWriter):
     # initialize statistics
     digitWeightsCoalescence={0:list(),1:list()}
-    # set dedicated figure
-    figure(FigureCounter.nextFigure())
     # get digit information
     digitRawInformation=perceptron.neurons[digit].thresholdedWeights
     weights=digitRawInformation[0:-1]
-    # prepare weights standardization
-    maximumCorrectedWeight=0.1
-    minimumCorrectedWeight=1
-    absoluteWeights=tuple(map(abs, weights))
-    absoluteMinimumWeight = min(absoluteWeights)
-    absoluteMaximumWeight = max(absoluteWeights)
-    weightCorrectorCoefficient = (maximumCorrectedWeight-minimumCorrectedWeight) / (absoluteMaximumWeight - absoluteMinimumWeight)
-    weightCorrectorOffset = (maximumCorrectedWeight+minimumCorrectedWeight - weightCorrectorCoefficient * (absoluteMaximumWeight + absoluteMinimumWeight)) / 2
-    # initialize graph
-    graph = Graph()
-    nodeColors = list()
-    # add digit node
-    digitNode = str(digit)+"*"
-    graph.add_node(digitNode)
-    nodeColors.append("yellow")
-    # for each image pixel
-    edgeWeights=list()
+    # for each pixel
     for pixelIndex in range(0, len(weights)):
-        # set node value
-        pixelValue = perceptron.trainings.data[digit][pixelIndex]
-        pixelNode = str(pixelIndex)
-        graph.add_node(pixelNode)
-        # set node color
-        if pixelValue == 0:
-            nodeColor = "cyan"
-        else:
-            nodeColor = "green"
-        nodeColors.append(nodeColor)
-        # set edge (with weight & color)
-        rawWeight=weights[pixelIndex]
-        edgeWeight = abs(rawWeight)*weightCorrectorCoefficient+weightCorrectorOffset
-        edgeWeights.append(edgeWeight)
-        if rawWeight < 0:
-            edgeColor = "red"
-        else:
-            edgeColor = "purple"
-        graph.add_edge(pixelNode, digitNode, color=edgeColor)
         # fill statistics details
-        digitWeightsCoalescence[pixelValue].append(rawWeight)
+        pixelValue = perceptron.trainings.data[digit][pixelIndex] # 0 or 1
+        digitWeightsCoalescence[pixelValue].append(weights[pixelIndex])
         pass
-    # coalesce edges weight & color
-    egdeColors = [graph[u][v]["color"] for u, v in graph.edges()]
-    # draw graph
-    position = spring_layout(graph)
-    draw(graph, pos=position, with_labels=True, node_color=nodeColors, edge_color=egdeColors, width=edgeWeights)
     # write statistics
     writeStatistics(digit, digitWeightsCoalescence, statisticWriter)
     # return
@@ -103,7 +61,7 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
     rows=list()
     # for each bit (0,1)
     for bit in weightsCoalescence.keys():
-        rows.append(((digit,bit,min(weightsCoalescence[bit]),max(weightsCoalescence[bit]),median(weightsCoalescence[bit]),mean(weightsCoalescence[bit]),pstdev(weightsCoalescence[bit]))))
+        rows.append(((digit,bit,min(weightsCoalescence[bit]),max(weightsCoalescence[bit]),median(weightsCoalescence[bit]),mean(weightsCoalescence[bit]))))
         pass
     comparisonRow=list()
     # compare statistics (1 vs. 0)
@@ -143,11 +101,11 @@ def main():
     # statistic & draw weights/digits graphs ...
     statisticReport = open(join(OUTPUT_DIRECTORY,"statisticReport.csv"), "wt")
     statisticWriter = writer(statisticReport)
-    statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN","STANDARD_DEVIATION")))
+    statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN")))
     allWeightsCoalescence = {0: list(), 1: list()}
     # for each digits (0 .. 9)
     for neuronIndex in range(0,len(perceptron.neurons)):
-        digitWeightsCoalescence = statisticDrawWeightDigit(perceptron, neuronIndex,statisticWriter)
+        digitWeightsCoalescence = computeStatistics(perceptron, neuronIndex,statisticWriter)
         # merge weights for global statistics
         for bit in digitWeightsCoalescence.keys():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]

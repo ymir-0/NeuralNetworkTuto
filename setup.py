@@ -33,7 +33,7 @@ setup(
     version=__version__,
     description="Neural network tutorial",
     packages=modules,
-    install_requires=["numpy","matplotlib","networkx"],
+    install_requires=["numpy","matplotlib"],
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
