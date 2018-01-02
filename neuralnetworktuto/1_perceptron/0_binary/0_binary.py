@@ -100,15 +100,20 @@ def StatisticDrawWeightDigit(perceptron, digit,statisticWriter):
     position = spring_layout(graph)
     draw(graph, pos=position, with_labels=True, node_color=nodeColors, edge_color=egdeColors, width=edgeWeights)
     # compute statistics
+    rows=list()
     for bit, binaryStatistic in digitStatistic.items():
         binaryStatistic.minimum = min(binaryStatistic.details)
         binaryStatistic.maximum = max(binaryStatistic.details)
         binaryStatistic.median = median(binaryStatistic.details)
         binaryStatistic.mean = mean(binaryStatistic.details)
         binaryStatistic.standardDeviation = pstdev(binaryStatistic.details)
-        statisticWriter.writerow(((digit,bit,binaryStatistic.minimum,binaryStatistic.maximum,binaryStatistic.median,binaryStatistic.mean,binaryStatistic.standardDeviation)))
+        rows.append(((digit,bit,binaryStatistic.minimum,binaryStatistic.maximum,binaryStatistic.median,binaryStatistic.mean,binaryStatistic.standardDeviation)))
         pass
-    pass
+    comparisonRow=list()
+    for column in range(2,len(rows[0])):
+        comparisonRow.append(rows[1][column]-rows[0][column])
+    rows.append([digit, "1<=>0"]+comparisonRow)
+    statisticWriter.writerows(rows)
 pass
 def main():
     # train & check neuron network
