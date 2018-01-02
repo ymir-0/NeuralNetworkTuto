@@ -3,11 +3,12 @@
 from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
-from os import linesep, sep, listdir
-from os.path import realpath, join
+from os import linesep, sep, listdir, makedirs
+from os.path import realpath, join, exists
 from random import shuffle
 from statistics import median, mean
 from csv import writer
+from shutil import rmtree
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
@@ -100,6 +101,10 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
     pass
 pass
 def main():
+    # empty output folder
+    if exists(OUTPUT_DIRECTORY):
+        rmtree(OUTPUT_DIRECTORY)
+    makedirs(OUTPUT_DIRECTORY)
     # train & check neuron network
     images = Images(join(INPUT_DIRECTORY,"training"))
     perceptron = Perceptron(images)
