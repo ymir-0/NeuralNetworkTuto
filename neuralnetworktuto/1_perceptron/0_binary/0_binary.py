@@ -119,9 +119,23 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
         elif difference < 0:
             comparison = "<"
         comparisonRow.append(comparison)
-    rows.append([digit, "1<=>0"]+comparisonRow)
+    rows.append(tuple([digit, "1<=>0"]+comparisonRow))
+    rows=tuple(rows)
     # write digit statistics
     statisticWriter.writerows(rows)
+    # set dedicated figure
+    figure(FigureCounter.nextFigure())
+    # draw training evolution
+    plot(weightsCoalescence[0], "o",color="cyan")
+    plot(weightsCoalescence[1], "o",color="green")
+    xticks(arange(0, max(len(weightsCoalescence[0]),len(weightsCoalescence[1]))))
+    allWeights=tuple(weightsCoalescence[0]+weightsCoalescence[1])
+    yticks(arange(min(allWeights), max(allWeights)))
+    title("weights repartion for digit : "+str(digit))
+    xlabel("digit")
+    ylabel("weight")
+    grid(linestyle="-.")
+    pass
     pass
 pass
 def main():
