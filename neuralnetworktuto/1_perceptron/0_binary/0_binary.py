@@ -14,16 +14,6 @@ CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # tools functions
-class FigureHandler():
-    figureCounter=-1
-    @staticmethod
-    def nextFigure():
-        FigureHandler.figureCounter=FigureHandler.figureCounter+1
-        return FigureHandler.figureCounter
-    @staticmethod
-    def saveFigure():
-        figurePath = join(OUTPUT_DIRECTORY, str(FigureHandler.figureCounter) + ".png")
-        savefig(figurePath)
 def prettyStringOutput(output):
     filteredOutput=list()
     for neuronNumber,neuronActivation in enumerate(output):
@@ -128,6 +118,16 @@ def main():
     writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
     pass
 # tools classes
+class FigureHandler():
+    figureCounter=-1
+    @staticmethod
+    def nextFigure():
+        FigureHandler.figureCounter=FigureHandler.figureCounter+1
+        return FigureHandler.figureCounter
+    @staticmethod
+    def saveFigure():
+        figurePath = join(OUTPUT_DIRECTORY, str(FigureHandler.figureCounter) + ".png")
+        savefig(figurePath)
 class Logger():
     completeLog=""
     @staticmethod
