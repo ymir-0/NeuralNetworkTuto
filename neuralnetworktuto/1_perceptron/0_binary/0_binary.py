@@ -7,7 +7,6 @@ from numpy.random import rand
 from os import linesep, sep, listdir
 from os.path import realpath, join
 from random import shuffle
-from copy import copy
 from statistics import median, mean, pstdev
 from csv import writer
 # contants
@@ -46,7 +45,7 @@ def writeReport(perceptron,images,reportFileName):
         reportFile.close()
         pass
     pass
-def StatisticDrawWeightDigit(perceptron, digit,statisticWriter):
+def statisticDrawWeightDigit(perceptron, digit,statisticWriter):
     # initialize statistics
     digitWeightsCoalescence={0:list(),1:list()}
     # set dedicated figure
@@ -99,32 +98,37 @@ def StatisticDrawWeightDigit(perceptron, digit,statisticWriter):
     # draw graph
     position = spring_layout(graph)
     draw(graph, pos=position, with_labels=True, node_color=nodeColors, edge_color=egdeColors, width=edgeWeights)
-    # compute statistics ...
-    rows=list()
-    # ... for each bit (0,1)
-    for bit in digitWeightsCoalescence.keys():
-        minimum = min(digitWeightsCoalescence[bit])
-        maximum = max(digitWeightsCoalescence[bit])
-        median_ = median(digitWeightsCoalescence[bit])
-        mean_ = mean(digitWeightsCoalescence[bit])
-        standardDeviation = pstdev(digitWeightsCoalescence[bit])
-        rows.append(((digit,bit,minimum,maximum,median_,mean_,standardDeviation)))
-        pass
-    comparisonRow=list()
-    # ... compare statistics (1 vs. 0)
-    for column in range(2,len(rows[0])):
-        comparisonRow.append(rows[1][column]-rows[0][column])
-    rows.append([digit, "1<=>0"]+comparisonRow)
     # write statistics
-    statisticWriter.writerows(rows)
+    writeStatistics(digit, digitWeightsCoalescence, statisticWriter)
     # return
     return digitWeightsCoalescence
+def writeStatistics(digit,weightsCoalescence,statisticWriter):
+    # compute statistics
+    rows=list()
+    # for each bit (0,1)
+    for bit in weightsCoalescence.keys():
+        rows.append(((digit,bit,min(weightsCoalescence[bit]),max(weightsCoalescence[bit]),median(weightsCoalescence[bit]),mean(weightsCoalescence[bit]),pstdev(weightsCoalescence[bit]))))
+        pass
+    comparisonRow=list()
+    # compare statistics (1 vs. 0)
+    for column in range(2,len(rows[0])):
+        comparison="="
+        difference=rows[1][column]-rows[0][column]
+        if difference>0:
+            comparison=">"
+        elif difference < 0:
+            comparison = "<"
+        comparisonRow.append(comparison)
+    rows.append([digit, "1<=>0"]+comparisonRow)
+    # write digit statistics
+    statisticWriter.writerows(rows)
+    pass
 pass
 def main():
     # train & check neuron network
     images = Images(TRAINING_FOLDER)
     perceptron = Perceptron(images)
-    #writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
+    writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
     # statistic & draw weights/digits graphs ...
     statisticReport = open(STATISTIC_REPORT, "wt")
     statisticWriter = writer(statisticReport)
@@ -132,32 +136,16 @@ def main():
     allWeightsCoalescence = {0: list(), 1: list()}
     # for each digits (0 .. 9)
     for neuronIndex in range(0,len(perceptron.neurons)):
-        digitWeightsCoalescence = StatisticDrawWeightDigit(perceptron, neuronIndex,statisticWriter)
+        digitWeightsCoalescence = statisticDrawWeightDigit(perceptron, neuronIndex,statisticWriter)
         # merge weights for global statistics
         for bit in digitWeightsCoalescence.keys():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
-    # compute global statistics ...
-    rows = list()
-    # ... for each bit (0,1)
-    for bit in allWeightsCoalescence.keys():
-        minimum = min(digitWeightsCoalescence[bit])
-        maximum = max(digitWeightsCoalescence[bit])
-        median_ = median(digitWeightsCoalescence[bit])
-        mean_ = mean(digitWeightsCoalescence[bit])
-        standardDeviation = pstdev(digitWeightsCoalescence[bit])
-        rows.append((("ALL",bit,minimum,maximum,median_,mean_,standardDeviation)))
-        pass
-    comparisonRow=list()
-    # ... compare statistics (1 vs. 0)
-    for column in range(2,len(rows[0])):
-        comparisonRow.append(rows[1][column]-rows[0][column])
-    rows.append(["ALL", "1<=>0"]+comparisonRow)
-    # write statistics
-    statisticWriter.writerows(rows)
+    # write global statistics
+    writeStatistics("ALL", allWeightsCoalescence, statisticWriter)
     statisticReport.close()
     # play with sandbox
-    #images = Images(SANDBOX_FOLDER)
-    #writeReport(perceptron,images,SANDBOX_REPORT)
+    images = Images(SANDBOX_FOLDER)
+    writeReport(perceptron,images,SANDBOX_REPORT)
     # display all graphs
     show()
     pass
