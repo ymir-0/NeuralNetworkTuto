@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # imports
-from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig
+from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir
