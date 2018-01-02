@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # imports
 from networkx import Graph, draw, spring_layout
-from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid, figure
+from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir
@@ -126,15 +126,16 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
     # set dedicated figure
     figure(FigureCounter.nextFigure())
     # draw training evolution
-    plot(weightsCoalescence[0], "o",color="cyan")
-    plot(weightsCoalescence[1], "o",color="green")
-    xticks(arange(0, max(len(weightsCoalescence[0]),len(weightsCoalescence[1]))))
+    plot(weightsCoalescence[0], "o",color="cyan", label="0")
+    plot(weightsCoalescence[1], "o",color="green", label="1")
+    tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
     allWeights=tuple(weightsCoalescence[0]+weightsCoalescence[1])
-    yticks(arange(min(allWeights), max(allWeights)))
+    yticks(arange(round(min(allWeights),1)-.1, round(max(allWeights),1)+.1,.1))
     title("weights repartion for digit : "+str(digit))
     xlabel("digit")
     ylabel("weight")
     grid(linestyle="-.")
+    legend()
     pass
     pass
 pass
