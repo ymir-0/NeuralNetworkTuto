@@ -11,12 +11,8 @@ from statistics import median, mean, pstdev
 from csv import writer
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
-TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
-SANDBOX_FOLDER=join(CURRENT_DIRECTORY,"input","sandbox")
-TRAINING_LOG=join(CURRENT_DIRECTORY,"output","training.log")
-TRAINING_REPORT=join(CURRENT_DIRECTORY,"output","trainingReport.txt")
-SANDBOX_REPORT=join(CURRENT_DIRECTORY,"output","sandboxReport.txt")
-STATISTIC_REPORT=join(CURRENT_DIRECTORY,"output","statisticReport.csv")
+INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
+OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # tools functions
 class FigureCounter():
     figureCounter=-1
@@ -141,11 +137,11 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
 pass
 def main():
     # train & check neuron network
-    images = Images(TRAINING_FOLDER)
+    images = Images(join(INPUT_DIRECTORY,"training"))
     perceptron = Perceptron(images)
-    writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
+    writeReport(perceptron,perceptron.trainings,join(OUTPUT_DIRECTORY,"trainingReport.txt"))
     # statistic & draw weights/digits graphs ...
-    statisticReport = open(STATISTIC_REPORT, "wt")
+    statisticReport = open(join(OUTPUT_DIRECTORY,"statisticReport.csv"), "wt")
     statisticWriter = writer(statisticReport)
     statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN","STANDARD_DEVIATION")))
     allWeightsCoalescence = {0: list(), 1: list()}
@@ -159,8 +155,8 @@ def main():
     writeStatistics("ALL", allWeightsCoalescence, statisticWriter)
     statisticReport.close()
     # play with sandbox
-    images = Images(SANDBOX_FOLDER)
-    writeReport(perceptron,images,SANDBOX_REPORT)
+    images = Images(join(INPUT_DIRECTORY,"sandbox"))
+    writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
     # display all graphs
     show()
     pass
@@ -173,7 +169,7 @@ class Logger():
         pass
     @staticmethod
     def flush():
-        logFile = open(TRAINING_LOG,"wt")
+        logFile = open(join(OUTPUT_DIRECTORY,"training.log"),"wt")
         logFile.write(Logger.completeLog)
         logFile.close()
     pass
