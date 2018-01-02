@@ -7,6 +7,9 @@ from numpy.random import rand
 from os import linesep, sep, listdir
 from os.path import realpath, join
 from random import shuffle
+from copy import copy
+from statistics import median, mean, pstdev
+from csv import writer
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 TRAINING_FOLDER=join(CURRENT_DIRECTORY,"input","training")
@@ -14,6 +17,7 @@ SANDBOX_FOLDER=join(CURRENT_DIRECTORY,"input","sandbox")
 TRAINING_LOG=join(CURRENT_DIRECTORY,"output","training.log")
 TRAINING_REPORT=join(CURRENT_DIRECTORY,"output","trainingReport.txt")
 SANDBOX_REPORT=join(CURRENT_DIRECTORY,"output","sandboxReport.txt")
+STATISTIC_REPORT=join(CURRENT_DIRECTORY,"output","statisticReport.csv")
 # tools functions
 class FigureCounter():
     figureCounter=-1
@@ -42,7 +46,9 @@ def writeReport(perceptron,images,reportFileName):
         reportFile.close()
         pass
     pass
-def drawWeightsDigit(perceptron, digit):
+def StatisticDrawWeightDigit(perceptron, digit,statisticWriter):
+    # initialize statistics
+    digitStatistic={0:BinaryStatistic(),1:BinaryStatistic()}
     # set dedicated figure
     figure(FigureCounter.nextFigure())
     # get digit information
@@ -77,37 +83,60 @@ def drawWeightsDigit(perceptron, digit):
             nodeColor = "green"
         nodeColors.append(nodeColor)
         # set edge (with weight & color)
-        rawEights=weights[pixelIndex]
-        edgeWeight = abs(rawEights)*weightCorrectorCoefficient+weightCorrectorOffset
+        rawWeight=weights[pixelIndex]
+        edgeWeight = abs(rawWeight)*weightCorrectorCoefficient+weightCorrectorOffset
         edgeWeights.append(edgeWeight)
-        if rawEights < 0:
+        if rawWeight < 0:
             edgeColor = "red"
         else:
             edgeColor = "purple"
         graph.add_edge(pixelNode, digitNode, color=edgeColor)
+        # fill statistics details
+        digitStatistic[pixelValue].details.append(rawWeight)
         pass
     # coalesce edges weight & color
     egdeColors = [graph[u][v]["color"] for u, v in graph.edges()]
     # draw graph
     position = spring_layout(graph)
     draw(graph, pos=position, with_labels=True, node_color=nodeColors, edge_color=egdeColors, width=edgeWeights)
+    # compute statistics
+    for bit, binaryStatistic in digitStatistic.items():
+        binaryStatistic.minimum = min(binaryStatistic.details)
+        binaryStatistic.maximum = max(binaryStatistic.details)
+        binaryStatistic.median = median(binaryStatistic.details)
+        binaryStatistic.mean = mean(binaryStatistic.details)
+        binaryStatistic.standardDeviation = pstdev(binaryStatistic.details)
+        statisticWriter.writerow(((digit,bit,binaryStatistic.minimum,binaryStatistic.maximum,binaryStatistic.median,binaryStatistic.mean,binaryStatistic.standardDeviation)))
+        pass
     pass
 pass
 def main():
     # train & check neuron network
     images = Images(TRAINING_FOLDER)
     perceptron = Perceptron(images)
-    writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
-    # draw weights/digits graphs
+    #writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
+    # statistic draw weights/digits graphs
+    statisticReport = open(STATISTIC_REPORT, "wt")
+    statisticWriter = writer(statisticReport)
+    statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN","STANDARD_DEVIATION")))
     for neuronIndex in range(0,len(perceptron.neurons)):
-        drawWeightsDigit(perceptron, neuronIndex)
+        StatisticDrawWeightDigit(perceptron, neuronIndex,statisticWriter)
+    statisticReport.close()
     # play with sandbox
-    images = Images(SANDBOX_FOLDER)
-    writeReport(perceptron,images,SANDBOX_REPORT)
+    #images = Images(SANDBOX_FOLDER)
+    #writeReport(perceptron,images,SANDBOX_REPORT)
     # display all graphs
     show()
     pass
 # tools classes
+class BinaryStatistic():
+    def __init__(self):
+        self.minimum = 0
+        self.maximum = 0
+        self.median = 0
+        self.mean = 0
+        self.standardDeviation = 0
+        self.details = copy(list()) #WARNING : copy to avoid same list usage
 class Logger():
     completeLog=""
     @staticmethod
