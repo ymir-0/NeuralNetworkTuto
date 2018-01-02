@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # imports
-from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params
+from matplotlib.pyplot import plot, show, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir
@@ -13,12 +13,16 @@ CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # tools functions
-class FigureCounter():
+class FigureHandler():
     figureCounter=-1
     @staticmethod
     def nextFigure():
-        FigureCounter.figureCounter=FigureCounter.figureCounter+1
-        return FigureCounter.figureCounter
+        FigureHandler.figureCounter=FigureHandler.figureCounter+1
+        return FigureHandler.figureCounter
+    @staticmethod
+    def saveFigure():
+        figurePath = join(OUTPUT_DIRECTORY, str(FigureHandler.figureCounter) + ".png")
+        savefig(figurePath)
 def prettyStringOutput(output):
     filteredOutput=list()
     for neuronNumber,neuronActivation in enumerate(output):
@@ -78,7 +82,7 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
     # write digit statistics
     statisticWriter.writerows(rows)
     # set dedicated figure
-    figure(FigureCounter.nextFigure())
+    figure(FigureHandler.nextFigure())
     # draw training evolution
     plot(weightsCoalescence[0], "o",color="cyan", label="0")
     plot(weightsCoalescence[1], "o",color="green", label="1")
@@ -86,10 +90,12 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
     allWeights=tuple(weightsCoalescence[0]+weightsCoalescence[1])
     yticks(arange(round(min(allWeights),1)-.1, round(max(allWeights),1)+.1,.1))
     title("weights repartion for digit : "+str(digit))
-    xlabel("digit")
+    xlabel("bit")
     ylabel("weight")
     grid(linestyle="-.")
     legend()
+    # save figure
+    FigureHandler.saveFigure()
     pass
     pass
 pass
@@ -115,8 +121,6 @@ def main():
     # play with sandbox
     images = Images(join(INPUT_DIRECTORY,"sandbox"))
     writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
-    # display all graphs
-    show()
     pass
 # tools classes
 class Logger():
@@ -190,7 +194,7 @@ class ErrorsGraph():
     @staticmethod
     def draw():
         # set dedicated figure
-        figure(FigureCounter.nextFigure())
+        figure(FigureHandler.nextFigure())
         # draw training evolution
         plot(ErrorsGraph.errorsCounter, "-o")
         xticks(arange(0, len(ErrorsGraph.errorsCounter) + 1, 1))
@@ -199,6 +203,8 @@ class ErrorsGraph():
         xlabel("training loop")
         ylabel("errors")
         grid(linestyle="-.", linewidth=.5)
+        # save figure
+        FigureHandler.saveFigure()
         pass
     pass
 pass
