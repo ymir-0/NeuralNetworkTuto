@@ -48,7 +48,7 @@ def writeReport(perceptron,images,reportFileName):
     pass
 def StatisticDrawWeightDigit(perceptron, digit,statisticWriter):
     # initialize statistics
-    digitStatistic={0:BinaryStatistic(),1:BinaryStatistic()}
+    digitWeightsCoalescence={0:list(),1:list()}
     # set dedicated figure
     figure(FigureCounter.nextFigure())
     # get digit information
@@ -92,40 +92,68 @@ def StatisticDrawWeightDigit(perceptron, digit,statisticWriter):
             edgeColor = "purple"
         graph.add_edge(pixelNode, digitNode, color=edgeColor)
         # fill statistics details
-        digitStatistic[pixelValue].details.append(rawWeight)
+        digitWeightsCoalescence[pixelValue].append(rawWeight)
         pass
     # coalesce edges weight & color
     egdeColors = [graph[u][v]["color"] for u, v in graph.edges()]
     # draw graph
     position = spring_layout(graph)
     draw(graph, pos=position, with_labels=True, node_color=nodeColors, edge_color=egdeColors, width=edgeWeights)
-    # compute statistics
+    # compute statistics ...
     rows=list()
-    for bit, binaryStatistic in digitStatistic.items():
-        binaryStatistic.minimum = min(binaryStatistic.details)
-        binaryStatistic.maximum = max(binaryStatistic.details)
-        binaryStatistic.median = median(binaryStatistic.details)
-        binaryStatistic.mean = mean(binaryStatistic.details)
-        binaryStatistic.standardDeviation = pstdev(binaryStatistic.details)
-        rows.append(((digit,bit,binaryStatistic.minimum,binaryStatistic.maximum,binaryStatistic.median,binaryStatistic.mean,binaryStatistic.standardDeviation)))
+    # ... for each bit (0,1)
+    for bit in digitWeightsCoalescence.keys():
+        minimum = min(digitWeightsCoalescence[bit])
+        maximum = max(digitWeightsCoalescence[bit])
+        median_ = median(digitWeightsCoalescence[bit])
+        mean_ = mean(digitWeightsCoalescence[bit])
+        standardDeviation = pstdev(digitWeightsCoalescence[bit])
+        rows.append(((digit,bit,minimum,maximum,median_,mean_,standardDeviation)))
         pass
     comparisonRow=list()
+    # ... compare statistics (1 vs. 0)
     for column in range(2,len(rows[0])):
         comparisonRow.append(rows[1][column]-rows[0][column])
     rows.append([digit, "1<=>0"]+comparisonRow)
+    # write statistics
     statisticWriter.writerows(rows)
+    # return
+    return digitWeightsCoalescence
 pass
 def main():
     # train & check neuron network
     images = Images(TRAINING_FOLDER)
     perceptron = Perceptron(images)
     #writeReport(perceptron,perceptron.trainings,TRAINING_REPORT)
-    # statistic draw weights/digits graphs
+    # statistic & draw weights/digits graphs ...
     statisticReport = open(STATISTIC_REPORT, "wt")
     statisticWriter = writer(statisticReport)
     statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN","STANDARD_DEVIATION")))
+    allWeightsCoalescence = {0: list(), 1: list()}
+    # for each digits (0 .. 9)
     for neuronIndex in range(0,len(perceptron.neurons)):
-        StatisticDrawWeightDigit(perceptron, neuronIndex,statisticWriter)
+        digitWeightsCoalescence = StatisticDrawWeightDigit(perceptron, neuronIndex,statisticWriter)
+        # merge weights for global statistics
+        for bit in digitWeightsCoalescence.keys():
+            allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
+    # compute global statistics ...
+    rows = list()
+    # ... for each bit (0,1)
+    for bit in allWeightsCoalescence.keys():
+        minimum = min(digitWeightsCoalescence[bit])
+        maximum = max(digitWeightsCoalescence[bit])
+        median_ = median(digitWeightsCoalescence[bit])
+        mean_ = mean(digitWeightsCoalescence[bit])
+        standardDeviation = pstdev(digitWeightsCoalescence[bit])
+        rows.append((("ALL",bit,minimum,maximum,median_,mean_,standardDeviation)))
+        pass
+    comparisonRow=list()
+    # ... compare statistics (1 vs. 0)
+    for column in range(2,len(rows[0])):
+        comparisonRow.append(rows[1][column]-rows[0][column])
+    rows.append(["ALL", "1<=>0"]+comparisonRow)
+    # write statistics
+    statisticWriter.writerows(rows)
     statisticReport.close()
     # play with sandbox
     #images = Images(SANDBOX_FOLDER)
@@ -134,14 +162,6 @@ def main():
     show()
     pass
 # tools classes
-class BinaryStatistic():
-    def __init__(self):
-        self.minimum = 0
-        self.maximum = 0
-        self.median = 0
-        self.mean = 0
-        self.standardDeviation = 0
-        self.details = copy(list()) #WARNING : copy to avoid same list usage
 class Logger():
     completeLog=""
     @staticmethod
