@@ -2,10 +2,12 @@
 # imports
 from numpy import heaviside, array, append
 from numpy.random import rand
-from os import linesep, sep
-from os.path import join, realpath
+from os import linesep, sep, makedirs
+from os.path import join, realpath, exists
+from shutil import rmtree
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
+OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # tools class
 class Logger():
     completeLog=""
@@ -14,12 +16,12 @@ class Logger():
         Logger.completeLog=Logger.completeLog+" "*(4*level)+message+linesep
     @staticmethod
     def flush():
-        logFile = open(join(CURRENT_DIRECTORY,"training.log"),"wt")
+        logFile = open(join(OUTPUT_DIRECTORY,"training_" + Logger.name + ".log"),"wt")
         logFile.write(Logger.completeLog)
         logFile.close()
 # neurons
 class Neuron():
-    computeLimitLoop=25 # sometimes, random choices are too long to adjust. better to retry
+    computeLimitLoop=300 # sometimes, random choices are too long to adjust. better to retry
     adjustmentStep = .01
     def __init__(self,trainings):
         # initiate neuron
@@ -69,27 +71,32 @@ class Neuron():
         # compute & return OUT
         output = heaviside(weightedInputs, 1)
         return output
-# train neuron for 'and'
-'''trainings={
-    ((0, 0)): 0,
-    ((0, 1)): 0,
-    ((1, 0)): 0,
-    ((1, 1)): 1,
+# empty output folder
+if exists(OUTPUT_DIRECTORY):
+    rmtree(OUTPUT_DIRECTORY)
+makedirs(OUTPUT_DIRECTORY)
+# train & test neuron for 'and'
+operatorsTrainings={
+    "AND" : {
+        ((0, 0)): 0,
+        ((0, 1)): 0,
+        ((1, 0)): 0,
+        ((1, 1)): 1,
+    },
+    "OR": {
+        ((0, 0)): 0,
+        ((0, 1)): 1,
+        ((1, 0)): 1,
+        ((1, 1)): 1,
+    },
 }
-andNeuron=Neuron(trainings)
-print("and 0 0 : " + str(andNeuron.activate((0,0))))
-print("and 0 1 : " + str(andNeuron.activate((0,1))))
-print("and 1 0 : " + str(andNeuron.activate((1,0))))
-print("and 1 1 : " + str(andNeuron.activate((1,1))))'''
-# train neuron for 'or'
-trainings={
-    ((0, 0)): 0,
-    ((0, 1)): 1,
-    ((1, 0)): 1,
-    ((1, 1)): 1,
-}
-andNeuron=Neuron(trainings)
-print("or 0 0 : " + str(andNeuron.activate((0,0))))
-print("or 0 1 : " + str(andNeuron.activate((0,1))))
-print("or 1 0 : " + str(andNeuron.activate((1,0))))
-print("or 1 1 : " + str(andNeuron.activate((1,1))))
+for operator, trainings in operatorsTrainings.items():
+    Logger.name=operator
+    report = ""
+    neuron = Neuron(trainings)
+    for A in range (0,2):
+        for B in range(0, 2):
+            report = report + str(A) + " , " + str(B) + " : " + str(neuron.activate((A, B))) + linesep
+    reportFile = open(join(OUTPUT_DIRECTORY, "test_" + operator + ".txt"), "wt")
+    reportFile.write(report)
+    reportFile.close()
