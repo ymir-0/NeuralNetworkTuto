@@ -36,21 +36,21 @@ class Neuron():
             # for each expected result
             adjusted = True # assume neuron is adjusted
             for inputs, expectedOutput in trainings.items():
-                # threshold input
+                Logger.append(1, "expected output : " + str(expectedOutput))
                 # compute actual output
                 actualOutput=self.activate(inputs)
+                Logger.append(1, "actual output : " + str(actualOutput))
                 # adjust if needed
                 if actualOutput!=expectedOutput:
                     adjusted = False
-                    if actualOutput<expectedOutput:
-                        adjustmentSigne=-1
-                    else :
-                        adjustmentSigne = 1
+                    adjustmentSign = expectedOutput - actualOutput
+                    Logger.append(1, "adjustment sign : " + str(adjustmentSign))
                     # adjust each activated neuron
                     thresholdedInputs = append(inputs, 1)
                     for neuronIndex, neuronActivated in enumerate(thresholdedInputs):
                         if neuronActivated==1:
-                            self.thresholdedWeights[neuronIndex]=self.thresholdedWeights[neuronIndex]+adjustmentStep
+                            self.thresholdedWeights[neuronIndex]=self.thresholdedWeights[neuronIndex]+adjustmentSign*adjustmentStep
+                    Logger.append(1, "corrected weights / threashold : " + str(self.thresholdedWeights))
             # check loops number
             actualLoopNumber = actualLoopNumber + 1
             if actualLoopNumber >= Neuron.computeLimitLoop:
