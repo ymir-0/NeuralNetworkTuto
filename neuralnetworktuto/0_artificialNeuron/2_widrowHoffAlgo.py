@@ -19,14 +19,14 @@ class Logger():
         logFile.close()
 # neurons
 class Neuron():
-    computeLimitLoop=20 # sometimes, random choices are too long to adjust. better to retry
+    computeLimitLoop=25 # sometimes, random choices are too long to adjust. better to retry
+    adjustmentStep = .01
     def __init__(self,trainings):
         # initiate neuron
-        adjustmentStep=.01
         weightsNumber=len(tuple(trainings.keys())[0]) # we use the length of 1st training data to get neurons number
         # INFO : found with a dichotomy between 1 and 0 for doing some loops
         threshold=rand()*.6+.1
-        weights=rand(weightsNumber)*.1
+        weights=rand(weightsNumber)*.1-.2
         self.thresholdedWeights=append(weights,-threshold)
         Logger.append(0,"initial weights / threashold : " + str(self.thresholdedWeights))
         # adjust neuron
@@ -49,7 +49,7 @@ class Neuron():
                     thresholdedInputs = append(inputs, 1)
                     for neuronIndex, neuronActivated in enumerate(thresholdedInputs):
                         if neuronActivated==1:
-                            self.thresholdedWeights[neuronIndex]=self.thresholdedWeights[neuronIndex]+adjustmentSign*adjustmentStep
+                            self.thresholdedWeights[neuronIndex]=self.thresholdedWeights[neuronIndex]+adjustmentSign*Neuron.adjustmentStep
                     Logger.append(1, "corrected weights / threashold : " + str(self.thresholdedWeights))
             # check loops number
             actualLoopNumber = actualLoopNumber + 1
