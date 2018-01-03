@@ -33,8 +33,6 @@ def writeReport(perceptron,images,reportFileName):
         reportFile = open(reportFileName,"wt")
         reportFile.write(trainingReport)
         reportFile.close()
-        pass
-    pass
 def computeDigitStatistics(perceptron, digit,statisticWriter):
     # initialize statistics
     digitWeightsCoalescence={0:list(),1:list()}
@@ -46,7 +44,6 @@ def computeDigitStatistics(perceptron, digit,statisticWriter):
         # fill statistics details
         pixelValue = perceptron.trainings.data[digit][pixelIndex] # 0 or 1
         digitWeightsCoalescence[pixelValue].append(weights[pixelIndex])
-        pass
     # write statistics
     writeDigitStatistics(digit, digitWeightsCoalescence, statisticWriter)
     # return
@@ -57,7 +54,6 @@ def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     # for each bit (0,1)
     for bit in weightsCoalescence.keys():
         rows.append(((digit,bit,min(weightsCoalescence[bit]),max(weightsCoalescence[bit]),median(weightsCoalescence[bit]),mean(weightsCoalescence[bit]))))
-        pass
     comparisonRow=list()
     # compare statistics (1 vs. 0)
     for column in range(2,len(rows[0])):
@@ -87,9 +83,6 @@ def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     legend()
     # save figure
     FigureHandler.saveFigure()
-    pass
-    pass
-pass
 def thresholdStatistics(perceptron):
     # coalesce thresholds
     thresholds=list()
@@ -112,11 +105,8 @@ def thresholdStatistics(perceptron):
     xlabel("digit")
     ylabel("threshold")
     grid(linestyle="-.")
-    legend()
     # save figure
     FigureHandler.saveFigure()
-    pass
-pass
 def main():
     # empty output folder
     if exists(OUTPUT_DIRECTORY):
@@ -145,7 +135,6 @@ def main():
     # play with sandbox
     images = Images(join(INPUT_DIRECTORY,"sandbox"))
     writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
-    pass
 # tools classes
 class FigureHandler():
     figureCounter=-1
@@ -162,13 +151,11 @@ class Logger():
     @staticmethod
     def append(level, message):
         Logger.completeLog=Logger.completeLog+" "*(4*level)+message+linesep
-        pass
     @staticmethod
     def flush():
         logFile = open(join(OUTPUT_DIRECTORY,"training.log"),"wt")
         logFile.write(Logger.completeLog)
         logFile.close()
-    pass
 class Images():
     rowNumber = 6
     columnNumber = 5
@@ -189,7 +176,6 @@ class Images():
             image=list()
             for pixel in dataPivot:
                 image.append(int(pixel))
-                pass
             # fill data
             self.data[key]=tuple(image)
     def stringValue(self,key):
@@ -220,11 +206,9 @@ class ErrorsGraph():
     @staticmethod
     def reset():
         ErrorsGraph.errorsCounter=list()
-        pass
     @staticmethod
     def append(errorNumber):
         ErrorsGraph.errorsCounter.append(errorNumber)
-        pass
     @staticmethod
     def draw():
         # set dedicated figure
@@ -239,9 +223,6 @@ class ErrorsGraph():
         grid(linestyle="-.", linewidth=.5)
         # save figure
         FigureHandler.saveFigure()
-        pass
-    pass
-pass
 # digit neuron
 class DigitNeuron():
     def __init__(self,digit,retinaLength):
@@ -272,11 +253,9 @@ class DigitNeuron():
                 newWeightThreashold=currentWeightThreashold+delta
                 newWeightsThreashold.append(newWeightThreashold)
                 Logger.append(4,"new weight : "+str(newWeightThreashold))
-                pass
             else:
                 Logger.append(4,"no correction needed for input value 0")
                 newWeightsThreashold.append(currentWeightThreashold)
-            pass
         # reset neuron weights
         self.thresholdedWeights=array(newWeightsThreashold)
         Logger.append(4,"new neuron weights : " + str(self))
@@ -313,7 +292,6 @@ class Perceptron():
             trained=self.playAllRandomTrainings()
             # compute next correction step
             self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
-            pass
         # print completed training
         Logger.append(0,"trained in "+str(trainingCounter) + " steps :"+linesep+str(self))
         Logger.flush()
@@ -325,7 +303,6 @@ class Perceptron():
         for digit in range(0,digitsNumbers):
             currentDigitNeuron=DigitNeuron(digit,retinaLength)
             self.digitNeurons.append(currentDigitNeuron)
-        pass
     def playAllRandomTrainings(self):
         # assume network is trained
         trainedPerceptron=True
@@ -343,7 +320,6 @@ class Perceptron():
             if not trainedDigit:
                 errorConter=errorConter+1
                 trainedPerceptron=trainedPerceptron and trainedDigit
-            pass
         # coalesce errors & return
         ErrorsGraph.append(errorConter)
         return trainedPerceptron
@@ -366,7 +342,6 @@ class Perceptron():
             trained=False
             # check all neurons for correction
             self.checkAllNeuronsCorrection(retinaContext,expectedDigits, actualDigits)
-            pass
         else:
             Logger.append(2,"this output is fine")
         # return
@@ -394,7 +369,6 @@ class Perceptron():
                 Logger.append(3,"this neuron need corrections delta : "+str(delta))
                 # correct this neuron
                 digitNeuron.correct(retinaContext,delta)
-                pass
             else:
                 Logger.append(3,"this neuron is fine")
     def __str__(self):
