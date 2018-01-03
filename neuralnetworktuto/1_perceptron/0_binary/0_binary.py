@@ -140,6 +140,7 @@ def main():
     # play with sandbox
     images = Images(join(INPUT_DIRECTORY,"sandbox"))
     writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
+# tools class
 class Logger():
     completeLog=""
     @staticmethod
