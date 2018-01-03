@@ -224,9 +224,8 @@ class DigitNeuron():
         # set name
         self.digit=digit
         # initialize random weights
-        weights=(rand(retinaLength)-.5)*Perceptron.initialCorrectionStep# INFO : we want to balance weights around 0
-        threshold=0.125 # INFO : found with a dichotomy between 1 and 0
-        self.thresholdedWeights=append(weights,-threshold)
+        initialWeights=(rand(retinaLength)-.5)*Perceptron.initialCorrectionStep# INFO : we want to balance weights around 0
+        self.thresholdedWeights=append(initialWeights,-Perceptron.initialCorrectionStep)
     def activate(self,retinaContext):
         # sum weighted input
         thresholdedInputs = array(append(retinaContext, 1))
