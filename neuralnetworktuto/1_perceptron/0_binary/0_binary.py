@@ -132,8 +132,8 @@ def main():
     statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN")))
     allWeightsCoalescence = {0: list(), 1: list()}
     # for each digits (0 .. 9)
-    for digitNeuronIndex in range(0,len(perceptron.digitNeurons)):
-        digitWeightsCoalescence = computeDigitStatistics(perceptron, digitNeuronIndex,statisticWriter)
+    for digit in range(0,len(perceptron.digitNeurons)):
+        digitWeightsCoalescence = computeDigitStatistics(perceptron, digit,statisticWriter)
         # merge weights for global statistics
         for bit in digitWeightsCoalescence.keys():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
@@ -244,12 +244,12 @@ class ErrorsGraph():
 pass
 # digit neuron
 class DigitNeuron():
-    def __init__(self,digit,neuronInputLength):
+    def __init__(self,digit,retinaLength):
         # set name
         self.digit=digit
         # initialize random weights
         weightCoefficient=Perceptron.initialCorrectionStep*(Perceptron.correctionFactor**(41+1)) # INFO : we genraly solve the problem in ~41 steps
-        weights=rand(neuronInputLength)*weightCoefficient-(weightCoefficient/2) # INFO : we want to balance weights around 0
+        weights=rand(retinaLength)*weightCoefficient-(weightCoefficient/2) # INFO : we want to balance weights around 0
         threshold=0.125 # INFO : found with a dichotomy between 1 and 0
         self.thresholdedWeights=append(weights,-threshold)
     def activate(self,retinaContext):
@@ -293,11 +293,11 @@ class Perceptron():
         self.trainings=trainings
         ErrorsGraph.reset()
         # set number of neurons & neuron input length
-        trainingKeys = tuple(self.trainings.data.keys())
-        neuronsNumbers=len(self.trainings.data)
-        neuronInputLength=len(self.trainings.data[trainingKeys[0]])
+        digits = tuple(self.trainings.data.keys())
+        digitsNumbers=len(digits)
+        retinaLength=len(self.trainings.data[digits[0]])
         # initialize network
-        self.initializeNetwork( neuronsNumbers, neuronInputLength)
+        self.initializeNetwork( digitsNumbers, retinaLength)
         Logger.append(0,"digits neurons initialized"+linesep+str(self))
         # assume network is not trained
         trained=False
@@ -315,92 +315,92 @@ class Perceptron():
             self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
             pass
         # print completed training
-        Logger.append(0,"TRAINED in "+str(trainingCounter) + " steps :"+linesep+str(self))
+        Logger.append(0,"trained in "+str(trainingCounter) + " steps :"+linesep+str(self))
         Logger.flush()
-        ErrorsGraph.draw() #TODO: enable this drawing
-    def initializeNetwork(self,neuronsNumbers,neuronInputLength):
+        ErrorsGraph.draw()
+    def initializeNetwork(self,digitsNumbers,retinaLength):
         # initialize neurons collection
         self.digitNeurons=list()
         # initialize each neurons with random values
-        for digitNeuronIndex in range(0,neuronsNumbers):
-            currentDigitNeuron=DigitNeuron(digitNeuronIndex,neuronInputLength)
+        for digit in range(0,digitsNumbers):
+            currentDigitNeuron=DigitNeuron(digit,retinaLength)
             self.digitNeurons.append(currentDigitNeuron)
         pass
     def playAllRandomTrainings(self):
         # assume network is trained
-        trained=True
+        trainedPerceptron=True
         errorConter=0
         # shuffle trainings
-        shuffledTrainingKeys = list(self.trainings.data.keys())
-        shuffle(shuffledTrainingKeys)
-        shuffledTrainingKeys=tuple(shuffledTrainingKeys)
-        Logger.append(1,"training order : "+str(shuffledTrainingKeys))
+        shuffledDigits = list(self.trainings.data.keys())
+        shuffle(shuffledDigits)
+        shuffledDigits=tuple(shuffledDigits)
+        Logger.append(1,"training order : "+str(shuffledDigits))
         # for each shuffled training
-        for currentTrainingKey in shuffledTrainingKeys:
-            Logger.append(1,"current training value : " + str(currentTrainingKey))
+        for digit in shuffledDigits:
+            Logger.append(1,"current training digit : " + str(digit))
             # play current training
-            currentTrained=self.playOneTraining(currentTrainingKey)
-            if not currentTrained:
+            trainedDigit=self.playOneTraining(digit)
+            if not trainedDigit:
                 errorConter=errorConter+1
-            trained=trained and currentTrained
+                trainedPerceptron=trainedPerceptron and trainedDigit
             pass
         # coalesce errors & return
         ErrorsGraph.append(errorConter)
-        return trained
-    def playOneTraining(self, trainingKey):
+        return trainedPerceptron
+    def playOneTraining(self, trainingDigit):
         # assume network is trained
         trained=True
         # compute network outputs
-        expectedOutput = [0] * len(self.digitNeurons)
-        expectedOutput[trainingKey] = 1
-        expectedOutput = tuple(expectedOutput)
-        Logger.append(2,"expected output : " + str(dict(enumerate(expectedOutput))))
-        training = self.trainings.data[trainingKey]
-        Logger.append(2,"input : "+str(trainingKey)+" -> "+linesep+self.trainings.stringValue(trainingKey))
-        actualOutput = self.execute(training)
-        Logger.append(2,"actual output : " + str(dict(enumerate(actualOutput))))
+        expectedDigits = [0] * len(self.digitNeurons)
+        expectedDigits[trainingDigit] = 1
+        expectedDigits = tuple(expectedDigits)
+        Logger.append(2,"expected digits : " + str(dict(enumerate(expectedDigits))))
+        retinaContext = self.trainings.data[trainingDigit]
+        Logger.append(2,"retina context : "+str(trainingDigit)+" -> "+linesep+self.trainings.stringValue(trainingDigit))
+        actualDigits = self.execute(retinaContext)
+        Logger.append(2,"actual digits : " + str(dict(enumerate(actualDigits))))
         # compare output
-        if expectedOutput!=actualOutput:
+        if expectedDigits!=actualDigits:
             Logger.append(2,"this output implies corrections")
             # neuron is not trained
             trained=False
             # check all neurons for correction
-            self.checkAllNeuronsCorrection(training,expectedOutput, actualOutput)
+            self.checkAllNeuronsCorrection(retinaContext,expectedDigits, actualDigits)
             pass
         else:
             Logger.append(2,"this output is fine")
         # return
         return trained
-    def execute(self,inputs):
+    def execute(self,retinaContext):
         # initialise outputs
-        outputs=list()
+        digits=list()
         # compute each neuron output
-        for digitNeuronIndex in range(0, len(self.digitNeurons)):
-            currentOutput = self.digitNeurons[digitNeuronIndex].activate(inputs)
-            outputs.append(currentOutput)
+        for digit in range(0, len(self.digitNeurons)):
+            currentOutput = self.digitNeurons[digit].activate(retinaContext)
+            digits.append(currentOutput)
         # return
-        return tuple(outputs)
-    def checkAllNeuronsCorrection(self,input,expectedOutput,actualOutput):
+        return tuple(digits)
+    def checkAllNeuronsCorrection(self,retinaContext,expectedDigits,actualDigits):
         # for each expected output
-        for digitNeuronIndex, neuronExpectedOutput in enumerate(expectedOutput):
+        for digit, expectedActivation in enumerate(expectedDigits):
             # get actual output
-            neuronActualOutput=actualOutput[digitNeuronIndex]
+            actualActivation=actualDigits[digit]
             # check if this neuron need correction
-            impliedNeuron = self.digitNeurons[digitNeuronIndex]
-            Logger.append(3,"implied neuron : "+str(impliedNeuron))
-            if neuronExpectedOutput!=neuronActualOutput:
+            digitNeuron = self.digitNeurons[digit]
+            Logger.append(3,"digit neuron : "+str(digitNeuron))
+            if expectedActivation!=actualActivation:
                 # compute delta
-                delta=self.currentCorrectionStep*(neuronExpectedOutput-neuronActualOutput)
+                delta=self.currentCorrectionStep*(expectedActivation-actualActivation)
                 Logger.append(3,"this neuron need corrections delta : "+str(delta))
                 # correct this neuron
-                impliedNeuron.correct(input,delta)
+                digitNeuron.correct(retinaContext,delta)
                 pass
             else:
                 Logger.append(3,"this neuron is fine")
     def __str__(self):
         representation =""
-        for currentNeuron in self.digitNeurons:
-            representation=representation+str(currentNeuron)+linesep
+        for digitNeuron in self.digitNeurons:
+            representation=representation+str(digitNeuron)+linesep
         return representation
 # run script
 main()
