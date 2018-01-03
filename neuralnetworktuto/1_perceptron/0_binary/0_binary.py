@@ -82,16 +82,18 @@ def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     grid(linestyle="-.")
     legend()
     # save figure
-    FigureHandler.saveFigure()
+    saveFigure("digit#"+str(digit))
 def thresholdStatistics(perceptron):
     # coalesce thresholds
     thresholds=list()
     for neuron in perceptron.digitNeurons:
         threshold=-neuron.thresholdedWeights[-1]
         thresholds.append(threshold)
-    #thresholds = tuple(thresholds)
+    thresholds = tuple(thresholds)
+    # initialize outpout file
+    outpoutFile="thresholdsStatistics"
     # write statistics
-    statisticReport = open(join(OUTPUT_DIRECTORY,"thresholdsStatistics.csv"), "wt")
+    statisticReport = open(join(OUTPUT_DIRECTORY,outpoutFile+".csv"), "wt")
     statisticWriter = writer(statisticReport)
     statisticWriter.writerows( (( (("MINIMUM","MAXIMUM","MEDIAN","MEAN")) , ((min(thresholds),max(thresholds),median(thresholds),mean(thresholds) )) )) )
     statisticReport.close()
@@ -106,7 +108,10 @@ def thresholdStatistics(perceptron):
     ylabel("threshold")
     grid(linestyle="-.")
     # save figure
-    FigureHandler.saveFigure()
+    saveFigure(outpoutFile)
+def saveFigure(name):
+    figurePath = join(OUTPUT_DIRECTORY, name + ".png")
+    savefig(figurePath)
 def main():
     # empty output folder
     if exists(OUTPUT_DIRECTORY):
@@ -142,10 +147,6 @@ class FigureHandler():
     def nextFigure():
         FigureHandler.figureCounter=FigureHandler.figureCounter+1
         return FigureHandler.figureCounter
-    @staticmethod
-    def saveFigure():
-        figurePath = join(OUTPUT_DIRECTORY, str(FigureHandler.figureCounter) + ".png")
-        savefig(figurePath)
 class Logger():
     completeLog=""
     @staticmethod
@@ -222,7 +223,7 @@ class ErrorsGraph():
         ylabel("errors")
         grid(linestyle="-.", linewidth=.5)
         # save figure
-        FigureHandler.saveFigure()
+        saveFigure("trainingEvolution")
 # digit neuron
 class DigitNeuron():
     def __init__(self,digit,retinaLength):
