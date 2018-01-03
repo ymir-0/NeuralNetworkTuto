@@ -77,7 +77,7 @@ def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     allWeights=tuple(weightsCoalescence[0]+weightsCoalescence[1])
     yticks(arange(round(min(allWeights),1)-.1, round(max(allWeights),1)+.1,.1))
     title("weights repartion for digit : "+str(digit))
-    xlabel("bit")
+    xlabel("pixels")
     ylabel("weight")
     grid(linestyle="-.")
     legend()
@@ -218,7 +218,7 @@ class ErrorsGraph():
         xticks(arange(0, len(ErrorsGraph.errorsCounter) + 1, 1))
         yticks(arange(0, max(ErrorsGraph.errorsCounter) + 1, 1))
         title("training evolution")
-        xlabel("training loop")
+        xlabel("training iteration")
         ylabel("errors")
         grid(linestyle="-.", linewidth=.5)
         # save figure
@@ -229,8 +229,7 @@ class DigitNeuron():
         # set name
         self.digit=digit
         # initialize random weights
-        weightCoefficient=Perceptron.initialCorrectionStep*(Perceptron.correctionFactor**(41+1)) # INFO : we genraly solve the problem in ~41 steps
-        weights=rand(retinaLength)*weightCoefficient-(weightCoefficient/2) # INFO : we want to balance weights around 0
+        weights=(rand(retinaLength)-.5)*Perceptron.initialCorrectionStep# INFO : we want to balance weights around 0
         threshold=0.125 # INFO : found with a dichotomy between 1 and 0
         self.thresholdedWeights=append(weights,-threshold)
     def activate(self,retinaContext):
@@ -254,17 +253,16 @@ class DigitNeuron():
                 newWeightsThreashold.append(newWeightThreashold)
                 Logger.append(4,"new weight : "+str(newWeightThreashold))
             else:
-                Logger.append(4,"no correction needed for input value 0")
+                Logger.append(4,"no correction needed for pixel or threshold value 0")
                 newWeightsThreashold.append(currentWeightThreashold)
         # reset neuron weights
         self.thresholdedWeights=array(newWeightsThreashold)
-        Logger.append(4,"new neuron weights : " + str(self))
+        Logger.append(4,"new neuron : " + str(self))
     def __str__(self):
         representation =str(self.digit) +" : "+str(dict(enumerate(self.thresholdedWeights)))
         return representation
 # perceptron
 class Perceptron():
-    computeLimitLoop=100 # sometimes, random choices are too long to adjust. better to retry
     initialCorrectionStep=0.125 # INFO : found with a dichotomy between 1 and 0
     correctionFactor=0.9375 # INFO : found with a dichotomy between 1 and 0.9
     def __init__(self, trainings):
@@ -366,7 +364,7 @@ class Perceptron():
             if expectedActivation!=actualActivation:
                 # compute delta
                 delta=self.currentCorrectionStep*(expectedActivation-actualActivation)
-                Logger.append(3,"this neuron need corrections delta : "+str(delta))
+                Logger.append(3,"correction delta : "+str(delta))
                 # correct this neuron
                 digitNeuron.correct(retinaContext,delta)
             else:
