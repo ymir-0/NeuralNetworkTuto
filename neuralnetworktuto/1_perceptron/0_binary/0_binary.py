@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # imports
-from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, acorr
+from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
@@ -39,7 +39,7 @@ def computeDigitStatistics(perceptron, digit,statisticWriter):
     # initialize statistics
     digitWeightsCoalescence={0:list(),1:list()}
     # get digit information
-    digitRawInformation=perceptron.neurons[digit].thresholdedWeights
+    digitRawInformation=perceptron.digitNeurons[digit].thresholdedWeights
     weights=digitRawInformation[0:-1]
     # for each pixel
     for pixelIndex in range(0, len(weights)):
@@ -93,7 +93,7 @@ pass
 def thresholdStatistics(perceptron):
     # coalesce thresholds
     thresholds=list()
-    for neuron in perceptron.neurons:
+    for neuron in perceptron.digitNeurons:
         threshold=-neuron.thresholdedWeights[-1]
         thresholds.append(threshold)
     #thresholds = tuple(thresholds)
@@ -132,8 +132,8 @@ def main():
     statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN")))
     allWeightsCoalescence = {0: list(), 1: list()}
     # for each digits (0 .. 9)
-    for neuronIndex in range(0,len(perceptron.neurons)):
-        digitWeightsCoalescence = computeDigitStatistics(perceptron, neuronIndex,statisticWriter)
+    for digitNeuronIndex in range(0,len(perceptron.digitNeurons)):
+        digitWeightsCoalescence = computeDigitStatistics(perceptron, digitNeuronIndex,statisticWriter)
         # merge weights for global statistics
         for bit in digitWeightsCoalescence.keys():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
@@ -242,46 +242,46 @@ class ErrorsGraph():
         pass
     pass
 pass
-# neuron
-class Neuron():
-    def __init__(self,name,neuronInputLength):
+# digit neuron
+class DigitNeuron():
+    def __init__(self,digit,neuronInputLength):
         # set name
-        self.name=name
+        self.digit=digit
         # initialize random weights
         weightCoefficient=Perceptron.initialCorrectionStep*(Perceptron.correctionFactor**(41+1)) # INFO : we genraly solve the problem in ~41 steps
         weights=rand(neuronInputLength)*weightCoefficient-(weightCoefficient/2) # INFO : we want to balance weights around 0
         threshold=0.125 # INFO : found with a dichotomy between 1 and 0
         self.thresholdedWeights=append(weights,-threshold)
-    def activate(self,input):
+    def activate(self,retinaContext):
         # sum weighted input
-        thresholdedInputs = array(append(input, 1))
+        thresholdedInputs = array(append(retinaContext, 1))
         weightedInputs = self.thresholdedWeights.dot(thresholdedInputs.transpose())
         # compute & return OUT
         output = heaviside(weightedInputs, 1)
         return output
-    def correct(self,input,delta):
+    def correct(self,retinaContext,delta):
         # new thresholded weights
-        newThresholdedWeights = list()
-        # for each input
-        thresholdedInputs = append(input, 1)
-        for currentIndex,currentInput in enumerate(thresholdedInputs):
+        newWeights = list()
+        # for each pixel on retina
+        thresholdedInputs = append(retinaContext, 1)
+        for currentIndex,currentValue in enumerate(thresholdedInputs):
             currentWeight=self.thresholdedWeights[currentIndex]
             # apply correction if needed
-            if currentInput==1:
-                Logger.append(4,"correction needed -> current input : " + str(currentInput) + "    current weight : " + str(currentWeight))
+            if currentValue==1:
+                Logger.append(4,"correction needed -> current pixel or threshold value : " + str(currentValue) + "    current weight : " + str(currentWeight))
                 newWeight=currentWeight+delta
-                newThresholdedWeights.append(newWeight)
+                newWeights.append(newWeight)
                 Logger.append(4,"new weight : "+str(newWeight))
                 pass
             else:
                 Logger.append(4,"no correction needed for input value 0")
-                newThresholdedWeights.append(currentWeight)
+                newWeights.append(currentWeight)
             pass
         # reset neuron weights
-        self.thresholdedWeights=array(newThresholdedWeights)
-        Logger.append(4,"new neurons weights : " + str(self))
+        self.thresholdedWeights=array(newWeights)
+        Logger.append(4,"new neuron weights : " + str(self))
     def __str__(self):
-        representation =self.name +" : "+str(dict(enumerate(self.thresholdedWeights)))
+        representation =str(self.digit) +" : "+str(dict(enumerate(self.thresholdedWeights)))
         return representation
 # perceptron
 class Perceptron():
@@ -298,7 +298,7 @@ class Perceptron():
         neuronInputLength=len(self.trainings.data[trainingKeys[0]])
         # initialize network
         self.initializeNetwork( neuronsNumbers, neuronInputLength)
-        Logger.append(0,"neurons initialized"+linesep+str(self))
+        Logger.append(0,"digits neurons initialized"+linesep+str(self))
         # assume network is not trained
         trained=False
         # initialize correction step
@@ -320,12 +320,11 @@ class Perceptron():
         ErrorsGraph.draw() #TODO: enable this drawing
     def initializeNetwork(self,neuronsNumbers,neuronInputLength):
         # initialize neurons collection
-        self.neurons=list()
+        self.digitNeurons=list()
         # initialize each neurons with random values
-        for neuronIndex in range(0,neuronsNumbers):
-            neuronName="neuron#"+str(neuronIndex)
-            currentNeuron=Neuron(neuronName,neuronInputLength)
-            self.neurons.append(currentNeuron)
+        for digitNeuronIndex in range(0,neuronsNumbers):
+            currentDigitNeuron=DigitNeuron(digitNeuronIndex,neuronInputLength)
+            self.digitNeurons.append(currentDigitNeuron)
         pass
     def playAllRandomTrainings(self):
         # assume network is trained
@@ -352,7 +351,7 @@ class Perceptron():
         # assume network is trained
         trained=True
         # compute network outputs
-        expectedOutput = [0] * len(self.neurons)
+        expectedOutput = [0] * len(self.digitNeurons)
         expectedOutput[trainingKey] = 1
         expectedOutput = tuple(expectedOutput)
         Logger.append(2,"expected output : " + str(dict(enumerate(expectedOutput))))
@@ -376,18 +375,18 @@ class Perceptron():
         # initialise outputs
         outputs=list()
         # compute each neuron output
-        for neuronIndex in range(0, len(self.neurons)):
-            currentOutput = self.neurons[neuronIndex].activate(inputs)
+        for digitNeuronIndex in range(0, len(self.digitNeurons)):
+            currentOutput = self.digitNeurons[digitNeuronIndex].activate(inputs)
             outputs.append(currentOutput)
         # return
         return tuple(outputs)
     def checkAllNeuronsCorrection(self,input,expectedOutput,actualOutput):
         # for each expected output
-        for neuronIndex, neuronExpectedOutput in enumerate(expectedOutput):
+        for digitNeuronIndex, neuronExpectedOutput in enumerate(expectedOutput):
             # get actual output
-            neuronActualOutput=actualOutput[neuronIndex]
+            neuronActualOutput=actualOutput[digitNeuronIndex]
             # check if this neuron need correction
-            impliedNeuron = self.neurons[neuronIndex]
+            impliedNeuron = self.digitNeurons[digitNeuronIndex]
             Logger.append(3,"implied neuron : "+str(impliedNeuron))
             if neuronExpectedOutput!=neuronActualOutput:
                 # compute delta
@@ -400,7 +399,7 @@ class Perceptron():
                 Logger.append(3,"this neuron is fine")
     def __str__(self):
         representation =""
-        for currentNeuron in self.neurons:
+        for currentNeuron in self.digitNeurons:
             representation=representation+str(currentNeuron)+linesep
         return representation
 # run script
