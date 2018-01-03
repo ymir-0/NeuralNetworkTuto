@@ -69,7 +69,7 @@ def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     # write digit statistics
     statisticWriter.writerows(rows)
     # set dedicated figure
-    figure(FigureHandler.nextFigure())
+    figure()
     # draw weights repartition
     plot(weightsCoalescence[0], "o",color="cyan", label="0")
     plot(weightsCoalescence[1], "o",color="green", label="1")
@@ -98,7 +98,7 @@ def thresholdStatistics(perceptron):
     statisticWriter.writerows( (( (("MINIMUM","MAXIMUM","MEDIAN","MEAN")) , ((min(thresholds),max(thresholds),median(thresholds),mean(thresholds) )) )) )
     statisticReport.close()
     # set dedicated figure
-    figure(FigureHandler.nextFigure())
+    figure()
     # draw weights repartition
     plot(thresholds,"o")
     xticks(arange(0,len(thresholds)+1))
@@ -140,13 +140,6 @@ def main():
     # play with sandbox
     images = Images(join(INPUT_DIRECTORY,"sandbox"))
     writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
-# tools classes
-class FigureHandler():
-    figureCounter=-1
-    @staticmethod
-    def nextFigure():
-        FigureHandler.figureCounter=FigureHandler.figureCounter+1
-        return FigureHandler.figureCounter
 class Logger():
     completeLog=""
     @staticmethod
@@ -213,7 +206,7 @@ class ErrorsGraph():
     @staticmethod
     def draw():
         # set dedicated figure
-        figure(FigureHandler.nextFigure())
+        figure()
         # draw training evolution
         plot(ErrorsGraph.errorsCounter, "-o")
         xticks(arange(0, len(ErrorsGraph.errorsCounter) + 1, 1))
