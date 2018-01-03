@@ -261,24 +261,24 @@ class DigitNeuron():
         return output
     def correct(self,retinaContext,delta):
         # new thresholded weights
-        newWeights = list()
+        newWeightsThreashold = list()
         # for each pixel on retina
         thresholdedInputs = append(retinaContext, 1)
         for currentIndex,currentValue in enumerate(thresholdedInputs):
-            currentWeight=self.thresholdedWeights[currentIndex]
+            currentWeightThreashold=self.thresholdedWeights[currentIndex]
             # apply correction if needed
             if currentValue==1:
-                Logger.append(4,"correction needed -> current pixel or threshold value : " + str(currentValue) + "    current weight : " + str(currentWeight))
-                newWeight=currentWeight+delta
-                newWeights.append(newWeight)
-                Logger.append(4,"new weight : "+str(newWeight))
+                Logger.append(4,"correction needed -> current pixel or threshold value : " + str(currentValue) + "    current weight : " + str(currentWeightThreashold))
+                newWeightThreashold=currentWeightThreashold+delta
+                newWeightsThreashold.append(newWeightThreashold)
+                Logger.append(4,"new weight : "+str(newWeightThreashold))
                 pass
             else:
                 Logger.append(4,"no correction needed for input value 0")
-                newWeights.append(currentWeight)
+                newWeightsThreashold.append(currentWeightThreashold)
             pass
         # reset neuron weights
-        self.thresholdedWeights=array(newWeights)
+        self.thresholdedWeights=array(newWeightsThreashold)
         Logger.append(4,"new neuron weights : " + str(self))
     def __str__(self):
         representation =str(self.digit) +" : "+str(dict(enumerate(self.thresholdedWeights)))
@@ -297,7 +297,7 @@ class Perceptron():
         digitsNumbers=len(digits)
         retinaLength=len(self.trainings.data[digits[0]])
         # initialize network
-        self.initializeNetwork( digitsNumbers, retinaLength)
+        self.initializeDigitNeurons( digitsNumbers, retinaLength)
         Logger.append(0,"digits neurons initialized"+linesep+str(self))
         # assume network is not trained
         trained=False
@@ -318,7 +318,7 @@ class Perceptron():
         Logger.append(0,"trained in "+str(trainingCounter) + " steps :"+linesep+str(self))
         Logger.flush()
         ErrorsGraph.draw()
-    def initializeNetwork(self,digitsNumbers,retinaLength):
+    def initializeDigitNeurons(self,digitsNumbers,retinaLength):
         # initialize neurons collection
         self.digitNeurons=list()
         # initialize each neurons with random values
