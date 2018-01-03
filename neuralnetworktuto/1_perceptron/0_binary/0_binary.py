@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # imports
-from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig
+from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, acorr
 from numpy import heaviside, array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
@@ -35,7 +35,7 @@ def writeReport(perceptron,images,reportFileName):
         reportFile.close()
         pass
     pass
-def computeStatistics(perceptron, digit,statisticWriter):
+def computeDigitStatistics(perceptron, digit,statisticWriter):
     # initialize statistics
     digitWeightsCoalescence={0:list(),1:list()}
     # get digit information
@@ -48,10 +48,10 @@ def computeStatistics(perceptron, digit,statisticWriter):
         digitWeightsCoalescence[pixelValue].append(weights[pixelIndex])
         pass
     # write statistics
-    writeStatistics(digit, digitWeightsCoalescence, statisticWriter)
+    writeDigitStatistics(digit, digitWeightsCoalescence, statisticWriter)
     # return
     return digitWeightsCoalescence
-def writeStatistics(digit,weightsCoalescence,statisticWriter):
+def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     # compute statistics
     rows=list()
     # for each bit (0,1)
@@ -74,7 +74,7 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
     statisticWriter.writerows(rows)
     # set dedicated figure
     figure(FigureHandler.nextFigure())
-    # draw training evolution
+    # draw weights repartition
     plot(weightsCoalescence[0], "o",color="cyan", label="0")
     plot(weightsCoalescence[1], "o",color="green", label="1")
     tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
@@ -90,6 +90,33 @@ def writeStatistics(digit,weightsCoalescence,statisticWriter):
     pass
     pass
 pass
+def thresholdStatistics(perceptron):
+    # coalesce thresholds
+    thresholds=list()
+    for neuron in perceptron.neurons:
+        threshold=-neuron.thresholdedWeights[-1]
+        thresholds.append(threshold)
+    #thresholds = tuple(thresholds)
+    # write statistics
+    statisticReport = open(join(OUTPUT_DIRECTORY,"thresholdsStatistics.csv"), "wt")
+    statisticWriter = writer(statisticReport)
+    statisticWriter.writerows( (( (("MINIMUM","MAXIMUM","MEDIAN","MEAN")) , ((min(thresholds),max(thresholds),median(thresholds),mean(thresholds) )) )) )
+    statisticReport.close()
+    # set dedicated figure
+    figure(FigureHandler.nextFigure())
+    # draw weights repartition
+    plot(thresholds,"o")
+    xticks(arange(0,len(thresholds)+1))
+    yticks(arange(round(min(thresholds),1)-.1, round(max(thresholds),1)+.1,.1))
+    title("thresholds repartion")
+    xlabel("digit")
+    ylabel("threshold")
+    grid(linestyle="-.")
+    legend()
+    # save figure
+    FigureHandler.saveFigure()
+    pass
+pass
 def main():
     # empty output folder
     if exists(OUTPUT_DIRECTORY):
@@ -100,19 +127,21 @@ def main():
     perceptron = Perceptron(images)
     writeReport(perceptron,perceptron.trainings,join(OUTPUT_DIRECTORY,"trainingReport.txt"))
     # statistic & draw weights/digits graphs ...
-    statisticReport = open(join(OUTPUT_DIRECTORY,"statisticReport.csv"), "wt")
+    statisticReport = open(join(OUTPUT_DIRECTORY,"digitsStatistics.csv"), "wt")
     statisticWriter = writer(statisticReport)
     statisticWriter.writerow((("DIGIT","BIT","MINIMUM","MAXIMUM","MEDIAN","MEAN")))
     allWeightsCoalescence = {0: list(), 1: list()}
     # for each digits (0 .. 9)
     for neuronIndex in range(0,len(perceptron.neurons)):
-        digitWeightsCoalescence = computeStatistics(perceptron, neuronIndex,statisticWriter)
+        digitWeightsCoalescence = computeDigitStatistics(perceptron, neuronIndex,statisticWriter)
         # merge weights for global statistics
         for bit in digitWeightsCoalescence.keys():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
     # write global statistics
-    writeStatistics("ALL", allWeightsCoalescence, statisticWriter)
+    writeDigitStatistics("ALL", allWeightsCoalescence, statisticWriter)
     statisticReport.close()
+    # threshold statistics
+    thresholdStatistics(perceptron)
     # play with sandbox
     images = Images(join(INPUT_DIRECTORY,"sandbox"))
     writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
