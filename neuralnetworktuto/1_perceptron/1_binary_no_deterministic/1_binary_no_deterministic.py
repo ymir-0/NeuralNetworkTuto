@@ -122,7 +122,6 @@ def main():
     images = Images(join(INPUT_DIRECTORY,"training"))
     perceptron = Perceptron(images)
     writeReport(perceptron,perceptron.trainings,join(OUTPUT_DIRECTORY,"trainingReport.txt"))
-    '''
     # statistic & draw weights/digits graphs ...
     statisticReport = open(join(OUTPUT_DIRECTORY,"digitsStatistics.csv"), "wt")
     statisticWriter = writer(statisticReport)
@@ -139,10 +138,6 @@ def main():
     statisticReport.close()
     # threshold statistics
     thresholdStatistics(perceptron)
-    # play with sandbox
-    images = Images(join(INPUT_DIRECTORY,"sandbox"))
-    writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
-    '''
 # tools class
 class Logger():
     completeLog=""
