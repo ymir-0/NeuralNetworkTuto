@@ -6,7 +6,7 @@ from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
 from os.path import realpath, join, exists
 from random import shuffle
-from statistics import median, mean
+from statistics import median, mean, pstdev
 from csv import writer
 from shutil import rmtree
 from math import exp
@@ -128,9 +128,9 @@ def thresholdStatistics(perceptron):
     statisticReport = open(join(OUTPUT_DIRECTORY,outpoutFile+".csv"), "wt")
     statisticWriter = writer(statisticReport)
     statisticWriter.writerows( ((
-                                  (("DATA","MINIMUM","MAXIMUM","MEDIAN","MEAN")) ,
-                                  (("THREASHOLDS", min(thresholds),max(thresholds),median(thresholds),mean(thresholds) )),
-                                  (("UNCERTAINTIES", min(uncertainties), max(uncertainties), median(uncertainties), mean(uncertainties))),
+        (("DATA","MINIMUM","MAXIMUM","MEDIAN","MEAN","DEVIATION")) ,
+        (("THREASHOLDS", min(thresholds),max(thresholds),median(thresholds),mean(thresholds),pstdev(thresholds) )),
+        (("UNCERTAINTIES", min(uncertainties), max(uncertainties), median(uncertainties), mean(uncertainties),pstdev(uncertainties) )),
     )) )
     statisticReport.close()
     # set dedicated figure
