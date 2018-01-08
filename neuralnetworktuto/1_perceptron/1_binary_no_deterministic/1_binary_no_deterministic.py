@@ -96,6 +96,7 @@ def optimizeNeuronUncertainty(perceptron,digit):
     testNeuron=copy(originalNeuron)
     training=perceptron.trainings.data[digit]
     # optimize temperature
+    Logger.append(1, "optimizing uncertainty for neuron #" + str(digit))
     while loopNumber < UNCERTAINTY_LOOP_LIMIT:
         # evaluate uncertainty
         sign = -1 if error else 1
@@ -106,6 +107,7 @@ def optimizeNeuronUncertainty(perceptron,digit):
         # update uncertainty
         if not error:
             originalNeuron.uncertainty = uncertainty
+            Logger.append(1, "new uncertainty : " + str(uncertainty))
         # next optimization try
         loopNumber = loopNumber + 1
         pass
@@ -174,6 +176,9 @@ def main():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
         # optimize temperature
         optimizeNeuronUncertainty(perceptron,digit)
+    # complete logs
+    Logger.append(0, "optimized uncertainties" + linesep + str(perceptron))
+    Logger.flush()
     # write global statistics
     writeDigitStatistics("ALL", allWeightsCoalescence, statisticWriter)
     statisticReport.close()
@@ -296,7 +301,7 @@ class DigitNeuron():
         self.thresholdedWeights=array(newWeightsThreashold)
         Logger.append(4,"new neuron : " + str(self))
     def __str__(self):
-        representation =str(self.digit) +" : "+str(dict(enumerate(self.thresholdedWeights)))
+        representation =str(self.digit) +" : [ threashold : " + str(self.thresholdedWeights[-1]) + " ; uncertainty : " + str(self.uncertainty) + " ; weights : " + str(dict(enumerate(self.thresholdedWeights[0:-1]))) + " ]"
         return representation
 # perceptron
 class Perceptron():
@@ -336,7 +341,6 @@ class Perceptron():
                 #raise Exception(message)
         # print completed training
         Logger.append(0,"trained in "+str(trainingCounter) + " steps :"+linesep+str(self))
-        Logger.flush()
         ErrorsGraph.draw()
     def initializeDigitNeurons(self,digitsNumbers,retinaLength):
         # initialize neurons collection
