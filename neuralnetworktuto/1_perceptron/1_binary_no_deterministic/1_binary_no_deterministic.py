@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # imports
 from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig
-from numpy import heaviside, array, append, arange
+from numpy import array, append, arange
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
 from os.path import realpath, join, exists
@@ -9,6 +9,7 @@ from random import shuffle
 from statistics import median, mean
 from csv import writer
 from shutil import rmtree
+from math import exp
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
@@ -121,6 +122,7 @@ def main():
     images = Images(join(INPUT_DIRECTORY,"training"))
     perceptron = Perceptron(images)
     writeReport(perceptron,perceptron.trainings,join(OUTPUT_DIRECTORY,"trainingReport.txt"))
+    '''
     # statistic & draw weights/digits graphs ...
     statisticReport = open(join(OUTPUT_DIRECTORY,"digitsStatistics.csv"), "wt")
     statisticWriter = writer(statisticReport)
@@ -140,6 +142,7 @@ def main():
     # play with sandbox
     images = Images(join(INPUT_DIRECTORY,"sandbox"))
     writeReport(perceptron,images,join(OUTPUT_DIRECTORY,"sandboxReport.txt"))
+    '''
 # tools class
 class Logger():
     completeLog=""
@@ -220,9 +223,10 @@ class ErrorsGraph():
         saveFigure("trainingEvolution")
 # digit neuron
 class DigitNeuron():
-    def __init__(self,digit,retinaLength):
-        # set name
+    def __init__(self,digit,retinaLength,temperature=0.136535883994026):
+        # set parameters
         self.digit=digit
+        self.temperature=temperature
         # initialize random weights
         initialWeights=(rand(retinaLength)-.5)*Perceptron.initialCorrectionStep# INFO : we want to balance weights around 0
         self.thresholdedWeights=append(initialWeights,-Perceptron.initialCorrectionStep)
@@ -230,8 +234,11 @@ class DigitNeuron():
         # sum weighted input
         thresholdedInputs = array(append(retinaContext, 1))
         weightedInputs = self.thresholdedWeights.dot(thresholdedInputs.transpose())
-        # compute & return OUT
-        output = heaviside(weightedInputs, 1)
+        # compute probabilistic activation
+        thresholdProbability = 1 / (1 + exp(-weightedInputs/self.temperature))
+        activationRandomChoice=rand()
+        output= activationRandomChoice <= thresholdProbability
+        # return OUT
         return output
     def correct(self,retinaContext,delta):
         # new thresholded weights
@@ -257,6 +264,7 @@ class DigitNeuron():
         return representation
 # perceptron
 class Perceptron():
+    computeLimitLoop=30 # sometimes, random choices are too long to adjust. better to retry
     initialCorrectionStep=0.125 # INFO : found with a dichotomy between 1 and 0
     correctionFactor=0.9375 # INFO : found with a dichotomy between 1 and 0.9
     def __init__(self, trainings):
@@ -277,13 +285,19 @@ class Perceptron():
         # initialize training counter
         trainingCounter=0
         # train while necessary
-        while not trained:
+        actualLoopNumber=0
+        while not (trained or trainingCounter == Perceptron.computeLimitLoop):
             Logger.append(0,"training #"+str(trainingCounter)+"   correction step : " + str(self.currentCorrectionStep))
             trainingCounter=trainingCounter+1
             # train all neurons
             trained=self.playAllRandomTrainings()
             # compute next correction step
             self.currentCorrectionStep = self.currentCorrectionStep * Perceptron.correctionFactor
+            if trainingCounter >= Perceptron.computeLimitLoop:
+                message = "Sorry, random choices are too long to adjust. Better to retry"
+                Logger.append(0, message)
+                Logger.flush()
+                #raise Exception(message)
         # print completed training
         Logger.append(0,"trained in "+str(trainingCounter) + " steps :"+linesep+str(self))
         Logger.flush()
