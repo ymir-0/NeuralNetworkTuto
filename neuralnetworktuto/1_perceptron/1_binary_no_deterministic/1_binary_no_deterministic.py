@@ -116,6 +116,21 @@ def thresholdStatistics(perceptron):
 def saveFigure(name):
     figurePath = join(OUTPUT_DIRECTORY, name + ".png")
     savefig(figurePath)
+def testDigits(perceptron):
+    testLoopNumber=int(1e4)
+    errorsCounter=list()
+    for digit, neuron in enumerate(perceptron.digitNeurons):
+        image=perceptron.trainings.data[digit]
+        errorCounter=0
+        for testNumber in range(0,testLoopNumber):
+            output=neuron.activate(image)
+            if not output:
+                errorCounter=errorCounter+1
+            pass
+        relativeError=errorCounter/testLoopNumber*100
+        errorsCounter.append(relativeError)
+        pass
+    pass
 def main():
     # empty output folder
     if exists(OUTPUT_DIRECTORY):
@@ -146,6 +161,8 @@ def main():
     statisticReport.close()
     # threshold statistics
     thresholdStatistics(perceptron)
+    # test digits
+    testDigits(perceptron)
 # tools class
 class Logger():
     completeLog=""
