@@ -103,10 +103,8 @@ def thresholdStatistics(perceptron):
         uncertainties.append(neuron.uncertainty)
     thresholds = tuple(thresholds)
     uncertainties = tuple(uncertainties)
-    # initialize outpout file
-    outpoutFile="thresholdsUncertaintiesStatistics"
     # write statistics
-    statisticReport = open(join(OUTPUT_DIRECTORY,outpoutFile+".csv"), "wt")
+    statisticReport = open(join(OUTPUT_DIRECTORY,"thresholdsUncertaintiesStatistics"+".csv"), "wt")
     statisticWriter = writer(statisticReport)
     statisticWriter.writerows( ((
         (("DATA","MINIMUM","MAXIMUM","MEDIAN","MEAN","DEVIATION")) ,
@@ -114,21 +112,26 @@ def thresholdStatistics(perceptron):
         (("UNCERTAINTIES", min(uncertainties), max(uncertainties), median(uncertainties), mean(uncertainties),pstdev(uncertainties) )),
     )) )
     statisticReport.close()
-    # set dedicated figure
-    figure()
     # draw weights & uncertainties repartition
+    figure()
     plot(thresholds,"o", label="weights")
     plot(uncertainties,"x", label="uncertainties")
     xticks(arange(0,len(perceptron.digitNeurons)+1))
-    #allData=thresholds+uncertainties
-    #yticks(arange(round(min(allData),1)-.1, round(max(allData),1)+.1,.1))
     title("thresholds & uncertainties repartition (for "+str(INITIAL_UNCERTAINTY)+"% success on training)")
     xlabel("digit")
     ylabel("threshold & uncertainties")
     grid(linestyle="-.")
     legend()
-    # save figure
-    saveFigure(outpoutFile)
+    saveFigure("thresholdsUncertaintiesRepartition")
+    # draw uncertainty in terms of threshold
+    figure()
+    plot(thresholds, uncertainties,"o")
+    title("uncertainty in terms of thresholds")
+    xlabel("threshold")
+    ylabel("uncertainty")
+    grid(linestyle="-.")
+    saveFigure("thresholdUncertaintyCorrelation")
+    pass
 def saveFigure(name):
     figurePath = join(OUTPUT_DIRECTORY, name + ".png")
     savefig(figurePath)
