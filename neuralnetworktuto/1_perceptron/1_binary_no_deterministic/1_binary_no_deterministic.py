@@ -123,11 +123,15 @@ def thresholdStatistics(perceptron):
     thresholds = tuple(thresholds)
     uncertainties = tuple(uncertainties)
     # initialize outpout file
-    outpoutFile="thresholdsStatistics"
+    outpoutFile="thresholdsUncertaintiesStatistics"
     # write statistics
     statisticReport = open(join(OUTPUT_DIRECTORY,outpoutFile+".csv"), "wt")
     statisticWriter = writer(statisticReport)
-    statisticWriter.writerows( (( (("MINIMUM","MAXIMUM","MEDIAN","MEAN")) , ((min(thresholds),max(thresholds),median(thresholds),mean(thresholds) )) )) )
+    statisticWriter.writerows( ((
+                                  (("DATA","MINIMUM","MAXIMUM","MEDIAN","MEAN")) ,
+                                  (("THREASHOLDS", min(thresholds),max(thresholds),median(thresholds),mean(thresholds) )),
+                                  (("UNCERTAINTIES", min(uncertainties), max(uncertainties), median(uncertainties), mean(uncertainties))),
+    )) )
     statisticReport.close()
     # set dedicated figure
     figure()
