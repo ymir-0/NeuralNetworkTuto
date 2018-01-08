@@ -10,7 +10,6 @@ from statistics import median, mean, pstdev
 from csv import writer
 from shutil import rmtree
 from math import exp, log
-from copy import copy
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
@@ -147,12 +146,17 @@ def drawErrorsEvolution(perceptron):
             pass
         # draw error evolution
         digitErrorsCounter = tuple(digitErrorsCounter)
+        relatedAmortizedParameter=amortizedParameter(digitErrorsCounter)
         figure()
-        plot(digitErrorsCounter, "-o")
+        plot(digitErrorsCounter, "-o", label="error evolution")
+        absciseRange=arange(0,30,1)
+        plot(absciseRange,[100*(1-exp(-x/relatedAmortizedParameter)) for x in absciseRange], label="armortized curve")
+        #plot(x,100*(1-exp(x/relatedAmortizedParameter)), "-o", label="error evolution for " + str(digit))
         title("error evolution for digit "+str(digit))
         xlabel("number of swtiched pixels")
         ylabel("relative error %")
         grid(linestyle="-.")
+        legend()
         saveFigure("errorEvolutionDigit#"+str(digit))
         # coalesce all errors
         globalErrorsCounter.append(digitErrorsCounter)
@@ -166,9 +170,23 @@ def drawErrorsEvolution(perceptron):
     xlabel("number of swtiched pixels")
     ylabel("relative error %")
     grid(linestyle="-.")
-    saveFigure("errorEvolutionDigitAll")
     legend()
+    saveFigure("errorEvolutionDigitAll")
     pass
+def amortizedParameter(digitErrorsCounter):
+    # compute all possible parameters value
+    # WARNING : no solution at 0
+    parameters=list()
+    for errorIndex in range(1, len(digitErrorsCounter)):
+        # sometimes, we have a math error
+        try:
+            # track each error
+            candidateParameter=-errorIndex/log(1-digitErrorsCounter[errorIndex]/100)
+            parameters.append(candidateParameter)
+        except: pass
+        pass
+    parameter=mean(parameters)
+    return parameter
 def swithImagePixel(originalImage, pixelSwitchNumber):
     # shuffle pixel indexes
     shuffledPixelsIndexes=list(range(0,len(originalImage)))
