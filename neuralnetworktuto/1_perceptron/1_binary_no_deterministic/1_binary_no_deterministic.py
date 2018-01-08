@@ -16,25 +16,6 @@ INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 INITIAL_UNCERTAINTY = 1 # initial uncertainty percentage
 # tools functions
-def prettyStringOutput(output):
-    filteredOutput=list()
-    for neuronNumber,neuronActivation in enumerate(output):
-        if neuronActivation==1:
-            filteredOutput.append(neuronNumber)
-    return str(tuple(filteredOutput))
-def writeReport(perceptron,images,reportFileName):
-    # initialize training report
-    trainingReport = ""
-    # for all training value
-    for inputValue, inputImage in images.data.items():
-        # fill report
-        output = perceptron.execute(inputImage)
-        outputRepresentation = prettyStringOutput(output)
-        trainingReport = trainingReport+"for image : " + linesep + images.stringValue(inputValue) + "corresponding numbers are : " + outputRepresentation + linesep
-        # write report
-        reportFile = open(reportFileName,"wt")
-        reportFile.write(trainingReport)
-        reportFile.close()
 def computeDigitStatistics(perceptron, digit,statisticWriter):
     # initialize statistics
     digitWeightsCoalescence={0:list(),1:list()}
@@ -140,10 +121,9 @@ def main():
     if exists(OUTPUT_DIRECTORY):
         rmtree(OUTPUT_DIRECTORY)
     makedirs(OUTPUT_DIRECTORY)
-    # train & check neuron network
+    # train neuron network
     images = Images(join(INPUT_DIRECTORY,"training"))
     perceptron = Perceptron(images)
-    writeReport(perceptron,perceptron.trainings,join(OUTPUT_DIRECTORY,"trainingReport.txt"))
     # statistic & draw weights/digits graphs ...
     statisticReport = open(join(OUTPUT_DIRECTORY,"digitsStatistics.csv"), "wt")
     statisticWriter = writer(statisticReport)
