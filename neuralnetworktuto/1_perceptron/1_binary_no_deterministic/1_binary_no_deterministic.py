@@ -10,10 +10,12 @@ from statistics import median, mean
 from csv import writer
 from shutil import rmtree
 from math import exp
+from copy import copy
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
+UNCERTAINTY_LOOP_LIMIT = 10
 # tools functions
 def prettyStringOutput(output):
     filteredOutput=list()
@@ -84,13 +86,42 @@ def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     legend()
     # save figure
     saveFigure("digit#"+str(digit))
+def optimizeNeuronUncertainty(perceptron,digit):
+    # INFO : as uncertainty always increase when temperature decrease, we use a dichotomy to optimize
+    # initialize parameters
+    error=False # assume there is no error with initial uncertainty
+    uncertainty=0
+    loopNumber=0
+    originalNeuron=perceptron.digitNeurons[digit]
+    testNeuron=copy(originalNeuron)
+    training=perceptron.trainings.data[digit]
+    # optimize temperature
+    while loopNumber < UNCERTAINTY_LOOP_LIMIT:
+        # evaluate uncertainty
+        sign = -1 if error else 1
+        uncertainty = uncertainty + sign * 2**-loopNumber
+        # check neuron stability
+        testNeuron.uncertainty = uncertainty
+        error = digit == testNeuron.activate(training)
+        # update uncertainty
+        if not error:
+            originalNeuron.uncertainty = uncertainty
+        # next optimization try
+        loopNumber = loopNumber + 1
+        pass
+    pass
 def thresholdStatistics(perceptron):
-    # coalesce thresholds
+    # coalesce thresholds & uncertainties
     thresholds=list()
+    uncertainties = list()
     for neuron in perceptron.digitNeurons:
+        # thresholds
         threshold=-neuron.thresholdedWeights[-1]
         thresholds.append(threshold)
+        # uncertainties
+        uncertainties.append(neuron.uncertainty)
     thresholds = tuple(thresholds)
+    uncertainties = tuple(uncertainties)
     # initialize outpout file
     outpoutFile="thresholdsStatistics"
     # write statistics
@@ -100,14 +131,17 @@ def thresholdStatistics(perceptron):
     statisticReport.close()
     # set dedicated figure
     figure()
-    # draw weights repartition
-    plot(thresholds,"o")
-    xticks(arange(0,len(thresholds)+1))
-    yticks(arange(round(min(thresholds),1)-.1, round(max(thresholds),1)+.1,.1))
-    title("thresholds repartion")
+    # draw weights & uncertainties repartition
+    plot(thresholds,"o", label="weights")
+    plot(uncertainties,"x", label="uncertainties")
+    xticks(arange(0,len(perceptron.digitNeurons)+1))
+    allData=thresholds+uncertainties
+    yticks(arange(round(min(allData),1)-.1, round(max(allData),1)+.1,.1))
+    title("thresholds & uncertainties repartion")
     xlabel("digit")
-    ylabel("threshold")
+    ylabel("threshold & uncertainties")
     grid(linestyle="-.")
+    legend()
     # save figure
     saveFigure(outpoutFile)
 def saveFigure(name):
@@ -129,10 +163,13 @@ def main():
     allWeightsCoalescence = {0: list(), 1: list()}
     # for each digits (0 .. 9)
     for digit in range(0,len(perceptron.digitNeurons)):
+        # compute digit statistics
         digitWeightsCoalescence = computeDigitStatistics(perceptron, digit,statisticWriter)
         # merge weights for global statistics
         for bit in digitWeightsCoalescence.keys():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
+        # optimize temperature
+        optimizeNeuronUncertainty(perceptron,digit)
     # write global statistics
     writeDigitStatistics("ALL", allWeightsCoalescence, statisticWriter)
     statisticReport.close()
@@ -218,10 +255,10 @@ class ErrorsGraph():
         saveFigure("trainingEvolution")
 # digit neuron
 class DigitNeuron():
-    def __init__(self,digit,retinaLength,temperature=0.136535883994026):
+    def __init__(self,digit,retinaLength,uncertainty=1e-2): # INFO : 1e-2 is a fine uncertainty to approch binary value without floating error
         # set parameters
         self.digit=digit
-        self.temperature=temperature
+        self.uncertainty=uncertainty
         # initialize random weights
         initialWeights=(rand(retinaLength)-.5)*Perceptron.initialCorrectionStep# INFO : we want to balance weights around 0
         self.thresholdedWeights=append(initialWeights,-Perceptron.initialCorrectionStep)
@@ -230,7 +267,7 @@ class DigitNeuron():
         thresholdedInputs = array(append(retinaContext, 1))
         weightedInputs = self.thresholdedWeights.dot(thresholdedInputs.transpose())
         # compute probabilistic activation
-        thresholdProbability = 1 / (1 + exp(-weightedInputs/self.temperature))
+        thresholdProbability = 1 / (1 + exp(-weightedInputs/self.uncertainty))
         activationRandomChoice=rand()
         output= activationRandomChoice <= thresholdProbability
         # return OUT
