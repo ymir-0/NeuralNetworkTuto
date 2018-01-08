@@ -10,11 +10,13 @@ from statistics import median, mean, pstdev
 from csv import writer
 from shutil import rmtree
 from math import exp, log
+from copy import copy
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 INITIAL_UNCERTAINTY = 1 # initial uncertainty percentage
+UNCERTAINTY_TEST_NUMBER = int(1e3)
 # tools functions
 def computeDigitStatistics(perceptron, digit,statisticWriter):
     # initialize statistics
@@ -113,24 +115,75 @@ def thresholdStatistics(perceptron):
     grid(linestyle="-.")
     saveFigure("thresholdUncertaintyCorrelation")
     pass
+def testDigits(perceptron):
+    # initialize
+    totalPixelsNumber=Images.rowNumber*Images.columnNumber
+    globalErrorsCounter=list()
+    digitsNumber=len(perceptron.digitNeurons)
+    # for each digit
+    for digit, neuron in enumerate(perceptron.digitNeurons):
+        image=perceptron.trainings.data[digit]
+        digitErrorsCounter = list()
+        # switch all pixels step by step
+        for pixelSwitchNumber in range(0,totalPixelsNumber):
+            errorCounter=0
+            # test a lot of time
+            for testNumber in range(0,UNCERTAINTY_TEST_NUMBER):
+                print("TEST digit:"+str(digit)+"/"+str(digitsNumber-1)+"\tpixel swith:"+str(pixelSwitchNumber)+"/"+str(totalPixelsNumber-1)+"\ttest:"+str(testNumber)+"/"+str(UNCERTAINTY_TEST_NUMBER-1))
+                corruptedImage = swithImagePixel(image, pixelSwitchNumber)
+                # sometimes, we have a math error
+                try:
+                    # track each error
+                    activated=neuron.activate(corruptedImage)
+                    if not activated:
+                        errorCounter=errorCounter+1
+                # retry
+                except:
+                    pixelSwitchNumber=pixelSwitchNumber-1
+                pass
+            # coalesce digit errors
+            relativeError = errorCounter / UNCERTAINTY_TEST_NUMBER * 100
+            digitErrorsCounter.append(relativeError)
+            pass
+        # draw error evolution
+        digitErrorsCounter = tuple(digitErrorsCounter)
+        figure()
+        plot(digitErrorsCounter, "-o")
+        title("error evolution for digit "+str(digit))
+        xlabel("number of swtiched pixels")
+        ylabel("relative error %")
+        grid(linestyle="-.")
+        saveFigure("errorEvolutionDigit#"+str(digit))
+        # coalesce all errors
+        globalErrorsCounter.append(digitErrorsCounter)
+        pass
+    # draw all errors
+    globalErrorsCounter = tuple(globalErrorsCounter)
+    figure()
+    for digit, errorEvolution in enumerate(globalErrorsCounter):
+        plot(errorEvolution, "-o",label=str(digit))
+    title("error evolution for all digits ")
+    xlabel("number of swtiched pixels")
+    ylabel("relative error %")
+    grid(linestyle="-.")
+    saveFigure("errorEvolutionDigitAll")
+    legend()
+    pass
+def swithImagePixel(originalImage, pixelSwitchNumber):
+    # shuffle pixel indexes
+    shuffledPixelsIndexes=list(range(0,len(originalImage)))
+    shuffle(shuffledPixelsIndexes)
+    shuffledPixelsIndexes=shuffledPixelsIndexes[0:pixelSwitchNumber]
+    # switch pixels
+    newImage = list(originalImage)
+    for pixelIndex in shuffledPixelsIndexes:
+        newImage[pixelIndex]=1-originalImage[pixelIndex]
+        pass
+    # return
+    return tuple(newImage)
 def saveFigure(name):
     figurePath = join(OUTPUT_DIRECTORY, name + ".png")
     savefig(figurePath)
-def testDigits(perceptron):
-    testLoopNumber=int(1e4)
-    errorsCounter=list()
-    for digit, neuron in enumerate(perceptron.digitNeurons):
-        image=perceptron.trainings.data[digit]
-        errorCounter=0
-        for testNumber in range(0,testLoopNumber):
-            output=neuron.activate(image)
-            if not output:
-                errorCounter=errorCounter+1
-            pass
-        relativeError=errorCounter/testLoopNumber*100
-        errorsCounter.append(relativeError)
-        pass
-    pass
 def main():
     # empty output folder
     if exists(OUTPUT_DIRECTORY):
