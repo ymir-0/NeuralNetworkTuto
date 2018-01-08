@@ -115,7 +115,7 @@ def thresholdStatistics(perceptron):
     grid(linestyle="-.")
     saveFigure("thresholdUncertaintyCorrelation")
     pass
-def testDigits(perceptron):
+def drawErrorsEvolution(perceptron):
     # initialize
     totalPixelsNumber=Images.rowNumber*Images.columnNumber
     globalErrorsCounter=list()
@@ -215,7 +215,7 @@ def main():
     # threshold statistics
     thresholdStatistics(perceptron)
     # test digits
-    testDigits(perceptron)
+    drawErrorsEvolution(perceptron)
 # tools class
 class Logger():
     completeLog=""
