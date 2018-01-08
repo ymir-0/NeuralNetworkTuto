@@ -15,7 +15,7 @@ from copy import copy
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
-INITIAL_UNCERTAINTY = 1 # initial uncertainty percentage
+INITIAL_UNCERTAINTY = .1 # initial uncertainty percentage
 UNCERTAINTY_TEST_NUMBER = int(1e3)
 # tools functions
 def computeDigitStatistics(perceptron, digit,statisticWriter):
