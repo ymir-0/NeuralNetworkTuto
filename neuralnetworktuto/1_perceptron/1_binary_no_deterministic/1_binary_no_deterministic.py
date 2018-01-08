@@ -9,13 +9,12 @@ from random import shuffle
 from statistics import median, mean, pstdev
 from csv import writer
 from shutil import rmtree
-from math import exp
-from copy import copy
+from math import exp, log
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
-UNCERTAINTY_LOOP_LIMIT = 10
+INITIAL_UNCERTAINTY = 1 # initial uncertainty percentage
 # tools functions
 def prettyStringOutput(output):
     filteredOutput=list()
@@ -87,30 +86,10 @@ def writeDigitStatistics(digit,weightsCoalescence,statisticWriter):
     # save figure
     saveFigure("digit#"+str(digit))
 def optimizeNeuronUncertainty(perceptron,digit):
-    # INFO : as uncertainty always increase when temperature decrease, we use a dichotomy to optimize
-    # initialize parameters
-    error=False # assume there is no error with initial uncertainty
-    uncertainty=0
-    loopNumber=0
-    originalNeuron=perceptron.digitNeurons[digit]
-    testNeuron=copy(originalNeuron)
+    neuron=perceptron.digitNeurons[digit]
     training=perceptron.trainings.data[digit]
-    # optimize temperature
-    Logger.append(1, "optimizing uncertainty for neuron #" + str(digit))
-    while loopNumber < UNCERTAINTY_LOOP_LIMIT:
-        # evaluate uncertainty
-        sign = -1 if error else 1
-        uncertainty = uncertainty + sign * 2**-loopNumber
-        # check neuron stability
-        testNeuron.uncertainty = uncertainty
-        error = digit == testNeuron.activate(training)
-        # update uncertainty
-        if not error:
-            originalNeuron.uncertainty = uncertainty
-            Logger.append(1, "new uncertainty : " + str(uncertainty))
-        # next optimization try
-        loopNumber = loopNumber + 1
-        pass
+    # optimize uncertainty
+    neuron.uncertainty = - neuron.weightedInputs(training) / log ( INITIAL_UNCERTAINTY / (100-INITIAL_UNCERTAINTY) )
     pass
 def thresholdStatistics(perceptron):
     # coalesce thresholds & uncertainties
@@ -141,9 +120,9 @@ def thresholdStatistics(perceptron):
     plot(thresholds,"o", label="weights")
     plot(uncertainties,"x", label="uncertainties")
     xticks(arange(0,len(perceptron.digitNeurons)+1))
-    allData=thresholds+uncertainties
-    yticks(arange(round(min(allData),1)-.1, round(max(allData),1)+.1,.1))
-    title("thresholds & uncertainties repartion")
+    #allData=thresholds+uncertainties
+    #yticks(arange(round(min(allData),1)-.1, round(max(allData),1)+.1,.1))
+    title("thresholds & uncertainties repartition (for "+str(INITIAL_UNCERTAINTY)+"% success on training)")
     xlabel("digit")
     ylabel("threshold & uncertainties")
     grid(linestyle="-.")
@@ -174,7 +153,7 @@ def main():
         # merge weights for global statistics
         for bit in digitWeightsCoalescence.keys():
             allWeightsCoalescence[bit]=allWeightsCoalescence[bit]+digitWeightsCoalescence[bit]
-        # optimize temperature
+        # optimize uncertainty
         optimizeNeuronUncertainty(perceptron,digit)
     # complete logs
     Logger.append(0, "optimized uncertainties" + linesep + str(perceptron))
@@ -273,14 +252,17 @@ class DigitNeuron():
         self.thresholdedWeights=append(initialWeights,-Perceptron.initialCorrectionStep)
     def activate(self,retinaContext):
         # sum weighted input
-        thresholdedInputs = array(append(retinaContext, 1))
-        weightedInputs = self.thresholdedWeights.dot(thresholdedInputs.transpose())
+        weightedInputs = self.weightedInputs(retinaContext)
         # compute probabilistic activation
         thresholdProbability = 1 / (1 + exp(-weightedInputs/self.uncertainty))
         activationRandomChoice=rand()
         output= activationRandomChoice <= thresholdProbability
         # return OUT
         return output
+    def weightedInputs(self,retinaContext):
+        thresholdedInputs = array(append(retinaContext, 1))
+        weightedInputs = self.thresholdedWeights.dot(thresholdedInputs.transpose())
+        return weightedInputs
     def correct(self,retinaContext,delta):
         # new thresholded weights
         newWeightsThreashold = list()
