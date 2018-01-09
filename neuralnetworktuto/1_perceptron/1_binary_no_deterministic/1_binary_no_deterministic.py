@@ -269,7 +269,7 @@ def main():
         rmtree(OUTPUT_DIRECTORY)
     makedirs(OUTPUT_DIRECTORY)
     # train neuron network
-    images = Images(join(INPUT_DIRECTORY,"training"))
+    images = Images(INPUT_DIRECTORY)
     perceptron = Perceptron(images)
     # statistic & draw weights/digits graphs ...
     statisticReport = open(join(OUTPUT_DIRECTORY,"digitsStatistics.csv"), "wt")
