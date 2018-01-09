@@ -147,11 +147,11 @@ def drawErrorsEvolution(perceptron):
         # draw error evolution
         digitErrorsCounter = tuple(digitErrorsCounter)
         relatedAmortizedParameter=amortizedParameter(digitErrorsCounter)
+        inflexion, relatedSigmoidParameter=sigmoidParameters(digitErrorsCounter)
         figure()
         plot(digitErrorsCounter, "-o", label="error evolution")
         absciseRange=range(0,30)
         plot(absciseRange,[100*(1-exp(-x/relatedAmortizedParameter)) for x in absciseRange], label="armortized curve")
-        #plot(x,100*(1-exp(x/relatedAmortizedParameter)), "-o", label="error evolution for " + str(digit))
         title("error evolution for digit "+str(digit))
         xlabel("number of swtiched pixels")
         ylabel("relative error %")
@@ -187,6 +187,40 @@ def amortizedParameter(digitErrorsCounter):
         pass
     parameter=mean(parameters)
     return parameter
+def sigmoidParameters(digitErrorsCounter):
+    # use a dichotomy to det inflexion point
+    x = 0
+    sign=1
+    xStep=round(len(digitErrorsCounter)/2)
+    while xStep > 1:
+        x=x+sign*xStep
+        y=digitErrorsCounter[x]
+        if y==50 :
+            inflexion=x
+            break
+        else :
+            sign=1 if y<50 else -1
+            xStep=round(xStep/2)
+            if xStep==1:
+                xp=x
+                yStepP=abs(50-y)
+                x=x+sign
+                y=digitErrorsCounter[x]
+                yStep = abs(50 - y)
+                inflexion=xp if yStepP<yStep else x
+                pass
+    # compute all possible parameters value
+    parameters=list()
+    for errorIndex in range(0, len(digitErrorsCounter)):
+        # sometimes, we have a math error
+        try:
+            # track each error
+            candidateParameter=-errorIndex/log(1-digitErrorsCounter[errorIndex]/100)
+            parameters.append(candidateParameter)
+        except: pass
+        pass
+    parameter=mean(parameters)
+    return inflexion, parameter
 def swithImagePixel(originalImage, pixelSwitchNumber):
     # shuffle pixel indexes
     shuffledPixelsIndexes=list(range(0,len(originalImage)))
