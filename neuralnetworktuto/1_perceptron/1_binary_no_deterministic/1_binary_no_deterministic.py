@@ -149,7 +149,7 @@ def drawErrorsEvolution(perceptron):
         relatedAmortizedParameter=amortizedParameter(digitErrorsCounter)
         figure()
         plot(digitErrorsCounter, "-o", label="error evolution")
-        absciseRange=arange(0,30,1)
+        absciseRange=range(0,30)
         plot(absciseRange,[100*(1-exp(-x/relatedAmortizedParameter)) for x in absciseRange], label="armortized curve")
         #plot(x,100*(1-exp(x/relatedAmortizedParameter)), "-o", label="error evolution for " + str(digit))
         title("error evolution for digit "+str(digit))
