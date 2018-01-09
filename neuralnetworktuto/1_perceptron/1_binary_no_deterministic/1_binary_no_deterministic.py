@@ -153,6 +153,7 @@ def drawErrorsEvolution(perceptron):
         absciseRange=range(0,30)
         plot(absciseRange,[100*(1-exp(-x/relatedAmortizedParameter)) for x in absciseRange], label="armortized curve")
         plot(absciseRange,[100/(1+exp(relatedSigmoidParameter*(inflexion-x))) for x in absciseRange], label="logistic curve")
+        plot(absciseRange,[(100-INITIAL_UNCERTAINTY)/totalPixelsNumber*x+INITIAL_UNCERTAINTY for x in absciseRange], label="linear curve")
         title("error evolution for digit "+str(digit))
         xlabel("number of swtiched pixels")
         ylabel("relative error %")
