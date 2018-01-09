@@ -148,12 +148,13 @@ def drawErrorsEvolution(perceptron):
         digitErrorsCounter = tuple(digitErrorsCounter)
         relatedAmortizedParameter=amortizedParameter(digitErrorsCounter)
         inflexion, relatedSigmoidParameter=sigmoidParameters(digitErrorsCounter)
+        relatedLinearParameter =linearParameters(digitErrorsCounter)
         figure()
         plot(digitErrorsCounter, "-o", label="error evolution")
         absciseRange=range(0,30)
         plot(absciseRange,[100*(1-exp(-x/relatedAmortizedParameter)) for x in absciseRange], label="armortized curve")
         plot(absciseRange,[100/(1+exp(relatedSigmoidParameter*(inflexion-x))) for x in absciseRange], label="logistic curve")
-        plot(absciseRange,[(100-INITIAL_UNCERTAINTY)/totalPixelsNumber*x+INITIAL_UNCERTAINTY for x in absciseRange], label="linear curve")
+        plot(absciseRange,[relatedLinearParameter*x+INITIAL_UNCERTAINTY for x in absciseRange], label="linear curve")
         title("error evolution for digit "+str(digit))
         xlabel("number of swtiched pixels")
         ylabel("relative error %")
@@ -234,6 +235,19 @@ def sigmoidParameters(digitErrorsCounter):
         pass
     parameter=mean(parameters)
     return inflexion, parameter
+def linearParameters(digitErrorsCounter):
+    # compute all possible parameters value
+    parameters=list()
+    for errorIndex in range(1, len(digitErrorsCounter)):
+        # sometimes, we have a math error
+        try:
+            # track each error
+            candidateParameter = (digitErrorsCounter[errorIndex] - digitErrorsCounter[1]) / (errorIndex-1)
+            parameters.append(candidateParameter)
+        except: pass
+        pass
+    parameter=mean(parameters)
+    return parameter
 def swithImagePixel(originalImage, pixelSwitchNumber):
     # shuffle pixel indexes
     shuffledPixelsIndexes=list(range(0,len(originalImage)))
