@@ -147,13 +147,13 @@ def drawErrorsEvolution(perceptron):
         # draw error evolution
         digitErrorsCounter = tuple(digitErrorsCounter)
         relatedAmortizedParameter=amortizedParameter(digitErrorsCounter)
-        inflexion, relatedSigmoidParameter=sigmoidParameters(digitErrorsCounter)
+        inflexion, relatedLogisticParameter=logisticParameters(digitErrorsCounter)
         relatedLinearParameter =linearParameters(digitErrorsCounter)
         figure()
         plot(digitErrorsCounter, "-o", label="error evolution")
         absciseRange=range(0,30)
         plot(absciseRange,[100*(1-exp(-x/relatedAmortizedParameter)) for x in absciseRange], label="armortized curve")
-        plot(absciseRange,[100/(1+exp(relatedSigmoidParameter*(inflexion-x))) for x in absciseRange], label="logistic curve")
+        plot(absciseRange,[100/(1+exp(relatedLogisticParameter*(inflexion-x))) for x in absciseRange], label="logistic curve")
         plot(absciseRange,[relatedLinearParameter*x+INITIAL_UNCERTAINTY for x in absciseRange], label="linear curve")
         title("error evolution for digit "+str(digit))
         xlabel("number of swtiched pixels")
@@ -190,7 +190,7 @@ def amortizedParameter(digitErrorsCounter):
         pass
     parameter=mean(parameters)
     return parameter
-def sigmoidParameters(digitErrorsCounter):
+def logisticParameters(digitErrorsCounter):
     # INFO : logistic function is increasing, so we use a dichotomy to det inflexion point
     # initialize inflexion search
     x = 0
