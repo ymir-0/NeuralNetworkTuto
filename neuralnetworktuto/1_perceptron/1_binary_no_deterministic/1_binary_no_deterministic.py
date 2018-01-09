@@ -152,6 +152,7 @@ def drawErrorsEvolution(perceptron):
         plot(digitErrorsCounter, "-o", label="error evolution")
         absciseRange=range(0,30)
         plot(absciseRange,[100*(1-exp(-x/relatedAmortizedParameter)) for x in absciseRange], label="armortized curve")
+        plot(absciseRange,[100/(1+exp(relatedSigmoidParameter*(inflexion-x))) for x in absciseRange], label="logistic curve")
         title("error evolution for digit "+str(digit))
         xlabel("number of swtiched pixels")
         ylabel("relative error %")
@@ -188,26 +189,37 @@ def amortizedParameter(digitErrorsCounter):
     parameter=mean(parameters)
     return parameter
 def sigmoidParameters(digitErrorsCounter):
-    # use a dichotomy to det inflexion point
+    # INFO : logistic function is increasing, so we use a dichotomy to det inflexion point
+    # initialize inflexion search
     x = 0
     sign=1
     xStep=round(len(digitErrorsCounter)/2)
+    # while we did not surrend inflexion
     while xStep > 1:
+        # compute curent surrounding value
         x=x+sign*xStep
         y=digitErrorsCounter[x]
+        # if (by any chance) we get the exact inflexion point, return it as it is
         if y==50 :
             inflexion=x
             break
+        # compute next surrounding value
         else :
             sign=1 if y<50 else -1
             xStep=round(xStep/2)
+            # if surrending is done
             if xStep==1:
+                # get previous surrounding point
                 xp=x
-                yStepP=abs(50-y)
+                yp=y
+                # get next surrounding point
                 x=x+sign
                 y=digitErrorsCounter[x]
-                yStep = abs(50 - y)
-                inflexion=xp if yStepP<yStep else x
+                # compute line throw surrounding points
+                A=(yp-y)/(xp-x)
+                B=(yp*x-y*xp)/(x-xp)
+                # compute inflexion point
+                inflexion = (50-B)/A
                 pass
     # compute all possible parameters value
     parameters=list()
@@ -215,7 +227,7 @@ def sigmoidParameters(digitErrorsCounter):
         # sometimes, we have a math error
         try:
             # track each error
-            candidateParameter=-errorIndex/log(1-digitErrorsCounter[errorIndex]/100)
+            candidateParameter = log(100/digitErrorsCounter[errorIndex]-1) / (inflexion - errorIndex)
             parameters.append(candidateParameter)
         except: pass
         pass
