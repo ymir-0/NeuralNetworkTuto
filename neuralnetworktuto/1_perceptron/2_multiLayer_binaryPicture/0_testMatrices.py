@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # imports
-from numpy import exp, transpose , diag, newaxis
+from numpy import exp, transpose , diag, newaxis, array
 from numpy.random import rand
 # sigmoid
 # TODO : remove static to set a specific uncenterty for each sigmoïd
@@ -74,9 +74,9 @@ class Perceptron():
     def computeHiddenError(self,reverseHiddenLayerIndex):
         # INFO : we start from hidden layer closest to output and move to the one closest from input
         aggregation = self.aggregations[-reverseHiddenLayerIndex-1]
-        weights = self.weights[-reverseHiddenLayerIndex] #INFO : there is no weights related to input layer
+        layerWeights = self.weights[-reverseHiddenLayerIndex] #INFO : there is no weights related to input layer
         previousError = self.errors[-reverseHiddenLayerIndex] #INFO : there is no error related to input layer
-        error = Sigmoid.derivative(aggregation) * weights.T.dot(previousError)
+        error = Sigmoid.derivative(aggregation) * layerWeights.T.dot(previousError)
         self.errors[-reverseHiddenLayerIndex-1] = error
         pass
     pass
@@ -98,6 +98,13 @@ hidenLayersNumber = len(perceptron.weights)
 for reverseHiddenLayerIndex in range(1,hidenLayersNumber)  : # INFO : we start from hidden layer closest to output and move to the one closest from input
     perceptron.computeHiddenError(reverseHiddenLayerIndex)
 # compute new weights
+newWeights=list()
 for layerIndex in range(1,hidenLayersNumber+1) : # INFO : we start from hidden layer closest to input and move to the output one
+    currentLayerWeights = perceptron.weights[layerIndex-1]  # INFO : there is no weights related to input layer
+    lambda_ = 1
+    error = perceptron.errors[layerIndex-1]
+    input = perceptron.inputs[layerIndex-1]
+    newLayerWeights = currentLayerWeights + lambda_*error[newaxis].T*input
+    newWeights.append(newLayerWeights)
     pass
 pass
