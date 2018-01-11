@@ -39,7 +39,8 @@ class Perceptron():
     def run(self, input, training = False):
         # initialize training activation history
         if training:
-            self.sigmoidInputs=list()
+            self.aggregations=list()
+            self.outputs = list()
         # initialize current layer input
         currentInput=input
         # for each layer
@@ -47,6 +48,9 @@ class Perceptron():
             # get activation inputs
             currentActivationInput = self.activationInputs(currentInput, layerIndex)
             currentActivationOutput = self.activationResults(currentActivationInput, layerIndex, training)
+            # compute & memorize sigmoid input (if training)
+            if training:
+                self.outputs.append(currentActivationOutput)
             # next layer input is current layer outpout
             currentInput = currentActivationOutput
             pass
@@ -62,21 +66,19 @@ class Perceptron():
         # get thresholds
         layerThreshold = self.thresholds[layerIndex-1] #INFO : there is no thresholds related to input layer
         # compute & memorize sigmoid input (if training)
-        sigmoidInput= activationInput - layerThreshold
+        aggregation= activationInput - layerThreshold
         if training:
-            self.sigmoidInputs.append(sigmoidInput)
+            self.aggregations.append(aggregation)
         # activate layer
-        activationResults = Sigmoid.value(sigmoidInput)
+        activationResults = Sigmoid.value(aggregation)
         # return
         return activationResults
-    # correct output layer : delta = 2 * pas * sigmoide'(E) * ( T - S )
-    def correctOutputLayer(self,expectedOutput,actualOutput,correctionStep=1): # INFO : S=actualOutput ; T=expectedOutput ; pas=correctionStep
+    # correct output layer : error = sigmoide'(E) * ( T - S )
+    def outputError(self,expectedOutput): # INFO : T=expectedOutput ; pas=correctionStep
         # compute weights correction step
-        outputSigmoidInput = self.sigmoidInputs[-1] # E
-        delta = 2 * correctionStep * Sigmoid.derivative(outputSigmoidInput) * (expectedOutput - actualOutput)
-        test0 = self.sigmoidInputs[-2]
-        test1 = delta[newaxis].T * test0
-        test3 = self.weights[-1] + test1
+        actualOutput = self.outputs[-1] # S
+        outputAggregation = self.aggregations[-1] # E
+        outputError = Sigmoid.derivative(outputAggregation) * (expectedOutput - actualOutput)
         pass
     pass
 pass
@@ -90,4 +92,4 @@ print("result="+str(result))
 pass
 # correct output layer
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
-perceptron.correctOutputLayer(expectedOutput,result)
+outputError = perceptron.outputError(expectedOutput)
