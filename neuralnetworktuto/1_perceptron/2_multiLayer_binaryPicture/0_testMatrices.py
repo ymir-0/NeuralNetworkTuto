@@ -61,12 +61,20 @@ class Perceptron():
             self.outputs.append(output)
         # return
         return output
-    # correct output layer : error = sigmoide'(E) * ( T - S )
-    def outputError(self,expectedOutput): # INFO : T=expectedOutput ; pas=correctionStep
-        # compute weights correction step
-        actualOutput = self.outputs[-1] # S
-        outputAggregation = self.aggregations[-1] # E
-        outputError = Sigmoid.derivative(outputAggregation) * (expectedOutput - actualOutput)
+    # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
+    def computeOutputError(self,expectedOutput):
+        actualOutput = self.outputs[-1]
+        aggregation = self.aggregations[-1]
+        error = Sigmoid.derivative(aggregation) * (expectedOutput - actualOutput)
+        perceptron.errors.append(error)
+        pass
+    # correct output layer : error = sigmoide'(aggregation) * sum(weights*previous_error)
+    def computeHiddenError(self,layerIndex):
+        aggregation = self.aggregations[layerIndex]
+        weights = self.weights[layerIndex+1] #INFO : there is no weights related to input layer
+        previousError = perceptron.errors[layerIndex+1] #INFO : there is no error related to input layer
+        error = Sigmoid.derivative(aggregation) * weights.T.dot(previousError)
+        perceptron.errors.append(error)
         pass
     pass
 pass
@@ -78,6 +86,12 @@ input=tuple([round(rand()) for _ in range(layerHeights[0])])
 result = perceptron.run(input, True)
 print("result="+str(result))
 pass
-# correct output layer
+# compute output layer
+perceptron.errors=list()
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
-outputError = perceptron.outputError(expectedOutput)
+perceptron.computeOutputError(expectedOutput)
+# compute hidden layer just before output
+perceptron.computeHiddenError(-2)
+# compute hidden layers ...
+#perceptron.computeHiddenError(-3)
+#perceptron.computeHiddenError(-4)
