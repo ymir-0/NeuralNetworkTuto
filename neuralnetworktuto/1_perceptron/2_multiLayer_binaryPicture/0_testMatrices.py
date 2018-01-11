@@ -94,8 +94,8 @@ perceptron.errors=[None]*(len(perceptron.aggregations))
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
 perceptron.computeOutputError(expectedOutput)
 # compute hidden layer errors
-hidenLayersNumber = len(perceptron.weights) - 1
-for reverseHiddenLayerIndex in range(1,hidenLayersNumber+1)  : # INFO : we start from hidden layer closest to output and move to the one closest from input
+hidenLayersNumber = len(perceptron.weights)
+for reverseHiddenLayerIndex in range(1,hidenLayersNumber)  : # INFO : we start from hidden layer closest to output and move to the one closest from input
     perceptron.computeHiddenError(reverseHiddenLayerIndex)
 # compute new weights
 for layerIndex in range(1,hidenLayersNumber+1) : # INFO : we go over hidden & output layer
