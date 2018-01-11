@@ -35,6 +35,7 @@ class Perceptron():
     def run(self, input, training = False):
         # initialize training activation history
         if training:
+            self.inputs = list()
             self.aggregations=list()
             self.outputs = list()
         # initialize current layer input
@@ -57,6 +58,7 @@ class Perceptron():
         output = Sigmoid.value(aggregation)
         # memorize (if training)
         if training:
+            self.inputs.append(input)
             self.aggregations.append(aggregation)
             self.outputs.append(output)
         # return
@@ -69,13 +71,13 @@ class Perceptron():
         self.errors[-1] = error
         pass
     # correct output layer : error = sigmoide'(aggregation) * sum(weights*previous_error)
-    def computeHiddenError(self,layerIndex):
+    def computeHiddenError(self,reverseHiddenLayerIndex):
         # INFO : we start from hidden layer closest to output and move to the one closest from input
-        aggregation = self.aggregations[-(layerIndex+2)]
-        weights = self.weights[-(layerIndex+1)] #INFO : there is no weights related to input layer
-        previousError = self.errors[-(layerIndex+1)] #INFO : there is no error related to input layer
+        aggregation = self.aggregations[-(reverseHiddenLayerIndex+2)]
+        weights = self.weights[-(reverseHiddenLayerIndex+1)] #INFO : there is no weights related to input layer
+        previousError = self.errors[-(reverseHiddenLayerIndex+1)] #INFO : there is no error related to input layer
         error = Sigmoid.derivative(aggregation) * weights.T.dot(previousError)
-        self.errors[-(layerIndex+2)] = error
+        self.errors[-(reverseHiddenLayerIndex+2)] = error
         pass
     pass
 pass
@@ -95,4 +97,6 @@ perceptron.computeOutputError(expectedOutput)
 hidenLayersNumber = len(perceptron.weights) - 1
 for reverseHiddenLayerIndex in range(hidenLayersNumber) : # INFO : we start from hidden layer closest to output and move to the one closest from input
     perceptron.computeHiddenError(reverseHiddenLayerIndex)
+# compute new weights
+
 pass
