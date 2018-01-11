@@ -39,7 +39,7 @@ class Perceptron():
     def run(self, input, training = False):
         # initialize training activation history
         if training:
-            self.activationHistory=list()
+            self.sigmoidInputs=list()
         # initialize current layer input
         currentInput=input
         # for each layer
@@ -62,19 +62,19 @@ class Perceptron():
         # get thresholds
         layerThreshold = self.thresholds[layerIndex-1] #INFO : there is no thresholds related to input layer
         # compute & memorize sigmoid input (if training)
-        sigmoidInputs = activationInput - layerThreshold
+        sigmoidInput= activationInput - layerThreshold
         if training:
-            self.activationHistory.append(sigmoidInputs)
+            self.sigmoidInputs.append(sigmoidInput)
         # activate layer
-        activationResults = Sigmoid.value(sigmoidInputs)
+        activationResults = Sigmoid.value(sigmoidInput)
         # return
         return activationResults
-    # correct output layer : deltaS = 2 * pas * sigmoide'(E) * S * ( T - S )
+    # correct output layer : delta = 2 * pas * sigmoide'(E) * ( T - S )
     def correctOutputLayer(self,expectedOutput,actualOutput,correctionStep=1): # INFO : S=actualOutput ; T=expectedOutput ; pas=correctionStep
         # compute weights correction step
-        inputActivationLayer = self.activationHistory[-1] # E
-        delta = 2 * Sigmoid.derivative(inputActivationLayer) * (expectedOutput - actualOutput)
-        test0 = self.activationHistory[-2]
+        outputSigmoidInput = self.sigmoidInputs[-1] # E
+        delta = 2 * correctionStep * Sigmoid.derivative(outputSigmoidInput) * (expectedOutput - actualOutput)
+        test0 = self.sigmoidInputs[-2]
         test1 = delta[newaxis].T * test0
         test3 = self.weights[-1] + test1
         pass
