@@ -98,6 +98,6 @@ hidenLayersNumber = len(perceptron.weights)
 for reverseHiddenLayerIndex in range(1,hidenLayersNumber)  : # INFO : we start from hidden layer closest to output and move to the one closest from input
     perceptron.computeHiddenError(reverseHiddenLayerIndex)
 # compute new weights
-for layerIndex in range(1,hidenLayersNumber+1) : # INFO : we go over hidden & output layer
+for layerIndex in range(1,hidenLayersNumber+1) : # INFO : we start from hidden layer closest to input and move to the output one
     pass
 pass
