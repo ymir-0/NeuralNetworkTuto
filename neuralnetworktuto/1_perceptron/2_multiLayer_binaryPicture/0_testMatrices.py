@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 # imports
-from numpy import exp
+from numpy import exp, transpose , diag, newaxis
 from numpy.random import rand
 # sigmoid
-def sigmoid(x,uncertainty=0.125):
-    result = 1 / (1 + exp(-uncertainty*x))
-    return result
+# TODO : remove static to set a specific uncenterty for each sigmoïd
+class Sigmoid():
+    uncertainty = 0.125
+    #staticmethod
+    def value(x):
+        result = 1 / (1 + exp(-Sigmoid.uncertainty*x))
+        return result
+    #staticmethod
+    def derivative(x):
+        value=Sigmoid.value(x)
+        result = Sigmoid.uncertainty*value/(value-1)
+        return result
+    pass
 # perceptron
 class Perceptron():
     def __init__(self,layerHeights,weightLimit=0.125,thresholdLimit=0.125):
@@ -26,17 +36,21 @@ class Perceptron():
             pass
         pass
     pass
-    def run(self, input):
+    def run(self, input, training = False):
+        # initialize training activation history
+        if training:
+            self.activationHistory=list()
         # initialize current layer input
         currentInput=input
         # for each layer
         for layerIndex in range(1, len(self.weights)+1): #INFO : there is no weights/thresholds related to input layer
             # get activation inputs
-            currentActivationInputs = self.activationInputs(currentInput, layerIndex)
-            currentActivationResults = self.activationResults(currentActivationInputs, layerIndex)
-            currentInput = currentActivationResults
+            currentActivationInput = self.activationInputs(currentInput, layerIndex)
+            currentActivationOutput = self.activationResults(currentActivationInput, layerIndex, training)
+            # next layer input is current layer outpout
+            currentInput = currentActivationOutput
             pass
-        result = currentInput
+        result = currentActivationOutput
         return result
     # activation input : A = sum(W*I)
     def activationInputs(self, input, layerIndex):
@@ -44,18 +58,36 @@ class Perceptron():
         activationInputs = layerWeights.dot(input)
         return activationInputs
     # activation result : O = sigmoïd(A-threshold)
-    def activationResults(self, activationInputs, layerIndex):
+    def activationResults(self, activationInput, layerIndex, training = False):
+        # get thresholds
         layerThreshold = self.thresholds[layerIndex-1] #INFO : there is no thresholds related to input layer
-        sigmoidInputs = activationInputs - layerThreshold
-        activationResults = sigmoid(sigmoidInputs)
+        # compute & memorize sigmoid input (if training)
+        sigmoidInputs = activationInput - layerThreshold
+        if training:
+            self.activationHistory.append(sigmoidInputs)
+        # activate layer
+        activationResults = Sigmoid.value(sigmoidInputs)
+        # return
         return activationResults
+    # correct output layer : deltaS = 2 * pas * sigmoide'(E) * S * ( T - S )
+    def correctOutputLayer(self,expectedOutput,actualOutput,correctionStep=1): # INFO : S=actualOutput ; T=expectedOutput ; pas=correctionStep
+        # compute weights correction step
+        inputActivationLayer = self.activationHistory[-1] # E
+        delta = 2 * Sigmoid.derivative(inputActivationLayer) * (expectedOutput - actualOutput)
+        test0 = self.activationHistory[-2]
+        test1 = delta[newaxis].T * test0
+        test3 = self.weights[-1] + test1
+        pass
     pass
 pass
 # perceptron initialization
 layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
-# perceptron run
-inputs=tuple([round(rand()) for _ in range(layerHeights[0])])
-result = perceptron.run(inputs)
+# perceptron run for training
+input=tuple([round(rand()) for _ in range(layerHeights[0])])
+result = perceptron.run(input, True)
 print("result="+str(result))
 pass
+# correct output layer
+expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
+perceptron.correctOutputLayer(expectedOutput,result)
