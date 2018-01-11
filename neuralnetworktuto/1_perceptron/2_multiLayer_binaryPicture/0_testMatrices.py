@@ -43,9 +43,6 @@ class Perceptron():
         for layerIndex in range(1, len(self.weights)+1): #INFO : there is no weights related to input layer
             # get activation inputs
             layerOutput = self.activateLayer(currentInput, layerIndex, True)
-            # compute & memorize sigmoid input (if training)
-            if training:
-                self.outputs.append(layerOutput)
             # next layer input is current layer outpout
             currentInput = layerOutput
             pass
@@ -54,12 +51,14 @@ class Perceptron():
     # activation input : A = sum(W*I)
     def activateLayer(self, input, layerIndex, training = False):
         layerWeights = self.weights[layerIndex-1] #INFO : there is no weights related to input layer
-        # compute & memorize sigmoid input (if training)
+        # compute sigmoid input
         aggregation = layerWeights.dot(input)
-        if training:
-            self.aggregations.append(aggregation)
         # activate layer
         output = Sigmoid.value(aggregation)
+        # memorize (if training)
+        if training:
+            self.aggregations.append(aggregation)
+            self.outputs.append(output)
         # return
         return output
     # correct output layer : error = sigmoide'(E) * ( T - S )
