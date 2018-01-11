@@ -87,7 +87,7 @@ result = perceptron.run(input, True)
 print("result="+str(result))
 pass
 # compute output layer
-perceptron.errors=[None]*(len(layerHeights)-1)
+perceptron.errors=[None]*(len(perceptron.aggregations))
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
 perceptron.computeOutputError(expectedOutput)
 # compute hidden layer just before output
