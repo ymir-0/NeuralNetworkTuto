@@ -66,7 +66,7 @@ class Perceptron():
         actualOutput = self.outputs[-1]
         aggregation = self.aggregations[-1]
         error = Sigmoid.derivative(aggregation) * (expectedOutput - actualOutput)
-        perceptron.errors.append(error)
+        self.errors[-1] = error
         pass
     # correct output layer : error = sigmoide'(aggregation) * sum(weights*previous_error)
     def computeHiddenError(self,layerIndex):
@@ -74,7 +74,7 @@ class Perceptron():
         weights = self.weights[layerIndex+1] #INFO : there is no weights related to input layer
         previousError = perceptron.errors[layerIndex+1] #INFO : there is no error related to input layer
         error = Sigmoid.derivative(aggregation) * weights.T.dot(previousError)
-        perceptron.errors.append(error)
+        self.errors[layerIndex] = error
         pass
     pass
 pass
@@ -87,11 +87,11 @@ result = perceptron.run(input, True)
 print("result="+str(result))
 pass
 # compute output layer
-perceptron.errors=list()
+perceptron.errors=[None]*(len(layerHeights)-1)
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
 perceptron.computeOutputError(expectedOutput)
 # compute hidden layer just before output
 perceptron.computeHiddenError(-2)
 # compute hidden layers ...
-#perceptron.computeHiddenError(-3)
-#perceptron.computeHiddenError(-4)
+perceptron.computeHiddenError(-3)
+pass
