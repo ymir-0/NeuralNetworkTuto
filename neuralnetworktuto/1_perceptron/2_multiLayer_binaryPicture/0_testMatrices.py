@@ -99,11 +99,11 @@ for reverseHiddenLayerIndex in range(1,hidenLayersNumber)  : # INFO : we start f
     perceptron.computeHiddenError(reverseHiddenLayerIndex)
 # compute new weights
 newWeights=list()
-for layerIndex in range(1,hidenLayersNumber+1) : # INFO : we start from hidden layer closest to input and move to the output one
-    currentLayerWeights = perceptron.weights[layerIndex-1]  # INFO : there is no weights related to input layer
+for layerIndex in range(0,hidenLayersNumber) : # INFO : we start from hidden layer closest to input and move to the output one
+    currentLayerWeights = perceptron.weights[layerIndex]  # INFO : there is no weights related to input layer
     lambda_ = 1
-    error = perceptron.errors[layerIndex-1]
-    input = perceptron.inputs[layerIndex-1]
+    error = perceptron.errors[layerIndex]
+    input = perceptron.inputs[layerIndex]
     newLayerWeights = currentLayerWeights + lambda_*error[newaxis].T*input
     newWeights.append(newLayerWeights)
     pass
