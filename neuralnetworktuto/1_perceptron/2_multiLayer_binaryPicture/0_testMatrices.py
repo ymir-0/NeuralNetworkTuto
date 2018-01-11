@@ -70,11 +70,12 @@ class Perceptron():
         pass
     # correct output layer : error = sigmoide'(aggregation) * sum(weights*previous_error)
     def computeHiddenError(self,layerIndex):
-        aggregation = self.aggregations[layerIndex]
-        weights = self.weights[layerIndex+1] #INFO : there is no weights related to input layer
-        previousError = perceptron.errors[layerIndex+1] #INFO : there is no error related to input layer
+        # INFO : we start from hidden layer closest to output and move to the one closest from input
+        aggregation = self.aggregations[-(layerIndex+2)]
+        weights = self.weights[-(layerIndex+1)] #INFO : there is no weights related to input layer
+        previousError = self.errors[-(layerIndex+1)] #INFO : there is no error related to input layer
         error = Sigmoid.derivative(aggregation) * weights.T.dot(previousError)
-        self.errors[layerIndex] = error
+        self.errors[-(layerIndex+2)] = error
         pass
     pass
 pass
@@ -86,12 +87,12 @@ input=tuple([round(rand()) for _ in range(layerHeights[0])])
 result = perceptron.run(input, True)
 print("result="+str(result))
 pass
-# compute output layer
+# compute output layer error
 perceptron.errors=[None]*(len(perceptron.aggregations))
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
 perceptron.computeOutputError(expectedOutput)
-# compute hidden layer just before output
-perceptron.computeHiddenError(-2)
-# compute hidden layers ...
-perceptron.computeHiddenError(-3)
+# compute hidden layer errors
+hidenLayersNumber = len(perceptron.weights) - 1
+for reverseHiddenLayerIndex in range(hidenLayersNumber) : # INFO : we start from hidden layer closest to output and move to the one closest from input
+    perceptron.computeHiddenError(reverseHiddenLayerIndex)
 pass
