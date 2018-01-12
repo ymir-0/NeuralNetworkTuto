@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # imports
-from numpy import exp, transpose , diag, newaxis, array
+from numpy import exp, newaxis
 from numpy.random import rand
 # sigmoid
-# TODO : remove static to set a specific uncenterty for each sigmoïd
 class Sigmoid():
-    uncertainty = 0.125
+    # TODO : remove static to set a specific uncertainty for each sigmoïd
+    uncertainty = 1e-2
     #staticmethod
     def value(x):
         result = 1 / (1 + exp(-Sigmoid.uncertainty*x))
@@ -24,18 +24,21 @@ class Perceptron():
         # for each layer
         # INFO : there is no weights related to input layer
         for layerIndex in range(1,len(layerHeights)):
-            # get heights for current & previous layers
-            currentHeight = layerHeights[layerIndex]
-            previousHeight = layerHeights[layerIndex-1]
-            # randomize layer weights
-            layerWeights=(rand(currentHeight,previousHeight)-.5)*2*weightLimit
-            self.weights.append(layerWeights)
+            self.randomizeLayer(layerIndex,weightLimit)
             pass
         pass
+    def randomizeLayer(self, layerIndex,weightLimit):
+        # get heights for current & previous layers
+        currentHeight = layerHeights[layerIndex]
+        previousHeight = layerHeights[layerIndex-1]
+        # randomize layer weights
+        layerWeights=(rand(currentHeight,previousHeight)-.5)*2*weightLimit
+        self.weights.append(layerWeights)
+        pass
     pass
-    def runAllLayers(self, input, training = False):
+    def runAllLayers(self, input):
         # initialize training activation history
-        if training:
+        if hasattr(self,"training"):
             self.inputs = list()
             self.aggregations=list()
             self.outputs = list()
@@ -45,10 +48,10 @@ class Perceptron():
         # INFO : there is no weights related to input layer
         for layerIndex in range(0, len(self.weights)):
             # next layer input is current layer outpout
-            currentInput = self.runSpecificLayer(currentInput, layerIndex, training)
+            currentInput = self.runSpecificLayer(currentInput, layerIndex)
             pass
         pass
-    def runSpecificLayer(self, input, layerIndex, training):
+    def runSpecificLayer(self, input, layerIndex):
         # get activation inputs
         # INFO : there is no weights related to input layer
         layerWeights = self.weights[layerIndex]
@@ -56,12 +59,31 @@ class Perceptron():
         aggregation = layerWeights.dot(input)
         output = Sigmoid.value(aggregation)
         # memorize (if training)
-        if training:
+        if hasattr(self,"training"):
             self.inputs.append(input)
             self.aggregations.append(aggregation)
             self.outputs.append(output)
         # next layer input is current layer outpout
         return output
+        pass
+    def executeOneTrainingStep (self,input,expectedOutput):
+        # enable training state
+        self.training = None
+        # run one training over all layers
+        perceptron.runAllLayers(input)
+        # compute output layer error
+        perceptron.errors = [None] * (len(perceptron.aggregations))
+        perceptron.computeOutputError(expectedOutput)
+        # compute hidden layer errors
+        perceptron.computeAllHiddenErrors()
+        # compute new weights
+        perceptron.computeAllNewWeights()
+        # remove training state
+        del self.training
+        del self.inputs
+        del self.aggregations
+        del self.outputs
+        self.weights=tuple(self.weights) # TODO : tuplize each sub-array
         pass
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
     def computeOutputError(self,expectedOutput):
@@ -100,21 +122,18 @@ class Perceptron():
         error = self.errors[layerIndex]
         input = self.inputs[layerIndex]
         newLayerWeights = currentLayerWeights + lambda_ * error[newaxis].T * input
-        self.weights[layerIndex] = newLayerWeights
+        self.weights[layerIndex] = newLayerWeights # TODO : add inertia https://fr.wikipedia.org/wiki/R%C3%A9tropropagation_du_gradient
     pass
 pass
 # perceptron initialization
 layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
-# perceptron run for training
+# perceptron run one training step
 input=tuple([round(rand()) for _ in range(layerHeights[0])])
-perceptron.runAllLayers(input, True)
-# compute output layer error
-perceptron.errors=[None]*(len(perceptron.aggregations))
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
-perceptron.computeOutputError(expectedOutput)
-# compute hidden layer errors
-perceptron.computeAllHiddenErrors()
-# compute new weights
-perceptron.computeAllNewWeights()
+perceptron.executeOneTrainingStep(input,expectedOutput)
+# TODO : train for a complete set
+# TODO : train until ready
+# TODO : compute statistics
+# TODO : optimize uncertainty
 pass
