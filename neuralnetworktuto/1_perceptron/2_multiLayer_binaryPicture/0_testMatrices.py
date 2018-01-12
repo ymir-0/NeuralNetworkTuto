@@ -40,18 +40,17 @@ class Perceptron():
             self.outputs = list()
         # initialize current layer input
         currentInput=input
-        # for each layer
-        for layerIndex in range(1, len(self.weights)+1): #INFO : there is no weights related to input layer
+        # for each hidden & output layer
+        for layerIndex in range(0, len(self.weights)): #INFO : there is no weights related to input layer
             # get activation inputs
             layerOutput = self.activateLayer(currentInput, layerIndex, True)
             # next layer input is current layer outpout
             currentInput = layerOutput
             pass
-        result = layerOutput
-        return result
+        pass
     # activation input : A = sum(W*I)
     def activateLayer(self, input, layerIndex, training = False):
-        layerWeights = self.weights[layerIndex-1] #INFO : there is no weights related to input layer
+        layerWeights = self.weights[layerIndex] #INFO : there is no weights related to input layer
         # compute sigmoid input
         aggregation = layerWeights.dot(input)
         # activate layer
@@ -65,6 +64,7 @@ class Perceptron():
         return output
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
     def computeOutputError(self,expectedOutput):
+        # we only work on output layer
         actualOutput = self.outputs[-1]
         aggregation = self.aggregations[-1]
         error = Sigmoid.derivative(aggregation) * (expectedOutput - actualOutput)
@@ -72,8 +72,9 @@ class Perceptron():
         pass
     # correct output layer : error = sigmoide'(aggregation) * sum(weights*previous_error)
     def computeAllHiddenErrors(self):
-        hidenLayersNumber = len(self.weights)
-        for reverseHiddenLayerIndex in range(1,hidenLayersNumber):  # INFO : we start from hidden layer closest to output and move to the one closest from input
+        # we only work on hidden layers
+        hidenOutputLayersNumber = len(self.weights)
+        for reverseHiddenLayerIndex in range(1,hidenOutputLayersNumber):  # INFO : we start from hidden layer closest to output and move to the one closest from input
             self.computeSpecificHiddenError(reverseHiddenLayerIndex)
         pass
     def computeSpecificHiddenError(self,reverseHiddenLayerIndex):
@@ -85,19 +86,18 @@ class Perceptron():
         self.errors[-reverseHiddenLayerIndex-1] = error
         pass
     def computeAllNewWeights(self):
-        hidenLayersNumber = len(self.weights)
-        newWeights = list()
-        for layerIndex in range(0,hidenLayersNumber):  # INFO : we start from hidden layer closest to input and move to the output one
+        # we only work on hidden & output layers
+        hidenOutputLayersNumber = len(self.weights)
+        for layerIndex in range(0,hidenOutputLayersNumber):  # INFO : we start from hidden layer closest to input and move to the output one
             self.computeSpecificNewLayerWeights(layerIndex)
-            pass
         pass
     def computeSpecificNewLayerWeights(self,layerIndex):
         currentLayerWeights = self.weights[layerIndex]  # INFO : there is no weights related to input layer
-        lambda_ = 1
+        lambda_ = 1 # TODO : make it a parameter
         error = self.errors[layerIndex]
         input = self.inputs[layerIndex]
         newLayerWeights = currentLayerWeights + lambda_ * error[newaxis].T * input
-        return newLayerWeights
+        self.weights[layerIndex] = newLayerWeights
     pass
 pass
 # perceptron initialization
@@ -105,9 +105,7 @@ layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
 # perceptron run for training
 input=tuple([round(rand()) for _ in range(layerHeights[0])])
-result = perceptron.run(input, True)
-print("result="+str(result))
-pass
+perceptron.run(input, True)
 # compute output layer error
 perceptron.errors=[None]*(len(perceptron.aggregations))
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
