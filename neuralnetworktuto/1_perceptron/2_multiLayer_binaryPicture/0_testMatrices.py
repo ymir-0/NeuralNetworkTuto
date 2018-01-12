@@ -80,7 +80,7 @@ class Perceptron():
             currentInput = self.runSpecificLayer(currentInput, layerIndex)
             pass
         # binary output
-        output = [ int(rand()<probability) for probability in currentInput]
+        output = [int(rand()<probability) for probability in currentInput]
         return tuple(output)
     def runSpecificLayer(self, input, layerIndex):
         # get activation inputs
@@ -118,15 +118,19 @@ class Perceptron():
         input = data[0]
         expectedOutput =  data[1]
         # run one training over all layers
-        perceptron.runAllLayers(input)
-        # compute output layer error
-        perceptron.errors = [None] * (len(perceptron.aggregations))
-        perceptron.computeOutputError(expectedOutput)
-        # compute hidden layer errors
-        perceptron.computeAllHiddenErrors()
-        # compute new weights
-        perceptron.computeAllNewWeights()
-        pass
+        actualOutput = perceptron.runAllLayers(input)
+        # check if trained & correct if needed
+        trained = actualOutput == expectedOutput
+        if not trained :
+            # compute output layer error
+            perceptron.errors = [None] * (len(perceptron.aggregations))
+            perceptron.computeOutputError(expectedOutput)
+            # compute hidden layer errors
+            perceptron.computeAllHiddenErrors()
+            # compute new weights
+            perceptron.computeAllNewWeights()
+        # return
+        return trained
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
     def computeOutputError(self,expectedOutput):
         # we only work on output layer
