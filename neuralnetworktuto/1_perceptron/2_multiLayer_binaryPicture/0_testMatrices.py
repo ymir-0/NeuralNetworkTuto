@@ -4,6 +4,7 @@ from numpy import exp, newaxis
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
 from os.path import realpath, join, exists
+from random import shuffle
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 # tools classes
@@ -98,7 +99,10 @@ class Perceptron():
         # enable training state
         self.training = None
         # try each data
-        for singleData in data:
+        randomizedData=list(data)
+        shuffle(randomizedData)
+        randomizedData=tuple(randomizedData)
+        for singleData in randomizedData:
             self.executeOneTrainingStep(singleData)
         # remove training state
         del self.training
