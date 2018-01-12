@@ -32,7 +32,7 @@ class Perceptron():
             pass
         pass
     pass
-    def run(self, input, training = False):
+    def runAllLayers(self, input, training = False):
         # initialize training activation history
         if training:
             self.inputs = list()
@@ -42,14 +42,12 @@ class Perceptron():
         currentInput=input
         # for each hidden & output layer
         for layerIndex in range(0, len(self.weights)): #INFO : there is no weights related to input layer
-            # get activation inputs
-            layerOutput = self.activateLayer(currentInput, layerIndex, True)
             # next layer input is current layer outpout
-            currentInput = layerOutput
+            currentInput = self.runSpecificLayer(currentInput, layerIndex, training)
             pass
         pass
-    # activation input : A = sum(W*I)
-    def activateLayer(self, input, layerIndex, training = False):
+    def runSpecificLayer(self, input, layerIndex, training):
+        # get activation inputs
         layerWeights = self.weights[layerIndex] #INFO : there is no weights related to input layer
         # compute sigmoid input
         aggregation = layerWeights.dot(input)
@@ -60,8 +58,10 @@ class Perceptron():
             self.inputs.append(input)
             self.aggregations.append(aggregation)
             self.outputs.append(output)
-        # return
+        # next layer input is current layer outpout
         return output
+        pass
+    # activation input : A = sum(W*I)
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
     def computeOutputError(self,expectedOutput):
         # we only work on output layer
@@ -105,7 +105,7 @@ layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
 # perceptron run for training
 input=tuple([round(rand()) for _ in range(layerHeights[0])])
-perceptron.run(input, True)
+perceptron.runAllLayers(input, True)
 # compute output layer error
 perceptron.errors=[None]*(len(perceptron.aggregations))
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
