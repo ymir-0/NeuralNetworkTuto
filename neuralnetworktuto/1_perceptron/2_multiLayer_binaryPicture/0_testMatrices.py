@@ -122,16 +122,22 @@ class Perceptron():
         # check if trained & correct if needed
         trained = actualOutput == expectedOutput
         if not trained :
-            # compute output layer error
-            perceptron.errors = [None] * (len(perceptron.aggregations))
-            perceptron.computeOutputError(expectedOutput)
-            # compute hidden layer errors
-            perceptron.computeAllHiddenErrors()
+            # compute all errors
+            perceptron.retropropagateErrors(expectedOutput)
             # compute new weights
             perceptron.computeAllNewWeights()
         # return
         return trained
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
+    def retropropagateErrors(self, expectedOutput):
+        # INFO : there is no error on input layer
+        # initialize errors retro-propagation
+        perceptron.errors = [None] * (len(perceptron.aggregations))
+        # compute output layer error
+        perceptron.computeOutputError(expectedOutput)
+        # compute hidden layer errors
+        perceptron.computeAllHiddenErrors()
+        pass
     def computeOutputError(self,expectedOutput):
         # we only work on output layer
         actualOutput = self.outputs[-1]
