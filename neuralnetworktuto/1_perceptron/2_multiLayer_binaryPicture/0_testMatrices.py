@@ -22,7 +22,8 @@ class Perceptron():
         # initialize attributs
         self.weights=list()
         # for each layer
-        for layerIndex in range(1,len(layerHeights)): #INFO : there is no weights related to input layer
+        # INFO : there is no weights related to input layer
+        for layerIndex in range(1,len(layerHeights)):
             # get heights for current & previous layers
             currentHeight = layerHeights[layerIndex]
             previousHeight = layerHeights[layerIndex-1]
@@ -41,17 +42,18 @@ class Perceptron():
         # initialize current layer input
         currentInput=input
         # for each hidden & output layer
-        for layerIndex in range(0, len(self.weights)): #INFO : there is no weights related to input layer
+        # INFO : there is no weights related to input layer
+        for layerIndex in range(0, len(self.weights)):
             # next layer input is current layer outpout
             currentInput = self.runSpecificLayer(currentInput, layerIndex, training)
             pass
         pass
     def runSpecificLayer(self, input, layerIndex, training):
         # get activation inputs
-        layerWeights = self.weights[layerIndex] #INFO : there is no weights related to input layer
-        # compute sigmoid input
+        # INFO : there is no weights related to input layer
+        layerWeights = self.weights[layerIndex]
+        # compute sigmoid
         aggregation = layerWeights.dot(input)
-        # activate layer
         output = Sigmoid.value(aggregation)
         # memorize (if training)
         if training:
@@ -61,7 +63,6 @@ class Perceptron():
         # next layer input is current layer outpout
         return output
         pass
-    # activation input : A = sum(W*I)
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
     def computeOutputError(self,expectedOutput):
         # we only work on output layer
@@ -73,26 +74,28 @@ class Perceptron():
     # correct output layer : error = sigmoide'(aggregation) * sum(weights*previous_error)
     def computeAllHiddenErrors(self):
         # we only work on hidden layers
-        hidenOutputLayersNumber = len(self.weights)
-        for reverseHiddenLayerIndex in range(1,hidenOutputLayersNumber):  # INFO : we start from hidden layer closest to output and move to the one closest from input
+        # INFO : we start from hidden layer closest to output and move to the one closest from input
+        for reverseHiddenLayerIndex in range(1,len(self.weights)):
             self.computeSpecificHiddenError(reverseHiddenLayerIndex)
         pass
     def computeSpecificHiddenError(self,reverseHiddenLayerIndex):
         # INFO : we start from hidden layer closest to output and move to the one closest from input
         aggregation = self.aggregations[-reverseHiddenLayerIndex-1]
-        layerWeights = self.weights[-reverseHiddenLayerIndex] #INFO : there is no weights related to input layer
-        previousError = self.errors[-reverseHiddenLayerIndex] #INFO : there is no error related to input layer
+        # INFO : there is no weights nor error related to input layer
+        layerWeights = self.weights[-reverseHiddenLayerIndex]
+        previousError = self.errors[-reverseHiddenLayerIndex]
         error = Sigmoid.derivative(aggregation) * layerWeights.T.dot(previousError)
         self.errors[-reverseHiddenLayerIndex-1] = error
         pass
     def computeAllNewWeights(self):
         # we only work on hidden & output layers
-        hidenOutputLayersNumber = len(self.weights)
-        for layerIndex in range(0,hidenOutputLayersNumber):  # INFO : we start from hidden layer closest to input and move to the output one
+        # INFO : we start from hidden layer closest to input and move to the output one
+        for layerIndex in range(0,len(self.weights)):
             self.computeSpecificNewLayerWeights(layerIndex)
         pass
     def computeSpecificNewLayerWeights(self,layerIndex):
-        currentLayerWeights = self.weights[layerIndex]  # INFO : there is no weights related to input layer
+        # INFO : there is no weights related to input layer
+        currentLayerWeights = self.weights[layerIndex]
         lambda_ = 1 # TODO : make it a parameter
         error = self.errors[layerIndex]
         input = self.inputs[layerIndex]
