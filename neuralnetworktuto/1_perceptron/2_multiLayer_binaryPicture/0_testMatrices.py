@@ -97,46 +97,66 @@ class Perceptron():
         # next layer input is current layer outpout
         return output
         pass
-    def executeCompleteTrainingStep (self,data):
+    def train(self,data):
         # enable training state
         self.training = None
-        # try each data
-        randomizedData=list(data)
-        shuffle(randomizedData)
-        randomizedData=tuple(randomizedData)
-        for singleData in randomizedData:
-            self.executeOneTrainingStep(singleData)
+        self.trainingEvolution=list()
+        # assume perceptron is not trained
+        trained = False
+        # train while necessary
+        while not trained:
+            trained = self.executeCompleteTrainingStep(data)
         # remove training state
         del self.training
+        del self.trainingEvolution
         del self.inputs
         del self.aggregations
         del self.outputs
         self.weights=tuple(self.weights) # TODO : tuplize each sub-array
         pass
+    def executeCompleteTrainingStep (self,data):
+        # assume perceptron is trained
+        trained = True
+        errorCounter = 0
+        # shuffle data
+        randomizedData=list(data)
+        shuffle(randomizedData)
+        randomizedData=tuple(randomizedData)
+        # try each shuffled data
+        for singleData in randomizedData:
+            currentTrained = self.executeOneTrainingStep(singleData)
+            # manage training results
+            if not currentTrained:
+                errorCounter = errorCounter + 1
+                trained = False
+        # store training evolution
+        self.trainingEvolution.append(errorCounter)
+        # return
+        return trained
     def executeOneTrainingStep (self,data):
         # parse training data
         input = data[0]
         expectedOutput =  data[1]
         # run one training over all layers
-        actualOutput = perceptron.runAllLayers(input)
+        actualOutput = self.runAllLayers(input)
         # check if trained & correct if needed
         trained = actualOutput == expectedOutput
         if not trained :
             # compute all errors
-            perceptron.retropropagateErrors(expectedOutput)
+            self.retropropagateErrors(expectedOutput)
             # compute new weights
-            perceptron.computeAllNewWeights()
+            self.computeAllNewWeights()
         # return
         return trained
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
     def retropropagateErrors(self, expectedOutput):
         # INFO : there is no error on input layer
         # initialize errors retro-propagation
-        perceptron.errors = [None] * (len(perceptron.aggregations))
+        self.errors = [None] * (len(self.aggregations))
         # compute output layer error
-        perceptron.computeOutputError(expectedOutput)
+        self.computeOutputError(expectedOutput)
         # compute hidden layer errors
-        perceptron.computeAllHiddenErrors()
+        self.computeAllHiddenErrors()
         pass
     def computeOutputError(self,expectedOutput):
         # we only work on output layer
@@ -170,7 +190,7 @@ class Perceptron():
     def computeSpecificNewLayerWeights(self,layerIndex):
         # INFO : there is no weights related to input layer
         currentLayerWeights = self.weights[layerIndex]
-        lambda_ = 1 # TODO : make it a parameter
+        lambda_ = .9 # TODO : make it a parameter
         error = self.errors[layerIndex]
         input = self.inputs[layerIndex]
         newLayerWeights = currentLayerWeights + lambda_ * error[newaxis].T * input
@@ -182,7 +202,7 @@ layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
 # train perceptron
 trainings = readTraining()
-perceptron.executeCompleteTrainingStep (trainings)
+perceptron.train(trainings)
 # TODO : train until ready
 # TODO : compute statistics
 # TODO : optimize uncertainty
