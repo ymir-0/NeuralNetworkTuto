@@ -2,6 +2,34 @@
 # imports
 from numpy import exp, newaxis
 from numpy.random import rand
+from os import linesep, sep, listdir, makedirs
+from os.path import realpath, join, exists
+# contants
+CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
+# tools classes
+def readTraining():
+    inputDirectory = join(CURRENT_DIRECTORY,"input")
+    # initialize data
+    trainings = list()
+    # for each data file
+    for dataFileShortName in listdir(inputDirectory):
+        # contruct expected output
+        expectedOutput = [0]*10
+        digit = int(dataFileShortName.split(".")[0])
+        expectedOutput[digit] = 1
+        # read it
+        dataFileFullName = join(inputDirectory, dataFileShortName)
+        dataFile = open(dataFileFullName)
+        rawData = dataFile.read()
+        dataFile.close()
+        # construct image
+        dataPivot = rawData.replace(linesep, "")
+        image = [int(pixel) for pixel in dataPivot]
+        # fill data
+        training=((tuple(image),tuple(expectedOutput)))
+        trainings.append(training)
+    # return
+    return tuple(trainings)
 # sigmoid
 class Sigmoid():
     # TODO : remove static to set a specific uncertainty for each sigmoïd
@@ -128,6 +156,8 @@ pass
 # perceptron initialization
 layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
+# train perceptron
+trainings = readTraining()
 # perceptron run one training step
 input=tuple([round(rand()) for _ in range(layerHeights[0])])
 expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
