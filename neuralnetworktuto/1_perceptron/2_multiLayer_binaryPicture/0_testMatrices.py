@@ -94,9 +94,23 @@ class Perceptron():
         # next layer input is current layer outpout
         return output
         pass
-    def executeOneTrainingStep (self,input,expectedOutput):
+    def executeCompleteTrainingStep (self,data):
         # enable training state
         self.training = None
+        # try each data
+        for singleData in data:
+            self.executeOneTrainingStep(singleData)
+        # remove training state
+        del self.training
+        del self.inputs
+        del self.aggregations
+        del self.outputs
+        self.weights=tuple(self.weights) # TODO : tuplize each sub-array
+        pass
+    def executeOneTrainingStep (self,data):
+        # parse training data
+        input = data[0]
+        expectedOutput =  data[1]
         # run one training over all layers
         perceptron.runAllLayers(input)
         # compute output layer error
@@ -106,12 +120,6 @@ class Perceptron():
         perceptron.computeAllHiddenErrors()
         # compute new weights
         perceptron.computeAllNewWeights()
-        # remove training state
-        del self.training
-        del self.inputs
-        del self.aggregations
-        del self.outputs
-        self.weights=tuple(self.weights) # TODO : tuplize each sub-array
         pass
     # correct output layer : error = sigmoide'(aggregation) * ( expected_output - actual_output )
     def computeOutputError(self,expectedOutput):
@@ -158,10 +166,7 @@ layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
 # train perceptron
 trainings = readTraining()
-# perceptron run one training step
-input=tuple([round(rand()) for _ in range(layerHeights[0])])
-expectedOutput = tuple([round(rand()) for _ in range(layerHeights[-1])])
-perceptron.executeOneTrainingStep(input,expectedOutput)
+perceptron.executeCompleteTrainingStep (trainings)
 # TODO : train for a complete set
 # TODO : train until ready
 # TODO : compute statistics
