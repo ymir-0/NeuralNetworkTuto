@@ -79,7 +79,9 @@ class Perceptron():
             # next layer input is current layer outpout
             currentInput = self.runSpecificLayer(currentInput, layerIndex)
             pass
-        pass
+        # binary output
+        output = [ int(rand()<probability) for probability in currentInput]
+        return tuple(output)
     def runSpecificLayer(self, input, layerIndex):
         # get activation inputs
         # INFO : there is no weights related to input layer
@@ -171,7 +173,6 @@ perceptron = Perceptron(layerHeights)
 # train perceptron
 trainings = readTraining()
 perceptron.executeCompleteTrainingStep (trainings)
-# TODO : train for a complete set
 # TODO : train until ready
 # TODO : compute statistics
 # TODO : optimize uncertainty
