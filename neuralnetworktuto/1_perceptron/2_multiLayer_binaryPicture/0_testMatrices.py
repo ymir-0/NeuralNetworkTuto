@@ -97,15 +97,17 @@ class Perceptron():
         # next layer input is current layer outpout
         return output
         pass
-    def train(self,data):
+    def train(self,data,loopLimit=1e3):
         # enable training state
         self.training = None
         self.trainingEvolution=list()
         # assume perceptron is not trained
         trained = False
         # train while necessary
-        while not trained:
+        loopCounter = 0
+        while not (trained or loopCounter==loopLimit):
             trained = self.executeCompleteTrainingStep(data)
+            loopCounter = loopCounter + 1
         # remove training state
         del self.training
         del self.trainingEvolution
