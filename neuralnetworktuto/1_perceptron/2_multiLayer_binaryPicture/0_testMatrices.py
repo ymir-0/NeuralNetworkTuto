@@ -5,8 +5,10 @@ from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
 from os.path import realpath, join, exists
 from random import shuffle
+from shutil import rmtree
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
+OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # tools classes
 def readTraining():
     inputDirectory = join(CURRENT_DIRECTORY,"input")
@@ -31,6 +33,16 @@ def readTraining():
         trainings.append(training)
     # return
     return tuple(trainings)
+class Logger():
+    completeLog=""
+    @staticmethod
+    def append(level, message):
+        Logger.completeLog=Logger.completeLog+" "*(4*level)+message+linesep
+    @staticmethod
+    def flush():
+        logFile = open(join(OUTPUT_DIRECTORY,"training.log"),"wt")
+        logFile.write(Logger.completeLog)
+        logFile.close()
 # sigmoid
 class Sigmoid():
     # TODO : remove static to set a specific uncertainty for each sigmoïd
@@ -48,6 +60,7 @@ class Sigmoid():
 # perceptron
 class Perceptron():
     def __init__(self,layerHeights,weightLimit=0.125):
+        Logger.append(0, "initializing perceptron with range : " + str(weightLimit))
         # initialize attributs
         self.weights=list()
         # for each layer
@@ -55,6 +68,7 @@ class Perceptron():
         for layerIndex in range(1,len(layerHeights)):
             self.randomizeLayer(layerIndex,weightLimit)
             pass
+        Logger.append(0, "initialized perceptron" + linesep + str(self))
         pass
     def randomizeLayer(self, layerIndex,weightLimit):
         # get heights for current & previous layers
@@ -62,6 +76,7 @@ class Perceptron():
         previousHeight = layerHeights[layerIndex-1]
         # randomize layer weights
         layerWeights=(rand(currentHeight,previousHeight)-.5)*2*weightLimit
+        Logger.append(1, "initialized layer weights #" + str(layerIndex) + linesep + str(layerWeights))
         self.weights.append(layerWeights)
         pass
     pass
@@ -98,6 +113,7 @@ class Perceptron():
         return output
         pass
     def train(self,data,loopLimit=1e3):
+        Logger.append(0, "training with " + str(loopLimit) + " loops and data" + linesep + str(data))
         # enable training state
         self.training = None
         self.trainingEvolution=list()
@@ -115,6 +131,11 @@ class Perceptron():
         del self.aggregations
         del self.outputs
         self.weights=tuple(self.weights) # TODO : tuplize each sub-array
+        Logger.append(0, "final perceptron" + linesep + str(self))
+        if trained:
+            Logger.append(0, "completely trained")
+        else:
+            Logger.append(0, "NOT completely trained")
         pass
     def executeCompleteTrainingStep (self,data):
         # assume perceptron is trained
@@ -192,19 +213,28 @@ class Perceptron():
     def computeSpecificNewLayerWeights(self,layerIndex):
         # INFO : there is no weights related to input layer
         currentLayerWeights = self.weights[layerIndex]
-        lambda_ = .9 # TODO : make it a parameter
+        lambda_ = .125 # TODO : make it a parameter
         error = self.errors[layerIndex]
         input = self.inputs[layerIndex]
         newLayerWeights = currentLayerWeights + lambda_ * error[newaxis].T * input
         self.weights[layerIndex] = newLayerWeights # TODO : add inertia https://fr.wikipedia.org/wiki/R%C3%A9tropropagation_du_gradient
+    def __str__(self):
+        return str(self.weights)
+        pass
     pass
 pass
+# empty output folder
+if exists(OUTPUT_DIRECTORY):
+    rmtree(OUTPUT_DIRECTORY)
+makedirs(OUTPUT_DIRECTORY)
 # perceptron initialization
 layerHeights=((30,24,17,10))
 perceptron = Perceptron(layerHeights)
 # train perceptron
 trainings = readTraining()
 perceptron.train(trainings)
+# flush logs
+Logger.flush()
 # TODO : train until ready
 # TODO : compute statistics
 # TODO : optimize uncertainty
