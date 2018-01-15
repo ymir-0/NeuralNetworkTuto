@@ -24,6 +24,13 @@ class Logger():
         logFile = open(join(OUTPUT_DIRECTORY,"training.log"),"wt")
         logFile.write(Logger.completeLog)
         logFile.close()
+# sigmoid
+def sigmoid(input,uncertainty=1,dilatation=1,offset=0):
+    # INFO : bias is already included in previous aggregation step
+    # TODO : set uncertainty/dilatation/offset for a layer
+    output = dilatation / (1 + exp(-uncertainty*input)) + offset
+    return output
+    pass
 # perceptron
 class Perceptron():
     def __init__(self,layerHeights,weights=None,biases=None,weightLimit=0.125,biasLimit=1):
@@ -86,15 +93,21 @@ weights=list()
 weights.append(zeros((2,2)))
 weights.append(zeros((2,2)))
 weights[0][0][0]=0.15
-weights[0][0][1]=0.25
-weights[0][1][0]=0.2
+weights[0][0][1]=0.2
+weights[0][1][0]=0.25
 weights[0][1][1]=0.3
 weights[1][0][0]=0.4
-weights[1][0][1]=0.5
-weights[1][1][0]=0.45
+weights[1][0][1]=0.45
+weights[1][1][0]=0.5
 weights[1][1][1]=0.55
 biases=((0.35,0.6))
 perceptron = Perceptron(layerHeights,weights,biases)
+# compute forward pass
+input = ((0.05,0.1))
+headerInput = weights[0].dot(input)+biases[0]
+headerOutput =  sigmoid(headerInput)
+outputInput = weights[1].dot(headerOutput)+biases[1]
+outputOutput =  sigmoid(outputInput)
 # flush logs
 Logger.flush()
 pass
