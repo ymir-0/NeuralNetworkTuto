@@ -15,9 +15,10 @@ def readTraining():
     # initialize data
     trainings = list()
     # for each data file
-    for dataFileShortName in listdir(inputDirectory):
+    files = listdir(inputDirectory)
+    for dataFileShortName in files:
         # contruct expected output
-        expectedOutput = [0]*10
+        expectedOutput = [0]*len(files)
         digit = int(dataFileShortName.split(".")[0])
         expectedOutput[digit] = 1
         # read it
@@ -133,7 +134,7 @@ class Perceptron():
         self.weights=tuple(self.weights) # TODO : tuplize each sub-array
         Logger.append(0, "final perceptron" + linesep + str(self))
         if trained:
-            Logger.append(0, "completely trained")
+            Logger.append(0, "completely trained in # loops : " + str(loopCounter))
         else:
             Logger.append(0, "NOT completely trained")
         pass
@@ -228,7 +229,7 @@ if exists(OUTPUT_DIRECTORY):
     rmtree(OUTPUT_DIRECTORY)
 makedirs(OUTPUT_DIRECTORY)
 # perceptron initialization
-layerHeights=((30,24,17,10))
+layerHeights=((30,1,1))
 perceptron = Perceptron(layerHeights)
 # train perceptron
 trainings = readTraining()
