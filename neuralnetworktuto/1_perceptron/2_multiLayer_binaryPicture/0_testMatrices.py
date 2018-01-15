@@ -229,7 +229,7 @@ if exists(OUTPUT_DIRECTORY):
     rmtree(OUTPUT_DIRECTORY)
 makedirs(OUTPUT_DIRECTORY)
 # perceptron initialization
-layerHeights=((30,1,1))
+layerHeights=((30,3,3))
 perceptron = Perceptron(layerHeights)
 # train perceptron
 trainings = readTraining()
