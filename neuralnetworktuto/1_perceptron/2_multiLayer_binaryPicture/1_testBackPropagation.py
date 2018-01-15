@@ -4,7 +4,7 @@
  - https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
 '''
 # imports
-from numpy import exp, newaxis
+from numpy import exp, newaxis, zeros
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
 from os.path import realpath, join, exists
@@ -82,7 +82,19 @@ if exists(OUTPUT_DIRECTORY):
 makedirs(OUTPUT_DIRECTORY)
 # perceptron initialization
 layerHeights=((2,2,2))
-perceptron = Perceptron(layerHeights)
+weights=list()
+weights.append(zeros((2,2)))
+weights.append(zeros((2,2)))
+weights[0][0][0]=0.15
+weights[0][0][1]=0.25
+weights[0][1][0]=0.2
+weights[0][1][1]=0.3
+weights[1][0][0]=0.4
+weights[1][0][1]=0.5
+weights[1][1][0]=0.45
+weights[1][1][1]=0.55
+biases=((0.35,0.6))
+perceptron = Perceptron(layerHeights,weights,biases)
 # flush logs
 Logger.flush()
 pass
