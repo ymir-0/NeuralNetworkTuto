@@ -5,11 +5,14 @@
 '''
 # imports
 from numpy import exp, newaxis, zeros
+from numpy.ma import size
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
 from os.path import realpath, join, exists
 from random import shuffle
 from shutil import rmtree
+from collections import Iterable
+from enum import Enum, unique
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
@@ -32,54 +35,105 @@ def sigmoid(input,uncertainty=1,dilatation=1,offset=0):
     return output
     pass
 # perceptron
+@unique
+class PerceptronParameters(Enum):
+    WEIGHTS="weights"
+    LAYER_HEIGHTS="layerHeights"
+    WEIGHT_LIMIT="weightLimit"
+@unique
+class WeightParameters(Enum):
+    WEIGHTS="weights"
+    CURRENT_HEIGHT="currentHeight"
+    PREVIOUS_HEIGHT="previousHeight"
+    WEIGHT_LIMIT="weightLimit"
+@unique
+class MetaParameters(Enum):
+    BIASES="biases"
+    UNCERTAINTIES="uncertainties"
+    DILATATIONS="dilatations"
+    OFFSETS="offsets"
+    @staticmethod
+    def enumerate():
+        parameters = [parameter.value for parameter in MetaParameters]
+        return tuple(parameters)
+    @staticmethod
+    def defaultValues():
+        defaultValues = {
+            "biases" : 0,
+            "uncertainties" : 1,
+            "dilatations" : 1,
+            "offsets" : 0,
+        }
+        return defaultValues
+class Layer():
+    def __init__(self,**parameters):
+        # TODO : check extra parameters dimensions consistancy if enumerates (must match layer height)
+        # initialize weights
+        weights=parameters.get(WeightParameters.WEIGHTS.value, None)
+        # randomize weights if necessary
+        if weights is None:
+            currentHeight = parameters.get(WeightParameters.CURRENT_HEIGHT.value)
+            previousHeight = parameters.get(WeightParameters.PREVIOUS_HEIGHT.value)
+            weightLimit = parameters.get(WeightParameters.WEIGHT_LIMIT.value)
+            weights = (rand(currentHeight, previousHeight) - .5) * 2 * weightLimit
+        self.weights = weights
+        height = size(self.weights,0)
+        # initialize meta parameters
+        metaParameters = MetaParameters.defaultValues()
+        # initialize meta parameters
+        for name in MetaParameters.enumerate():
+            value = metaParameters[name]
+            if not isinstance(value, Iterable):
+                metaParameters[name] = [value] * height
+            metaParameters[name] = tuple(metaParameters[name])
+        # set meta parameters has enumerates
+        for name , value in metaParameters.items():
+            setattr(self, name , value)
+        pass
 class Perceptron():
-    def __init__(self,layerHeights,weights=None,biases=None,weightLimit=0.125,biasLimit=1):
-        # TODO : check dimensions consistancy if not random
-        # TODO : set global weight/biais/uncertainty/dilatation/offset for all neurons or make it specific for each layer
-        Logger.append(0, "initializing perceptron from layer heights : " + str(layerHeights))
-        # initialize attributs
-        hiddenLayerNumbers=len(layerHeights)-1
-        # initialize weights...
-        # ... from input
-        if weights is not None:
-            Logger.append(0, "from given weights : " + str(weights))
-            self.weights = weights
+    # TODO : add methods to manipulate perceptron : remove weight between 2 neurons, remove specific neuron, edit specific neuron meta parameter
+    def __init__(self,**parameters):
+        # layerHeights,weights=None,weightLimit=0.125,biasLimit=1,uncertainties=1,dilatations=1,offsets=0
+        # TODO : check weights dimensions consistancy if planned (not random) : at least 2 layers (input/output) and matrices dimensions
+        # TODO : check extra parameters dimensions consistancy if enumerates
+        # initialize layers
+        layers = list()
+        # test planned weights
+        plannedWeights = WeightParameters.WEIGHTS.value in parameters
+        # set layer number
+        # INFO : we do not create the input layer because it will be the input vector to forward pass with
+        layerNumber = len(parameters[WeightParameters.WEIGHTS.value]) if plannedWeights else layerHeights - 1
+        # initialize meta parameters
+        metaParameters = MetaParameters.defaultValues()
+        # set meta parameters has enumerates
+        for name in MetaParameters.enumerate():
+            value = metaParameters[name]
+            if not isinstance(value, Iterable):
+                metaParameters[name] = [value] * layerNumber
+            metaParameters[name] = tuple(metaParameters[name])
             pass
-        # ... randomly
-        else:
-            Logger.append(0, "random weights in range : " + str(weightLimit))
-            # for each layer
-            # INFO : there is no weights related to input layer
-            self.weights = list()
-            for layerIndex in range(0, hiddenLayerNumbers):
-                # randomize weights
-                self.randomizeLayer(layerIndex, weightLimit)
-                pass
+        # for each layer
+        for layerIndex in range(layerNumber):
+            # initialize layer parameters
+            layerParameters=dict()
+            # fill weights parameters (regarding planned xor random)
+            if plannedWeights:
+                layerParameters[WeightParameters.WEIGHTS.value] = parameters[PerceptronParameters.WEIGHTS.value][layerIndex]
+            else :
+                # INFO : we take in account input layer height
+                layerParameters[WeightParameters.CURRENT_HEIGHT.value] = parameters[PerceptronParameters.LAYER_HEIGHTS.value][layerIndex+1]
+                layerParameters[WeightParameters.PREVIOUS_HEIGHT.value] = parameters[PerceptronParameters.LAYER_HEIGHTS.value][layerIndex]
+                layerParameters[WeightParameters.WEIGHT_LIMIT.value] = parameters[PerceptronParameters.WEIGHT_LIMIT.value][layerIndex]
+            # fill meta parameters
+            for name, value in metaParameters.items():
+                layerParameters[name] = metaParameters[name][layerIndex]
+            # create layer
+            layer = Layer(**layerParameters)
+            layers.append(layer)
             pass
-        # initialize weights...
-        # ... from input
-        if biases is not None:
-            Logger.append(0, "from given biases : " + str(biases))
-            self.biases = biases
-        # ... randomly
-        else:
-            Logger.append(0, "random biases in range : " + str(biasLimit))
-            self.biases = (rand(hiddenLayerNumbers)-.5)*2*biasLimit
-        #
-        Logger.append(0, "initialized perceptron" + linesep + str(self))
-        pass
-    def randomizeLayer(self, layerIndex,weightLimit):
-        # get heights for current & previous layers
-        currentHeight = layerHeights[layerIndex]
-        previousHeight = layerHeights[layerIndex-1]
-        # randomize layer weights
-        layerWeights=(rand(currentHeight,previousHeight)-.5)*2*weightLimit
-        Logger.append(1, "initialized layer weights #" + str(layerIndex) + linesep + str(layerWeights))
-        self.weights.append(layerWeights)
-        pass
-    pass
-    def __str__(self):
-        return "weights : " + linesep + str(self.weights) + linesep + "biases : " + linesep + str(self.biases)
+        # tuple layers
+        self.layers = tuple(layers)
+        # set
         pass
     pass
 pass
@@ -101,12 +155,12 @@ weights[1][0][1]=0.45
 weights[1][1][0]=0.5
 weights[1][1][1]=0.55
 biases=((0.35,0.6))
-perceptron = Perceptron(layerHeights,weights,biases)
+perceptron = Perceptron(layerHeights=layerHeights,weights=weights,biases=biases)
 # compute forward pass
 input = ((0.05,0.1))
-headerInput = weights[0].dot(input)+biases[0]
-headerOutput =  sigmoid(headerInput)
-outputInput = weights[1].dot(headerOutput)+biases[1]
+hiddenInput = weights[0].dot(input)+biases[0]
+hiddenOutput =  sigmoid(hiddenInput)
+outputInput = weights[1].dot(hiddenOutput)+biases[1]
 outputOutput =  sigmoid(outputInput)
 # flush logs
 Logger.flush()
