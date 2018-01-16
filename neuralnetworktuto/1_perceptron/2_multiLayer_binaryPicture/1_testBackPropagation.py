@@ -135,6 +135,10 @@ class Perceptron():
         self.layers = tuple(layers)
         # set
         pass
+    def layerPassForward(self,layer,input):
+        sigmoidInput = layer.weights.dot(input) + layer.biases
+        output = sigmoid(sigmoidInput)
+        return output
     pass
 pass
 # empty output folder
@@ -158,10 +162,8 @@ biases=((0.35,0.6))
 perceptron = Perceptron(layerHeights=layerHeights,weights=weights,biases=biases)
 # compute forward pass
 input = ((0.05,0.1))
-hiddenInput = perceptron.layers[0].weights.dot(input)+perceptron.layers[0].biases
-hiddenOutput =  sigmoid(hiddenInput)
-outputInput = perceptron.layers[1].weights.dot(hiddenOutput)+perceptron.layers[1].biases
-outputOutput =  sigmoid(outputInput)
+hiddenOutput =  perceptron.layerPassForward(perceptron.layers[0],input)
+outputOutput =  perceptron.layerPassForward(perceptron.layers[1],hiddenOutput)
 # flush logs
 Logger.flush()
 pass
