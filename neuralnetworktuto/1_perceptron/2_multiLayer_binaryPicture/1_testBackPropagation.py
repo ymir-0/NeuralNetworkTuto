@@ -82,10 +82,10 @@ class Layer():
         metaParameters = MetaParameters.defaultValues()
         # initialize meta parameters
         for name in MetaParameters.enumerate():
-            value = metaParameters[name]
+            value = parameters[name] if name in parameters else metaParameters[name]
             if not isinstance(value, Iterable):
-                metaParameters[name] = [value] * height
-            metaParameters[name] = tuple(metaParameters[name])
+                value = [value] * height
+            metaParameters[name] = tuple(value)
         # set meta parameters has enumerates
         for name , value in metaParameters.items():
             setattr(self, name , value)
@@ -107,10 +107,10 @@ class Perceptron():
         metaParameters = MetaParameters.defaultValues()
         # set meta parameters has enumerates
         for name in MetaParameters.enumerate():
-            value = metaParameters[name]
+            value = parameters[name]  if name in parameters else metaParameters[name]
             if not isinstance(value, Iterable):
-                metaParameters[name] = [value] * layerNumber
-            metaParameters[name] = tuple(metaParameters[name])
+                value = [value] * layerNumber
+            metaParameters[name] = tuple(value)
             pass
         # for each layer
         for layerIndex in range(layerNumber):
@@ -158,9 +158,9 @@ biases=((0.35,0.6))
 perceptron = Perceptron(layerHeights=layerHeights,weights=weights,biases=biases)
 # compute forward pass
 input = ((0.05,0.1))
-hiddenInput = weights[0].dot(input)+biases[0]
+hiddenInput = perceptron.layers[0].weights.dot(input)+perceptron.layers[0].biases
 hiddenOutput =  sigmoid(hiddenInput)
-outputInput = weights[1].dot(hiddenOutput)+biases[1]
+outputInput = perceptron.layers[1].weights.dot(hiddenOutput)+perceptron.layers[1].biases
 outputOutput =  sigmoid(outputInput)
 # flush logs
 Logger.flush()
