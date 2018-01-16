@@ -13,20 +13,6 @@ from random import shuffle
 from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
-# contants
-CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
-OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
-# tools classes
-class Logger():
-    completeLog=""
-    @staticmethod
-    def append(level, message):
-        Logger.completeLog=Logger.completeLog+" "*(4*level)+message+linesep
-    @staticmethod
-    def flush():
-        logFile = open(join(OUTPUT_DIRECTORY,"training.log"),"wt")
-        logFile.write(Logger.completeLog)
-        logFile.close()
 # sigmoid
 def sigmoid(input,uncertainty=1,dilatation=1,offset=0):
     # INFO : bias is already included in previous aggregation step
@@ -148,10 +134,6 @@ class Perceptron():
         return inputOutput
     pass
 pass
-# empty output folder
-if exists(OUTPUT_DIRECTORY):
-    rmtree(OUTPUT_DIRECTORY)
-makedirs(OUTPUT_DIRECTORY)
 # perceptron initialization
 layerHeights=((2,2,2))
 weights=list()
@@ -170,6 +152,4 @@ perceptron = Perceptron(layerHeights=layerHeights,weights=weights,biases=biases)
 # compute forward pass
 input = ((0.05,0.1))
 output =  perceptron.passForward(input)
-# flush logs
-Logger.flush()
 pass
