@@ -90,6 +90,11 @@ class Layer():
         for name , value in metaParameters.items():
             setattr(self, name , value)
         pass
+    def passForward(self,input):
+        sigmoidInput = self.weights.dot(input) + self.biases
+        output = sigmoid(sigmoidInput)
+        return output
+    pass
 class Perceptron():
     # TODO : add methods to manipulate perceptron : remove weight between 2 neurons, remove specific neuron, edit specific neuron meta parameter
     def __init__(self,**parameters):
@@ -135,10 +140,12 @@ class Perceptron():
         self.layers = tuple(layers)
         # set
         pass
-    def layerPassForward(self,layer,input):
-        sigmoidInput = layer.weights.dot(input) + layer.biases
-        output = sigmoid(sigmoidInput)
-        return output
+    def passForward(self,input):
+        # INFO : next input is actual output
+        inputOutput = input
+        for layer in self.layers:
+            inputOutput = layer.passForward(inputOutput)
+        return inputOutput
     pass
 pass
 # empty output folder
@@ -162,8 +169,7 @@ biases=((0.35,0.6))
 perceptron = Perceptron(layerHeights=layerHeights,weights=weights,biases=biases)
 # compute forward pass
 input = ((0.05,0.1))
-hiddenOutput =  perceptron.layerPassForward(perceptron.layers[0],input)
-outputOutput =  perceptron.layerPassForward(perceptron.layers[1],hiddenOutput)
+output =  perceptron.passForward(input)
 # flush logs
 Logger.flush()
 pass
