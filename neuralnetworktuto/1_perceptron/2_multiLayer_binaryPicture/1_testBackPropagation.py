@@ -13,13 +13,6 @@ from random import shuffle
 from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
-# sigmoid
-def sigmoid(input,uncertainty=1,dilatation=1,offset=0):
-    # INFO : bias is already included in previous aggregation step
-    # TODO : set uncertainty/dilatation/offset for a layer
-    output = dilatation / (1 + exp(-uncertainty*input)) + offset
-    return output
-    pass
 # perceptron
 @unique
 class PerceptronParameters(Enum):
@@ -75,10 +68,13 @@ class Layer():
         # set meta parameters has enumerates
         for name , value in metaParameters.items():
             setattr(self, name , value)
-        pass
     def passForward(self,input):
         sigmoidInput = self.weights.dot(input) + self.biases
-        output = sigmoid(sigmoidInput)
+        output = self.sigmoid(sigmoidInput)
+        return output
+    def sigmoid(self, input):
+        # INFO : bias is already included in previous aggregation step
+        output = self.dilatations / (1 + exp( -input * self.uncertainties)) + self.offsets
         return output
     pass
 class Perceptron():
@@ -93,7 +89,7 @@ class Perceptron():
         plannedWeights = WeightParameters.WEIGHTS.value in parameters
         # set layer number
         # INFO : we do not create the input layer because it will be the input vector to forward pass with
-        layerNumber = len(parameters[WeightParameters.WEIGHTS.value]) if plannedWeights else layerHeights - 1
+        layerNumber = len(parameters[PerceptronParameters.WEIGHTS.value]) if plannedWeights else parameters[PerceptronParameters.LAYER_HEIGHTS.value] - 1
         # initialize meta parameters
         metaParameters = MetaParameters.defaultValues()
         # set meta parameters has enumerates
@@ -102,7 +98,6 @@ class Perceptron():
             if not isinstance(value, Iterable):
                 value = [value] * layerNumber
             metaParameters[name] = tuple(value)
-            pass
         # for each layer
         for layerIndex in range(layerNumber):
             # initialize layer parameters
@@ -121,11 +116,9 @@ class Perceptron():
             # create layer
             layer = Layer(**layerParameters)
             layers.append(layer)
-            pass
         # tuple layers
         self.layers = tuple(layers)
         # set
-        pass
     def passForward(self,input):
         # INFO : next input is actual output
         inputOutput = input
@@ -133,7 +126,6 @@ class Perceptron():
             inputOutput = layer.passForward(inputOutput)
         return inputOutput
     pass
-pass
 # perceptron initialization
 weights=((
     array(((
@@ -147,7 +139,7 @@ weights=((
 ))
 biases=((0.35,0.6))
 perceptron = Perceptron(weights=weights,biases=biases)
-# compute forward pass
+# forward pass
 input = ((0.05,0.1))
 output =  perceptron.passForward(input)
 pass
