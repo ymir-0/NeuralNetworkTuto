@@ -135,19 +135,18 @@ class Perceptron():
     pass
 pass
 # perceptron initialization
-layerHeights=((2,2,2))
 weights=((
-    array([
+    array(((
         ((0.15,0.2)),
-        ((0.25,0.3))
-    ]),
-    array([
+        ((0.25,0.3)),
+    ))),
+    array(((
         ((0.4,0.45)),
-        ((0.5,0.55))
-    ]),
+        ((0.5,0.55)),
+    ))),
 ))
 biases=((0.35,0.6))
-perceptron = Perceptron(layerHeights=layerHeights,weights=weights,biases=biases)
+perceptron = Perceptron(weights=weights,biases=biases)
 # compute forward pass
 input = ((0.05,0.1))
 output =  perceptron.passForward(input)
