@@ -4,7 +4,7 @@
  - https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
 '''
 # imports
-from numpy import exp, newaxis, zeros
+from numpy import exp, newaxis, zeros, array
 from numpy.ma import size
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
@@ -136,17 +136,16 @@ class Perceptron():
 pass
 # perceptron initialization
 layerHeights=((2,2,2))
-weights=list()
-weights.append(zeros((2,2)))
-weights.append(zeros((2,2)))
-weights[0][0][0]=0.15
-weights[0][0][1]=0.2
-weights[0][1][0]=0.25
-weights[0][1][1]=0.3
-weights[1][0][0]=0.4
-weights[1][0][1]=0.45
-weights[1][1][0]=0.5
-weights[1][1][1]=0.55
+weights=((
+    array([
+        ((0.15,0.2)),
+        ((0.25,0.3))
+    ]),
+    array([
+        ((0.4,0.45)),
+        ((0.5,0.55))
+    ]),
+))
 biases=((0.35,0.6))
 perceptron = Perceptron(layerHeights=layerHeights,weights=weights,biases=biases)
 # compute forward pass
