@@ -14,6 +14,7 @@ from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
 # perceptron
+# INFO : can not defined a common parameters enumeration : https://docs.python.org/3/library/enum.html#restricted-subclassing-of-enumerations
 @unique
 class PerceptronParameters(Enum):
     WEIGHTS="weights"
