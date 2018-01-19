@@ -70,12 +70,8 @@ class Layer():
         for name , value in metaParameters.items():
             setattr(self, name , value)
     def passForward(self,input):
-        sigmoidInput = self.weights.dot(input) + self.biases
-        output = self.sigmoid(sigmoidInput)
-        return output
-    def sigmoid(self, input):
-        # INFO : bias is already included in previous aggregation step
-        output = self.dilatations / (1 + exp( -input * self.uncertainties)) + self.offsets
+        weightsBiasInput = self.weights.dot(input) + self.biases
+        output = self.dilatations / (1 + exp( -weightsBiasInput * self.uncertainties)) + self.offsets
         return output
     pass
 class Perceptron():
@@ -143,4 +139,6 @@ perceptron = Perceptron(weights=weights,biases=biases)
 # forward pass
 input = ((0.05,0.1))
 output =  perceptron.passForward(input)
+print("expected passforward output = [0.75136507 0.772928465]")
+print("actual passforward output = " + str(output))
 pass
