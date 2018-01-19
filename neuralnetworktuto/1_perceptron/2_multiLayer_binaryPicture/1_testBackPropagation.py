@@ -81,7 +81,7 @@ class Perceptron():
         # TODO : check weights dimensions consistancy if planned (not random) : at least 2 layers (input/output) and matrices dimensions
         # TODO : check extra parameters dimensions consistancy if enumerates
         # initialize layers
-        layers = list()
+        self.layers = list()
         # test planned weights
         plannedWeights = WeightParameters.WEIGHTS.value in parameters
         # set layer number
@@ -112,10 +112,8 @@ class Perceptron():
                 layerParameters[name] = metaParameters[name][layerIndex]
             # create layer
             layer = Layer(**layerParameters)
-            layers.append(layer)
-        # tuple layers
-        self.layers = tuple(layers)
-        # set
+            self.layers.append(layer)
+        # TODO : tuple layers after training ?
     def passForward(self,input):
         self.historyInputs=list()
         # INFO : next input is actual output
@@ -124,14 +122,14 @@ class Perceptron():
             self.historyInputs.append(inputOutput)
             inputOutput = layer.passForward(inputOutput)
         return inputOutput
-    def passBackward(self,expectedOutput, actualOutput):
+    def passBackwardOutput(self,expectedOutput, actualOutput):
         # cast to array to array to avoid issues
         differentialErrorOutput = actualOutput - expectedOutput
         lastLayer = self.layers[-1]
         differentialOutpoutWeightsBiasInput = array([lastLayer.dilatations]) * lastLayer.uncertainties * actualOutput * (1-array([actualOutput]))
-        differentialErrorWeights= differentialErrorOutput * differentialOutpoutWeightsBiasInput * self.historyInputs[-1][newaxis].T
-        newWeights = lastLayer.weights - 0.5 * differentialErrorWeights.T
-        return newWeights
+        differentialErrorWeights= (differentialErrorOutput * differentialOutpoutWeightsBiasInput).T * self.historyInputs[-1]
+        newWeights = lastLayer.weights - 0.5 * differentialErrorWeights
+        self.layers[-1] = newWeights
     pass
 # perceptron initialization
 weights=((
@@ -149,10 +147,10 @@ perceptron = Perceptron(weights=weights,biases=biases)
 # forward pass
 input = ((0.05,0.1))
 output =  perceptron.passForward(input)
-print("expected pass forward output = [0.75136507 0.772928465]")
-print("actual pass forward output = " + str(output))
-# backward pass
-output =  perceptron.passBackward(((0.01,0.99)),output)
-print("expected pass backward output = [0.75136507 0.772928465]")
-print("actual pass backward output = " + str(output))
+print("expected pass forward output =\n[0.75136507 0.772928465]")
+print("actual pass forward output =\n" + str(output))
+# backward pass on output
+perceptron.passBackwardOutput(((0.01,0.99)),output)
+print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
+print("actual pass backward output =\n" + str(perceptron.layers[-1]))
 pass
