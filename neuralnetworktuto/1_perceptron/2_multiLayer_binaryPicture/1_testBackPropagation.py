@@ -117,11 +117,21 @@ class Perceptron():
         self.layers = tuple(layers)
         # set
     def passForward(self,input):
+        self.historyInputs=list()
         # INFO : next input is actual output
         inputOutput = input
         for layer in self.layers:
+            self.historyInputs.append(inputOutput)
             inputOutput = layer.passForward(inputOutput)
         return inputOutput
+    def passBackward(self,expectedOutput, actualOutput):
+        # cast to array to array to avoid issues
+        differentialErrorOutput = actualOutput - expectedOutput
+        lastLayer = self.layers[-1]
+        differentialOutpoutWeightsBiasInput = array([lastLayer.dilatations]) * lastLayer.uncertainties * actualOutput * (1-array([actualOutput]))
+        differentialErrorWeights= differentialErrorOutput * differentialOutpoutWeightsBiasInput * self.historyInputs[-1][newaxis].T
+        newWeights = lastLayer.weights - 0.5 * differentialErrorWeights.T
+        return newWeights
     pass
 # perceptron initialization
 weights=((
@@ -139,6 +149,10 @@ perceptron = Perceptron(weights=weights,biases=biases)
 # forward pass
 input = ((0.05,0.1))
 output =  perceptron.passForward(input)
-print("expected passforward output = [0.75136507 0.772928465]")
-print("actual passforward output = " + str(output))
+print("expected pass forward output = [0.75136507 0.772928465]")
+print("actual pass forward output = " + str(output))
+# backward pass
+output =  perceptron.passBackward(((0.01,0.99)),output)
+print("expected pass backward output = [0.75136507 0.772928465]")
+print("actual pass backward output = " + str(output))
 pass
