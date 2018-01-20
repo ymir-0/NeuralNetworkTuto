@@ -117,6 +117,7 @@ class Perceptron():
             self.layers.append(layer)
         # TODO : tuple layers after training ?
     def passForward(self,input):
+        # TODO : use self.historyInputsOutputs only if learning
         self.historyInputsOutputs=list()
         # INFO : next input is actual output
         inputOutput = input
@@ -125,6 +126,18 @@ class Perceptron():
             inputOutput = layer.passForward(inputOutput)
         self.historyInputsOutputs.append(inputOutput)
         return inputOutput
+    def passBackward(self,expectedOutput):
+        # initialize new weights
+        newLayersWeights = list()
+        # pass on output
+        newWeights = self.passBackwardOutput(expectedOutput)
+        newLayersWeights.append(newWeights)
+        # pass on hidden layers
+        for hiddenLayerIndex in range(0, len(self.layers)-1):
+            newWeights = self.passBackwardHidden()
+            newLayersWeights.append(newWeights)
+        # set new weights on all layers
+        pass
     def passBackwardOutput(self,expectedOutput):
         # cast to array to array to avoid issues
         actualOutput = self.historyInputsOutputs[-1]
@@ -137,7 +150,6 @@ class Perceptron():
         newWeights = lastLayer.weights - 0.5 * differentialErrorWeights
         return newWeights
     def passBackwardHidden(self):
-        #
         differentialErrorsOutput = self.differentialErrorWeightsBiasInput * self.layers[-1].weights
         differentialErrorOutput = sum(differentialErrorsOutput,0)
         hiddenLayer = self.layers[-2]
@@ -174,4 +186,8 @@ print("actual pass backward output =\n" + str(newWeights))
 newWeights = perceptron.passBackwardHidden()
 print("expected pass backward hidden =\n[[0.149780719 0.19956143]\n[0.24975114 0.29950229]]")
 print("actual pass backward hidden =\n" + str(newWeights))
+# complete backward pass
+newWeights = perceptron.passBackward(((0.01,0.99)))
+print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
+print("actual pass backward output =\n" + str(newWeights))
 pass
