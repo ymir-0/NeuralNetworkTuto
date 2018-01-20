@@ -2,7 +2,6 @@
 ''' examples from :
  - https://stackoverflow.com/questions/2480650/role-of-bias-in-neural-networks
  - https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
- - https://becominghuman.ai/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
  - http://www.anyflo.com/bret/cours/rn/rn5.htm#exemple
 '''
 # imports
