@@ -2,9 +2,11 @@
 ''' examples from :
  - https://stackoverflow.com/questions/2480650/role-of-bias-in-neural-networks
  - https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
+ - https://becominghuman.ai/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
+ - http://www.anyflo.com/bret/cours/rn/rn5.htm#exemple
 '''
 # imports
-from numpy import exp, newaxis, zeros, array
+from numpy import exp, newaxis, zeros, array, sum
 from numpy.ma import size
 from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
@@ -126,10 +128,23 @@ class Perceptron():
         # cast to array to array to avoid issues
         differentialErrorOutput = actualOutput - expectedOutput
         lastLayer = self.layers[-1]
-        differentialOutpoutWeightsBiasInput = array([lastLayer.dilatations]) * lastLayer.uncertainties * actualOutput * (1-array([actualOutput]))
-        differentialErrorWeights= (differentialErrorOutput * differentialOutpoutWeightsBiasInput).T * self.historyInputs[-1]
+        differentialOutputWeightsBiasInput = array([lastLayer.dilatations]) * lastLayer.uncertainties * actualOutput * (1-array([actualOutput]))
+        self.differentialErrorWeightsBiasInput = (differentialErrorOutput * differentialOutputWeightsBiasInput).T
+        differentialErrorWeights= self.differentialErrorWeightsBiasInput * self.historyInputs[-1]
+        # TODO : set learning rate 0.5 has variable (and add inertia)
         newWeights = lastLayer.weights - 0.5 * differentialErrorWeights
-        self.layers[-1] = newWeights
+        return newWeights
+    def passBackwardHidden(self):
+        #
+        differentialErrorsOutput = self.differentialErrorWeightsBiasInput * self.layers[-1].weights
+        differentialErrorOutput = sum(differentialErrorsOutput,0)
+        hiddenLayer = self.layers[-2]
+        hiddenInput = self.historyInputs[-1]
+        differentialOutputWeightsBiasInput =  array([hiddenLayer.dilatations]) * hiddenLayer.uncertainties * hiddenInput * (1-array([hiddenInput]))
+        differentialErrorWeights= (differentialErrorOutput * differentialOutputWeightsBiasInput).T * self.historyInputs[-2]
+        # TODO : set learning rate 0.5 has variable (and add inertia)
+        newWeights = hiddenLayer.weights - 0.5 * differentialErrorWeights
+        return newWeights
     pass
 # perceptron initialization
 weights=((
@@ -150,7 +165,11 @@ output =  perceptron.passForward(input)
 print("expected pass forward output =\n[0.75136507 0.772928465]")
 print("actual pass forward output =\n" + str(output))
 # backward pass on output
-perceptron.passBackwardOutput(((0.01,0.99)),output)
+newWeights = perceptron.passBackwardOutput(((0.01,0.99)),output)
 print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
-print("actual pass backward output =\n" + str(perceptron.layers[-1]))
+print("actual pass backward output =\n" + str(newWeights))
+# backward pass on hiddenLayer
+newWeights = perceptron.passBackwardHidden()
+print("expected pass backward hidden =\n[[0.149780719 0.19956143]\n[0.24975114 0.29950229]]")
+print("actual pass backward hidden =\n" + str(newWeights))
 pass
