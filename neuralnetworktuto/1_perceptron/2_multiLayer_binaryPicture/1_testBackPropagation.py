@@ -137,6 +137,9 @@ class Perceptron():
             newWeights = self.passBackwardHidden()
             newLayersWeights.append(newWeights)
         # set new weights on all layers
+        newLayersWeights.reverse()
+        for layerIndex, layer in enumerate(self.layers):
+            layer.weights = newLayersWeights[layerIndex]
         pass
     def passBackwardOutput(self,expectedOutput):
         # cast to array to array to avoid issues
@@ -178,16 +181,10 @@ input = ((0.05,0.1))
 output =  perceptron.passForward(input)
 print("expected pass forward output =\n[0.75136507 0.772928465]")
 print("actual pass forward output =\n" + str(output))
-# backward pass on output
-newWeights = perceptron.passBackwardOutput(((0.01,0.99)))
-print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
-print("actual pass backward output =\n" + str(newWeights))
-# backward pass on hiddenLayer
-newWeights = perceptron.passBackwardHidden()
-print("expected pass backward hidden =\n[[0.149780719 0.19956143]\n[0.24975114 0.29950229]]")
-print("actual pass backward hidden =\n" + str(newWeights))
 # complete backward pass
-newWeights = perceptron.passBackward(((0.01,0.99)))
+perceptron.passBackward(((0.01,0.99)))
 print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
-print("actual pass backward output =\n" + str(newWeights))
+print("actual pass backward output =\n" + str(perceptron.layers[-1].weights))
+print("expected pass backward hidden =\n[[0.149780719 0.19956143]\n[0.24975114 0.29950229]]")
+print("actual pass backward hidden =\n" + str(perceptron.layers[-2].weights))
 pass
