@@ -117,20 +117,22 @@ class Perceptron():
             self.layers.append(layer)
         # TODO : tuple layers after training ?
     def passForward(self,input):
-        self.historyInputs=list()
+        self.historyInputsOutputs=list()
         # INFO : next input is actual output
         inputOutput = input
         for layer in self.layers:
-            self.historyInputs.append(inputOutput)
+            self.historyInputsOutputs.append(inputOutput)
             inputOutput = layer.passForward(inputOutput)
+        self.historyInputsOutputs.append(inputOutput)
         return inputOutput
-    def passBackwardOutput(self,expectedOutput, actualOutput):
+    def passBackwardOutput(self,expectedOutput):
         # cast to array to array to avoid issues
+        actualOutput = self.historyInputsOutputs[-1]
         differentialErrorOutput = actualOutput - expectedOutput
         lastLayer = self.layers[-1]
         differentialOutputWeightsBiasInput = array([lastLayer.dilatations]) * lastLayer.uncertainties * actualOutput * (1-array([actualOutput]))
         self.differentialErrorWeightsBiasInput = (differentialErrorOutput * differentialOutputWeightsBiasInput).T
-        differentialErrorWeights= self.differentialErrorWeightsBiasInput * self.historyInputs[-1]
+        differentialErrorWeights= self.differentialErrorWeightsBiasInput * self.historyInputsOutputs[-2]
         # TODO : set learning rate 0.5 has variable (and add inertia)
         newWeights = lastLayer.weights - 0.5 * differentialErrorWeights
         return newWeights
@@ -139,9 +141,9 @@ class Perceptron():
         differentialErrorsOutput = self.differentialErrorWeightsBiasInput * self.layers[-1].weights
         differentialErrorOutput = sum(differentialErrorsOutput,0)
         hiddenLayer = self.layers[-2]
-        hiddenInput = self.historyInputs[-1]
+        hiddenInput = self.historyInputsOutputs[-2]
         differentialOutputWeightsBiasInput =  array([hiddenLayer.dilatations]) * hiddenLayer.uncertainties * hiddenInput * (1-array([hiddenInput]))
-        differentialErrorWeights= (differentialErrorOutput * differentialOutputWeightsBiasInput).T * self.historyInputs[-2]
+        differentialErrorWeights= (differentialErrorOutput * differentialOutputWeightsBiasInput).T * self.historyInputsOutputs[-3]
         # TODO : set learning rate 0.5 has variable (and add inertia)
         newWeights = hiddenLayer.weights - 0.5 * differentialErrorWeights
         return newWeights
@@ -165,7 +167,7 @@ output =  perceptron.passForward(input)
 print("expected pass forward output =\n[0.75136507 0.772928465]")
 print("actual pass forward output =\n" + str(output))
 # backward pass on output
-newWeights = perceptron.passBackwardOutput(((0.01,0.99)),output)
+newWeights = perceptron.passBackwardOutput(((0.01,0.99)))
 print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
 print("actual pass backward output =\n" + str(newWeights))
 # backward pass on hiddenLayer
