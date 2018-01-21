@@ -86,6 +86,7 @@ class Layer():
         else:
             differentialErrorLayer = self.differentialErrorHidden(differentialErrorWeightsBiasInput,previousLayerWeights)
         # compute new weights
+        # TODO : merge into sigmoïde derivative
         differentialOutputWeightsBiasInput = array([self.dilatations]) * self.uncertainties * self.output * (1 - array([self.output]))
         # INFO : new differential error on layer will be used on next computation
         newDifferentialErrorWeightsBiases = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
@@ -95,15 +96,21 @@ class Layer():
         # INFO : old weights will be used on next computation
         oldWeights = self.weights
         self.weights = oldWeights - 0.5 * differentialErrorWeights
-        # compute new bias
+        # compute new biases
         newBiases = self.biases - 0.5 * newDifferentialErrorWeightsBiases.T
         self.biases = tuple(newBiases[0])
-        # compute new dilatation
+        # compute new dilatations
         # TODO : merge into sigmoïde fct°
-        differentialOutputDilatation = 1 / (1 + exp( -self.weightsBiasInput * self.uncertainties))
-        differentialErrorDilatation = differentialErrorLayer * differentialOutputDilatation
-        newDilatation = self.dilatations - 0.5 * differentialErrorDilatation
-        self.dilatations = newDilatation
+        differentialOutputDilatations = 1 / (1 + exp( -self.weightsBiasInput * self.uncertainties))
+        differentialErrorDilatations = differentialErrorLayer * differentialOutputDilatations
+        newDilatations = self.dilatations - 0.5 * differentialErrorDilatations
+        self.dilatations = newDilatations
+        # compute new uncertainties
+        # TODO : merge into sigmoïde derivative
+        differentialOutputUncertainties = array([self.dilatations]) * self.output * self.uncertainties * (1 - array([self.uncertainties]))
+        differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
+        newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
+        self.uncertainties = tuple(newUncertainties[0])
         # return
         return newDifferentialErrorWeightsBiases, oldWeights
     # get differential error on output layer
@@ -199,7 +206,7 @@ weights=((
     ))),
 ))
 biases=((0.35,0.6))
-perceptron = Perceptron(weights=weights,biases=biases)
+perceptron = Perceptron(weights=weights,biases=biases,uncertainties=.99)
 input = ((0.05,0.1))
 expectedOutput = ((0.01,0.99))
 # make one forward & backward pass
@@ -212,7 +219,7 @@ print("expected pass backward hidden =\n[[0.14978072 0.19956143]\n[0.24975114 0.
 print("actual pass backward hidden =\n" + str(perceptron.layers[-2].weights))
 print("total error = " + str(totalError))
 # make many forward & backward pass
-for loopNumber in range(21):
+for loopNumber in range(22):
     totalError = perceptron.passForwardBackward(input, expectedOutput)
 output = perceptron.passForward(input)
 print("total error = " + str(totalError))
