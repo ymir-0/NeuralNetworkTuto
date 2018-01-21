@@ -16,6 +16,8 @@ from collections import Iterable
 from enum import Enum, unique
 from copy import deepcopy
 # sigmoid
+# TODO : create an abstract class for all future functions
+# TODO : compute with spark each method
 class Sigmoid():
     @staticmethod
     def value(variables, uncertainties=1, dilatations=1, offsets=0):
@@ -74,6 +76,7 @@ class Layer():
             currentHeight = parameters.get(WeightParameters.CURRENT_HEIGHT.value)
             previousHeight = parameters.get(WeightParameters.PREVIOUS_HEIGHT.value)
             weightLimit = parameters.get(WeightParameters.WEIGHT_LIMIT.value)
+            # TODO : compute with spark 'weights'
             weights = (rand(currentHeight, previousHeight) - .5) * 2 * weightLimit
         self.weights = weights
         height = size(self.weights,0)
@@ -90,6 +93,7 @@ class Layer():
             setattr(self, name , value)
     def passForward(self,input,training=False):
         # compute ouput
+        # TODO : compute with spark 'weightsBiasInput'
         weightsBiasInput = self.weights.dot(input) + self.biases
         output = Sigmoid.value(weightsBiasInput, self.uncertainties, self.dilatations, self.offsets)
         # initialize training draft (if justified by context)
@@ -102,6 +106,7 @@ class Layer():
             differentialErrorLayer = self.differentialErrorOutput(expectedOutput)
         else:
             differentialErrorLayer = self.differentialErrorHidden(differentialErrorWeightsBiasInput,previousLayerWeights)
+        # TODO : compute with spark each parameter
         # compute new weights
         differentialOutputWeightsBiasInput = Sigmoid.derivativeFromValue(array([self.trainingDraft.output]), self.uncertainties, array([self.dilatations]))
         # INFO : new differential error on layer will be used on next computation
@@ -133,10 +138,12 @@ class Layer():
         return newDifferentialErrorWeightsBiases, oldWeights
     # get differential error on output layer
     def differentialErrorOutput(self,expectedOutput):
+        # TODO : compute with spark 'differentialError'
         differentialError = self.trainingDraft.output - expectedOutput
         return differentialError
     # get differential error on hidden layer
     def differentialErrorHidden(self,differentialErrorWeightsBiasInput,previousLayerWeights):
+        # TODO : compute with spark 'differentialError'
         differentialErrors = differentialErrorWeightsBiasInput * previousLayerWeights
         differentialError = sum(differentialErrors, 0)
         return differentialError
@@ -247,6 +254,7 @@ perceptron.freeze()
 output = perceptron.passForward(input)
 print("total error = " + str(totalError))
 print("pass forward output = " + str(output))
+# train with multiple input / expected output
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
 # perceptron initialization
