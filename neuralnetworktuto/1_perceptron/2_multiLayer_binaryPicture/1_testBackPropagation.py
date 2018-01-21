@@ -211,6 +211,7 @@ class Perceptron():
             layer = Layer(**layerParameters)
             self.layers.append(layer)
     def passForward(self,input,training=False):
+        # TODO : add a pipe to cascade passes (only if not training)
         # INFO : next input is actual output
         inputOutput = input
         for layer in self.layers:
@@ -329,7 +330,7 @@ grid(linestyle="-.")
 legend()
 show()
 '''
-# ***** 2 hidden layer , 2 neurons on each layer, no random
+# ***** 2 hidden layers , 2 neurons on each layer, no random
 # initialize perceptron
 weights=((
     array(((
