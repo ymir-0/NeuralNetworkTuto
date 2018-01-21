@@ -15,6 +15,7 @@ from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
 from copy import deepcopy
+from statistics import mean
 # sigmoid
 # TODO : create an abstract class for all future functions
 # TODO : compute with spark each method
@@ -214,6 +215,20 @@ class Perceptron():
         for layer in self.layers:
             inputOutput = layer.passForward(inputOutput,training)
         return inputOutput
+    def train(self,maximumLoopNumber=int(1e5),minimumMeanError=1e-10):
+        # initialize errors
+        # TODO : set a number of errors to record
+        # train has necessary
+        for loopNumber in range(maximumLoopNumber):
+            errors = self.trainRandomized(sequences)
+            # test if error is sufficient
+            meanError = mean(list(errors.values()))
+            if meanError <= minimumMeanError :
+                break
+        # freeze when trained
+        self.freeze()
+        # return
+        return errors
     def trainRandomized(self,sequences):
         # initialize errors
         errors = dict()
@@ -288,9 +303,7 @@ sequences = dict({
 })
 loopNumber = int(1e5)
 print("loop number = " + str(loopNumber))
-for loopNumber in range(loopNumber):
-    errors = perceptron.trainRandomized(sequences)
-perceptron.freeze()
+errors = perceptron.train(loopNumber)
 for input, expectedOutput in sequences.items():
     actualOutput = perceptron.passForward(input)
     print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input]))
