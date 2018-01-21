@@ -15,6 +15,12 @@ from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
 from copy import deepcopy
+# training draft
+class TrainingDraft():
+    def __init__(self,input,weightsBiasInput,output):
+        self.input = input
+        self.weightsBiasInput = weightsBiasInput
+        self.output = output
 # perceptron
 # INFO : can not defined a common parameters enumeration : https://docs.python.org/3/library/enum.html#restricted-subclassing-of-enumerations
 @unique
@@ -71,14 +77,14 @@ class Layer():
         # set meta parameters has enumerates
         for name , value in metaParameters.items():
             setattr(self, name , value)
-    def passForward(self,input):
-        # TODO : store input & output & weightsBiasInput only if training (self.%)
-        self.input = input
+    def passForward(self,input,training=False):
+        # compute ouput
         weightsBiasInput = self.weights.dot(input) + self.biases
-        self.weightsBiasInput = weightsBiasInput
         # TODO : merge into sigmoïde fct°
         output = self.dilatations / (1 + exp( -weightsBiasInput * self.uncertainties)) + self.offsets
-        self.output = output
+        # initialize training draft (if justified by context)
+        if training:
+            self.trainingDraft = TrainingDraft(input, weightsBiasInput, output)
         return output
     def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None):
         # get differential error on layer regarding output or hidden one
@@ -88,12 +94,11 @@ class Layer():
             differentialErrorLayer = self.differentialErrorHidden(differentialErrorWeightsBiasInput,previousLayerWeights)
         # compute new weights
         # TODO : merge into sigmoïde derivative
-        differentialOutputWeightsBiasInput = array([self.dilatations]) * self.uncertainties * self.output * (1 - array([self.output]))
+        differentialOutputWeightsBiasInput = array([self.dilatations]) * self.uncertainties * self.trainingDraft.output * (1 - array([self.trainingDraft.output]))
         # INFO : new differential error on layer will be used on next computation
         newDifferentialErrorWeightsBiases = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
-        differentialErrorWeights = newDifferentialErrorWeightsBiases * self.input
+        differentialErrorWeights = newDifferentialErrorWeightsBiases * self.trainingDraft.input
         # TODO : set learning rate 0.5 has variable (and add inertia)
-        # TODO : correct bias ? should be possible considering it is a weight=1 input neuron
         # INFO : old weights will be used on next computation
         oldWeights = self.weights
         self.weights = oldWeights - 0.5 * differentialErrorWeights
@@ -102,24 +107,26 @@ class Layer():
         self.biases = tuple(newBiases[0])
         # compute new dilatations
         # TODO : merge into sigmoïde fct°
-        differentialOutputDilatations = 1 / (1 + exp( -self.weightsBiasInput * self.uncertainties))
+        differentialOutputDilatations = 1 / (1 + exp( -self.trainingDraft.weightsBiasInput * self.uncertainties))
         differentialErrorDilatations = differentialErrorLayer * differentialOutputDilatations
         newDilatations = self.dilatations - 0.5 * differentialErrorDilatations
         self.dilatations = newDilatations
         # compute new uncertainties
         # TODO : merge into sigmoïde derivative
-        differentialOutputUncertainties = array([self.dilatations]) * self.output * self.uncertainties * (1 - array([self.uncertainties]))
+        differentialOutputUncertainties = array([self.dilatations]) * self.trainingDraft.output * self.uncertainties * (1 - array([self.uncertainties]))
         differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
         newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
         self.uncertainties = tuple(newUncertainties[0])
         # compute new offsets
         newOffsets = self.offsets - 0.5 * differentialErrorLayer
         self.offsets = newOffsets
+        # discard training draft
+        del self.trainingDraft
         # return
         return newDifferentialErrorWeightsBiases, oldWeights
     # get differential error on output layer
     def differentialErrorOutput(self,expectedOutput):
-        differentialError = self.output - expectedOutput
+        differentialError = self.trainingDraft.output - expectedOutput
         return differentialError
     # get differential error on hidden layer
     def differentialErrorHidden(self,differentialErrorWeightsBiasInput,previousLayerWeights):
@@ -167,17 +174,16 @@ class Perceptron():
             layer = Layer(**layerParameters)
             self.layers.append(layer)
         # TODO : tuple layers after training ?
-    def passForward(self,input):
+    def passForward(self,input,training=False):
         # INFO : next input is actual output
         inputOutput = input
         for layer in self.layers:
-            inputOutput = layer.passForward(inputOutput)
+            inputOutput = layer.passForward(inputOutput,training)
         return inputOutput
     def passForwardBackward(self,input,expectedOutput):
         # pass forward
-        self.passForward(input)
+        actualOutput = self.passForward(input=input,training=True)
         # compute total error
-        actualOutput = self.layers[-1].output
         outputError = ( ( expectedOutput - actualOutput ) ** 2 ) / 2
         totalError = sum(outputError,0)
         # pass backward
