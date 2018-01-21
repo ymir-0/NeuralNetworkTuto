@@ -71,9 +71,40 @@ class Layer():
         for name , value in metaParameters.items():
             setattr(self, name , value)
     def passForward(self,input):
+        # TODO : store input & output only if training
+        self.input = input
         weightsBiasInput = self.weights.dot(input) + self.biases
         output = self.dilatations / (1 + exp( -weightsBiasInput * self.uncertainties)) + self.offsets
+        self.output = output
         return output
+    def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None):
+        # get differential error on layer regarding output or hidden one
+        if expectedOutput is not None:
+            differentialErrorLayer = self.differentialErrorOutput(expectedOutput)
+        else:
+            differentialErrorLayer = self.differentialErrorHidden(differentialErrorWeightsBiasInput,previousLayerWeights)
+        # compute new weights
+        differentialOutputWeightsBiasInput = array([self.dilatations]) * self.uncertainties * self.output * (1 - array([self.output]))
+        # INFO : new differential error on layer will be used on next computation
+        newDifferentialErrorWeightsBiasInput = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
+        differentialErrorWeights = newDifferentialErrorWeightsBiasInput * self.input
+        # TODO : set learning rate 0.5 has variable (and add inertia)
+        # TODO : correct bias ? should be possible considering it is a weight=1 input neuron
+        # INFO : old weights will be used on next computation
+        oldWeights = self.weights
+        self.weights = oldWeights - 0.5 * differentialErrorWeights
+        # return
+        return newDifferentialErrorWeightsBiasInput, oldWeights
+
+    # get differential error on output layer
+    def differentialErrorOutput(self,expectedOutput):
+        differentialError = output - expectedOutput
+        return differentialError
+    # get differential error on hidden layer
+    def differentialErrorHidden(self,differentialErrorWeightsBiasInput,previousLayerWeights):
+        differentialErrors = differentialErrorWeightsBiasInput * previousLayerWeights
+        differentialError = sum(differentialErrors, 0)
+        return differentialError
     pass
 class Perceptron():
     # TODO : add methods to manipulate perceptron : remove weight between 2 neurons, remove specific neuron, edit specific neuron meta parameter
@@ -125,43 +156,15 @@ class Perceptron():
             inputOutput = layer.passForward(inputOutput)
         self.historyInputsOutputs.append(inputOutput)
         return inputOutput
-    def completePassBackward(self,expectedOutput):
-        # initialize new weights
-        newLayersWeights = list()
+    def passBackward(self,expectedOutput):
         # pass on output
-        newWeights = self.passBackward(expectedOutput=expectedOutput)
-        newLayersWeights.append(newWeights)
+        layer = self.layers[-1]
+        differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(expectedOutput=expectedOutput)
         # pass on hidden layers
-        for hiddenLayerIndex in range(1, len(self.layers)):
-            newWeights = self.passBackward(hiddenLayerIndex)
-            newLayersWeights.append(newWeights)
-        # set new weights on all layers
-        newLayersWeights.reverse()
-        for layerIndex, layer in enumerate(self.layers):
-            layer.weights = newLayersWeights[layerIndex]
+        for hiddenLayerIndex in range(2, len(self.layers)+1):
+            layer = self.layers[-hiddenLayerIndex]
+            differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(differentialErrorWeightsBiasInput=differentialErrorWeightsBiasInput,previousLayerWeights=previousLayerWeights)
         pass
-    def passBackward(self,layerIndex=0,expectedOutput=None):
-        layerOutput = self.historyInputsOutputs[-(layerIndex+1)]
-        #
-        if expectedOutput is not None:
-            differentialErrorLayer = self.differentialErrorOutput(expectedOutput)
-        else:
-            differentialErrorLayer = self.differentialErrorHidden(layerIndex)
-        #
-        layer = self.layers[-(layerIndex+1)]
-        differentialOutputWeightsBiasInput = array([layer.dilatations]) * layer.uncertainties * layerOutput * (1 - array([layerOutput]))
-        self.differentialErrorWeightsBiasInput = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
-        differentialErrorWeights = self.differentialErrorWeightsBiasInput * self.historyInputsOutputs[-(layerIndex+2)]
-        # TODO : set learning rate 0.5 has variable (and add inertia)
-        newWeights = layer.weights - 0.5 * differentialErrorWeights
-        return newWeights
-    def differentialErrorOutput(self,expectedOutput):
-        differentialError = self.historyInputsOutputs[-1] - expectedOutput
-        return differentialError
-    def differentialErrorHidden(self,layerIndex):
-        differentialErrors = self.differentialErrorWeightsBiasInput * self.layers[-layerIndex].weights
-        differentialError = sum(differentialErrors, 0)
-        return differentialError
     pass
 # ***** 1 hidden layer , 2 neurons on each layer
 # perceptron initialization
@@ -177,15 +180,43 @@ weights=((
 ))
 biases=((0.35,0.6))
 perceptron = Perceptron(weights=weights,biases=biases)
-# forward pass
 input = ((0.05,0.1))
+expectedOutput = ((0.01,0.99))
+# forward pass
 output =  perceptron.passForward(input)
 print("expected pass forward output =\n[0.75136507 0.772928465]")
 print("actual pass forward output =\n" + str(output))
 # complete backward pass
-perceptron.completePassBackward(((0.01,0.99)))
-print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
+perceptron.passBackward(expectedOutput)
+print("expected pass backward output =\n[[0.35891648 0.40866619]\n[0.51130127 0.56137012]]")
 print("actual pass backward output =\n" + str(perceptron.layers[-1].weights))
-print("expected pass backward hidden =\n[[0.149780719 0.19956143]\n[0.24975114 0.29950229]]")
+print("expected pass backward hidden =\n[[0.14978072 0.19956143]\n[0.24975114 0.29950229]]")
 print("actual pass backward hidden =\n" + str(perceptron.layers[-2].weights))
+'''
+# ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
+# perceptron initialization
+weights=((
+    array(((
+        ((0.5, 0.3, 0.1)),
+        ((0.3, 0.2, 0.1)),
+    ))),
+    array(((
+        ((0.1,0.2)),
+        ((0.3,0.4)),
+        ((0.5, 0.6)),
+    ))),
+))
+perceptron = Perceptron(weights=weights)
+# forward pass
+input = ((1,2,3))
+output =  perceptron.passForward(input)
+print("expected pass forward output =\n[0.5564 0.6302 0.6984]")
+print("actual pass forward output =\n" + str(output))
+# complete backward pass
+perceptron.passBackward(((0.1,0.3,0.7)))
+#print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
+print("actual pass backward output =\n" + str(perceptron.layers[-1].weights))
+#print("expected pass backward hidden =\n[[0.4946 0.2892 0.0837]\n[0.2896 0.1791 0.0687]]")
+print("actual pass backward hidden =\n" + str(perceptron.layers[-2].weights))
+'''
 pass
