@@ -99,7 +99,7 @@ class Layer():
         # initialize training draft (if justified by context)
         if training:
             self.trainingDraft = TrainingDraft(input, weightsBiasInput, output)
-        return output
+        return tuple(output)
     def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None):
         # get differential error on layer regarding output or hidden one
         if expectedOutput is not None:
@@ -116,22 +116,11 @@ class Layer():
         # INFO : old weights will be used on next computation
         oldWeights = self.weights
         self.weights = oldWeights - 0.5 * differentialErrorWeights
-        # compute new biases
-        newBiases = self.biases - 0.5 * newDifferentialErrorWeightsBiases.T
-        self.biases = newBiases[0]
-        # compute new dilatations
-        differentialOutputDilatations = Sigmoid.value(self.trainingDraft.weightsBiasInput, self.uncertainties)
-        differentialErrorDilatations = differentialErrorLayer * differentialOutputDilatations
-        newDilatations = self.dilatations - 0.5 * differentialErrorDilatations
-        self.dilatations = newDilatations
-        # compute new uncertainties
-        differentialOutputUncertainties = Sigmoid.derivativeFromValue(array([self.uncertainties]), self.trainingDraft.output, array([self.dilatations]))
-        differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
-        newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
-        self.uncertainties = newUncertainties[0]
-        # compute new offsets
-        newOffsets = self.offsets - 0.5 * differentialErrorLayer
-        self.offsets = newOffsets
+        # compute new extra parameters
+        self.computeNewBiases(newDifferentialErrorWeightsBiases)
+        self.computeNewUncertainties(differentialErrorLayer)
+        self.computeNewDilatations(differentialErrorLayer)
+        self.computeNewOffsets(differentialErrorLayer)
         # discard training draft
         del self.trainingDraft
         # return
@@ -147,6 +136,24 @@ class Layer():
         differentialErrors = differentialErrorWeightsBiasInput * previousLayerWeights
         differentialError = sum(differentialErrors, 0)
         return differentialError
+    def computeNew(self):
+        pass
+    def computeNewBiases(self,differentialErrorWeightsBiases):
+        newBiases = self.biases - 0.5 * differentialErrorWeightsBiases.T
+        self.biases = newBiases[0]
+    def computeNewUncertainties(self,differentialErrorLayer):
+        differentialOutputUncertainties = Sigmoid.derivativeFromValue(array([self.uncertainties]), self.trainingDraft.output, array([self.dilatations]))
+        differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
+        newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
+        self.uncertainties = newUncertainties[0]
+    def computeNewDilatations(self,differentialErrorLayer):
+        differentialOutputDilatations = Sigmoid.value(self.trainingDraft.weightsBiasInput, self.uncertainties)
+        differentialErrorDilatations = differentialErrorLayer * differentialOutputDilatations
+        newDilatations = self.dilatations - 0.5 * differentialErrorDilatations
+        self.dilatations = newDilatations
+    def computeNewOffsets(self,differentialErrorLayer):
+        newOffsets = self.offsets - 0.5 * differentialErrorLayer
+        self.offsets = newOffsets
     def freeze(self):
         # freeze weights
         frozenWeights = list()
@@ -209,7 +216,7 @@ class Perceptron():
         # pass forward
         actualOutput = self.passForward(input=input,training=True)
         # compute total error
-        outputError = ( ( expectedOutput - actualOutput ) ** 2 ) / 2
+        outputError = ( ( expectedOutput - array([actualOutput]) ) ** 2 ) / 2
         totalError = sum(outputError,0)
         # pass backward
         self.passBackward(expectedOutput)
@@ -251,9 +258,10 @@ expectedOutput = ((0.01,0.99))
 for loopNumber in range(6):
     totalError = perceptron.passForwardBackward(input, expectedOutput)
 perceptron.freeze()
-output = perceptron.passForward(input)
+actualOutput = perceptron.passForward(input)
 print("total error = " + str(totalError))
-print("pass forward output = " + str(output))
+print("expected output = " + str(expectedOutput))
+print("actual output = " + str(actualOutput))
 # train with multiple input / expected output
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
