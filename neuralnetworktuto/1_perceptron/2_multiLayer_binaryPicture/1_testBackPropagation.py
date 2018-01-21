@@ -14,6 +14,7 @@ from random import shuffle
 from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
+from copy import deepcopy
 # perceptron
 # INFO : can not defined a common parameters enumeration : https://docs.python.org/3/library/enum.html#restricted-subclassing-of-enumerations
 @unique
@@ -111,6 +112,9 @@ class Layer():
         differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
         newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
         self.uncertainties = tuple(newUncertainties[0])
+        # compute new offsets
+        newOffsets = self.offsets - 0.5 * differentialErrorLayer
+        self.offsets = newOffsets
         # return
         return newDifferentialErrorWeightsBiases, oldWeights
     # get differential error on output layer
@@ -164,14 +168,10 @@ class Perceptron():
             self.layers.append(layer)
         # TODO : tuple layers after training ?
     def passForward(self,input):
-        # TODO : use self.historyInputsOutputs only if learning
-        self.historyInputsOutputs=list()
         # INFO : next input is actual output
         inputOutput = input
         for layer in self.layers:
-            self.historyInputsOutputs.append(inputOutput)
             inputOutput = layer.passForward(inputOutput)
-        self.historyInputsOutputs.append(inputOutput)
         return inputOutput
     def passForwardBackward(self,input,expectedOutput):
         # pass forward
@@ -206,20 +206,12 @@ weights=((
     ))),
 ))
 biases=((0.35,0.6))
-perceptron = Perceptron(weights=weights,biases=biases,uncertainties=.99)
+perceptronModel = Perceptron(weights=weights,biases=biases,uncertainties=.99)
+# make many forward & backward pass
+perceptron = deepcopy(perceptronModel)
 input = ((0.05,0.1))
 expectedOutput = ((0.01,0.99))
-# make one forward & backward pass
-totalError = perceptron.passForwardBackward(input,expectedOutput)
-print("expected pass forward output =\n[0.75136507 0.772928465]")
-print("actual pass forward output =\n" + str(perceptron.layers[-1].output))
-print("expected pass backward output =\n[[0.35891648 0.40866619]\n[0.51130127 0.56137012]]")
-print("actual pass backward output =\n" + str(perceptron.layers[-1].weights))
-print("expected pass backward hidden =\n[[0.14978072 0.19956143]\n[0.24975114 0.29950229]]")
-print("actual pass backward hidden =\n" + str(perceptron.layers[-2].weights))
-print("total error = " + str(totalError))
-# make many forward & backward pass
-for loopNumber in range(22):
+for loopNumber in range(6):
     totalError = perceptron.passForwardBackward(input, expectedOutput)
 output = perceptron.passForward(input)
 print("total error = " + str(totalError))
