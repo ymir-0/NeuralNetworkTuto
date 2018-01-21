@@ -101,21 +101,15 @@ class Layer():
             self.trainingDraft = TrainingDraft(input, weightsBiasInput, output)
         return tuple(output)
     def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None):
+        # TODO : compute with spark each parameter
+        # TODO : set learning rate 0.5 has variable (and add inertia)
         # get differential error on layer regarding output or hidden one
         if expectedOutput is not None:
             differentialErrorLayer = self.differentialErrorOutput(expectedOutput)
         else:
             differentialErrorLayer = self.differentialErrorHidden(differentialErrorWeightsBiasInput,previousLayerWeights)
-        # TODO : compute with spark each parameter
         # compute new weights
-        differentialOutputWeightsBiasInput = Sigmoid.derivativeFromValue(array([self.trainingDraft.output]), self.uncertainties, array([self.dilatations]))
-        # INFO : new differential error on layer will be used on next computation
-        newDifferentialErrorWeightsBiases = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
-        differentialErrorWeights = newDifferentialErrorWeightsBiases * self.trainingDraft.input
-        # TODO : set learning rate 0.5 has variable (and add inertia)
-        # INFO : old weights will be used on next computation
-        oldWeights = self.weights
-        self.weights = oldWeights - 0.5 * differentialErrorWeights
+        newDifferentialErrorWeightsBiases, oldWeights = self.computeNewWeights(differentialErrorLayer)
         # compute new extra parameters
         self.computeNewBiases(newDifferentialErrorWeightsBiases)
         self.computeNewUncertainties(differentialErrorLayer)
@@ -136,8 +130,15 @@ class Layer():
         differentialErrors = differentialErrorWeightsBiasInput * previousLayerWeights
         differentialError = sum(differentialErrors, 0)
         return differentialError
-    def computeNew(self):
-        pass
+    def computeNewWeights(self,differentialErrorLayer):
+        differentialOutputWeightsBiasInput = Sigmoid.derivativeFromValue(array([self.trainingDraft.output]), self.uncertainties, array([self.dilatations]))
+        # INFO : new differential error on layer will be used on next computation
+        newDifferentialErrorWeightsBiases = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
+        differentialErrorWeights = newDifferentialErrorWeightsBiases * self.trainingDraft.input
+        # INFO : old weights will be used on next computation
+        oldWeights = self.weights
+        self.weights = oldWeights - 0.5 * differentialErrorWeights
+        return newDifferentialErrorWeightsBiases, oldWeights
     def computeNewBiases(self,differentialErrorWeightsBiases):
         newBiases = self.biases - 0.5 * differentialErrorWeightsBiases.T
         self.biases = newBiases[0]
