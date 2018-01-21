@@ -282,8 +282,9 @@ class Perceptron():
         # freeze all layers
         self.layers = tuple(self.layers)
     pass
-# ***** 1 hidden layer , 2 neurons on each layer
-# perceptron initialization
+# ***** 1 hidden layer , 2 neurons on each layer, no random
+'''
+# initialize perceptron
 weights=((
     array(((
         ((0.15,0.2)),
@@ -295,20 +296,8 @@ weights=((
     ))),
 ))
 biases=((0.35,0.6))
-perceptronModel = Perceptron(weights=weights,biases=biases,uncertainties=.99)
-# run many forward & backward pass
-perceptron = deepcopy(perceptronModel)
-input = ((0.05,0.1))
-expectedOutput = ((0.01,0.99))
-for loopNumber in range(6):
-    totalError = perceptron.passForwardBackward(input, expectedOutput)
-perceptron.freeze()
-actualOutput = perceptron.passForward(input)
-print("total error = " + str(totalError))
-print("expected output = " + str(expectedOutput))
-print("actual output = " + str(actualOutput))
-# run many randomized sequences
-perceptron = deepcopy(perceptronModel)
+perceptron = Perceptron(weights=weights,biases=biases,uncertainties=.99)
+# train perceptron
 sequences = dict({
     ((0.05, 0.1)): ((0.01, 0.99)),
     ((0.05, 0.01)): ((0.1, 0.99)),
@@ -326,6 +315,7 @@ sequences = dict({
 loopNumber = int(6e4)
 print("loop number = " + str(loopNumber))
 errors = perceptron.train(sequences,loopNumber)
+# display results
 for input, expectedOutput in sequences.items():
     # print results
     actualOutput = perceptron.passForward(input)
@@ -338,7 +328,56 @@ ylabel("error")
 grid(linestyle="-.")
 legend()
 show()
-# train with multiple input / expected output
+'''
+# ***** 2 hidden layer , 2 neurons on each layer, no random
+# initialize perceptron
+weights=((
+    array(((
+        ((0.15,0.2)),
+        ((0.25,0.3)),
+    ))),
+    array(((
+        ((0.275,0.325)),
+        ((0.375,0.425)),
+    ))),
+    array(((
+        ((0.4,0.45)),
+        ((0.5,0.55)),
+    ))),
+))
+biases=((0.35,0.475,0.6))
+perceptron = Perceptron(weights=weights,biases=biases,uncertainties=.99)
+# train perceptron
+sequences = dict({
+    ((0.05, 0.1)): ((0.01, 0.99)),
+    ((0.05, 0.01)): ((0.1, 0.99)),
+    ((0.05, 0.99)): ((0.01, 0.1)),
+    ((0.1, 0.05)): ((0.99, 0.01)),
+    ((0.1, 0.99)): ((0.05, 0.01)),
+    ((0.1, 0.01)): ((0.99, 0.05)),
+    ((0.01, 0.99)): ((0.05, 0.1)),
+    ((0.01, 0.05)): ((0.99, 0.1)),
+    ((0.01, 0.1)): ((0.05, 0.99)),
+    ((0.99, 0.01)): ((0.1, 0.05)),
+    ((0.99, 0.1)): ((0.01, 0.05)),
+    ((0.99, 0.05)): ((0.1, 0.01)),
+})
+loopNumber = int(6.5e4)
+print("loop number = " + str(loopNumber))
+errors = perceptron.train(sequences,loopNumber)
+# display results
+for input, expectedOutput in sequences.items():
+    # print results
+    actualOutput = perceptron.passForward(input)
+    print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input][-1]))
+    # prepare graph
+    plot(errors["loopNumbers"],errors[input], label=str(input))
+title("errors evolution")
+xlabel("training step")
+ylabel("error")
+grid(linestyle="-.")
+legend()
+show()
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
 # perceptron initialization
