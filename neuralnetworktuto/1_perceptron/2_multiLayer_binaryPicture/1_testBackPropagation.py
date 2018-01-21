@@ -285,7 +285,7 @@ class Perceptron():
     pass
 # test perceptrons
 TEST_COUNTER = 0
-def testParceptron(perceptron,sequences,loopNumber):
+def testPerceptron(perceptron,sequences,loopNumber):
     # train perceptron
     global TEST_COUNTER
     print("test # " + str(TEST_COUNTER))
@@ -335,7 +335,7 @@ sequences = dict({
     ((0.01, 0.1)): ((0.05, 0.99)),
     ((0.99, 0.01)): ((0.1, 0.05)),
 })
-testParceptron(perceptron,sequences,int(6e4))
+testPerceptron(perceptron,sequences,int(6e4))
 # ***** 2 hidden layers , 2 neurons on each layer, no random
 # initialize perceptron
 weights=((
@@ -360,7 +360,7 @@ sequences.update(dict({
     ((0.99, 0.05)): ((0.1, 0.01)),
 }))
 loopNumber = int(6.5e4)
-#testParceptron(perceptron,sequences,int(6.5e4))
+#testPerceptron(perceptron,sequences,int(6.5e4))
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
 # perceptron initialization
