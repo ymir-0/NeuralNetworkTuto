@@ -21,6 +21,11 @@ class Sigmoid():
     def value(variables, uncertainties=1, dilatations=1, offsets=0):
         value = dilatations / (1 + exp(-variables * uncertainties)) + offsets
         return value
+    @staticmethod
+    # INFO : we compute the derivative from : value = sigmoïd(variables)
+    def derivativeFromValue(value, uncertainties=1, dilatations=1):
+        derivative = dilatations * uncertainties * value * (1 - value)
+        return derivative
 # training draft
 class TrainingDraft():
     def __init__(self,input,weightsBiasInput,output):
@@ -98,8 +103,7 @@ class Layer():
         else:
             differentialErrorLayer = self.differentialErrorHidden(differentialErrorWeightsBiasInput,previousLayerWeights)
         # compute new weights
-        # TODO : merge into sigmoïde derivative
-        differentialOutputWeightsBiasInput = array([self.dilatations]) * self.uncertainties * self.trainingDraft.output * (1 - array([self.trainingDraft.output]))
+        differentialOutputWeightsBiasInput = Sigmoid.derivativeFromValue(array([self.trainingDraft.output]), self.uncertainties, array([self.dilatations]))
         # INFO : new differential error on layer will be used on next computation
         newDifferentialErrorWeightsBiases = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
         differentialErrorWeights = newDifferentialErrorWeightsBiases * self.trainingDraft.input
@@ -116,8 +120,7 @@ class Layer():
         newDilatations = self.dilatations - 0.5 * differentialErrorDilatations
         self.dilatations = newDilatations
         # compute new uncertainties
-        # TODO : merge into sigmoïde derivative
-        differentialOutputUncertainties = array([self.dilatations]) * self.trainingDraft.output * self.uncertainties * (1 - array([self.uncertainties]))
+        differentialOutputUncertainties = Sigmoid.derivativeFromValue(array([self.uncertainties]), self.trainingDraft.output, array([self.dilatations]))
         differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
         newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
         self.uncertainties = tuple(newUncertainties[0])
