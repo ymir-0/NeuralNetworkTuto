@@ -71,9 +71,11 @@ class Layer():
         for name , value in metaParameters.items():
             setattr(self, name , value)
     def passForward(self,input):
-        # TODO : store input & output only if training
+        # TODO : store input & output & weightsBiasInput only if training (self.%)
         self.input = input
         weightsBiasInput = self.weights.dot(input) + self.biases
+        self.weightsBiasInput = weightsBiasInput
+        # TODO : merge into sigmoïde fct°
         output = self.dilatations / (1 + exp( -weightsBiasInput * self.uncertainties)) + self.offsets
         self.output = output
         return output
@@ -86,18 +88,24 @@ class Layer():
         # compute new weights
         differentialOutputWeightsBiasInput = array([self.dilatations]) * self.uncertainties * self.output * (1 - array([self.output]))
         # INFO : new differential error on layer will be used on next computation
-        newDifferentialErrorWeightsBiasInput = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
-        differentialErrorWeights = newDifferentialErrorWeightsBiasInput * self.input
+        newDifferentialErrorWeightsBiases = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
+        differentialErrorWeights = newDifferentialErrorWeightsBiases * self.input
         # TODO : set learning rate 0.5 has variable (and add inertia)
         # TODO : correct bias ? should be possible considering it is a weight=1 input neuron
         # INFO : old weights will be used on next computation
         oldWeights = self.weights
         self.weights = oldWeights - 0.5 * differentialErrorWeights
         # compute new bias
-        newBiases = self.biases - 0.5 * newDifferentialErrorWeightsBiasInput.T
+        newBiases = self.biases - 0.5 * newDifferentialErrorWeightsBiases.T
         self.biases = tuple(newBiases[0])
+        # compute new dilatation
+        # TODO : merge into sigmoïde fct°
+        differentialOutputDilatation = 1 / (1 + exp( -self.weightsBiasInput * self.uncertainties))
+        differentialErrorDilatation = differentialErrorLayer * differentialOutputDilatation
+        newDilatation = self.dilatations - 0.5 * differentialErrorDilatation
+        self.dilatations = newDilatation
         # return
-        return newDifferentialErrorWeightsBiasInput, oldWeights
+        return newDifferentialErrorWeightsBiases, oldWeights
     # get differential error on output layer
     def differentialErrorOutput(self,expectedOutput):
         differentialError = self.output - expectedOutput
@@ -204,7 +212,7 @@ print("expected pass backward hidden =\n[[0.14978072 0.19956143]\n[0.24975114 0.
 print("actual pass backward hidden =\n" + str(perceptron.layers[-2].weights))
 print("total error = " + str(totalError))
 # make many forward & backward pass
-for loopNumber in range(int(1e4)):
+for loopNumber in range(21):
     totalError = perceptron.passForwardBackward(input, expectedOutput)
 output = perceptron.passForward(input)
 print("total error = " + str(totalError))
