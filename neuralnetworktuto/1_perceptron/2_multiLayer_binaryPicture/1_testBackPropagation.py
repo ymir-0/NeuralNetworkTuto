@@ -221,8 +221,8 @@ class Perceptron():
         # initialize errors
         errors=dict()
         errors["loopNumbers"]=list()
-        for input in sequences.keys():
-            errors[input]=list()
+        for expectedOutput in sequences.values():
+            errors[expectedOutput]=list()
         errorsMeasureStep = maximumLoopNumber / errorsRecordNumber
         errorsMeasureLoop = int(errorsMeasureStep)
         # train has necessary
@@ -231,7 +231,7 @@ class Perceptron():
             # keep error measure if necessary
             if loopNumber == errorsMeasureLoop:
                 errors["loopNumbers"].append(loopNumber)
-                [errors[input].append(error) for input, error in currentErrors.items()]
+                [errors[expectedOutput].append(error) for expectedOutput, error in currentErrors.items()]
                 # set next error measurement step
                 errorsMeasureLoop = int(errorsMeasureLoop+errorsMeasureStep)
             # test if error is sufficient
@@ -239,8 +239,8 @@ class Perceptron():
             if meanError <= minimumMeanError :
                 break
         # freeze when trained
-        for input, error in errors.items():
-            errors[input]=tuple(error)
+        for expectedOutput, error in errors.items():
+            errors[expectedOutput]=tuple(error)
         self.freeze()
         # return
         return errors
@@ -255,7 +255,7 @@ class Perceptron():
         for input in randomizedInputs:
             expectedOutput = sequences[input]
             error = self.passForwardBackward(input, expectedOutput)
-            errors[input] = error
+            errors[expectedOutput] = error
         # return
         return errors
     def passForwardBackward(self,input,expectedOutput):
@@ -295,10 +295,9 @@ def testPerceptron(perceptron,sequences,loopNumber):
     for input, expectedOutput in sequences.items():
         # print results
         actualOutput = perceptron.passForward(input)
-        print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
-            actualOutput) + "\terror = " + str(errors[input][-1]))
+        print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[expectedOutput][-1]))
         # prepare graph
-        plot(errors["loopNumbers"], errors[input], label=str(input))
+        plot(errors["loopNumbers"], errors[expectedOutput], label=str(expectedOutput))
     title("errors evolution (test # " + str(TEST_COUNTER) + ")")
     xlabel("training step")
     ylabel("error")
