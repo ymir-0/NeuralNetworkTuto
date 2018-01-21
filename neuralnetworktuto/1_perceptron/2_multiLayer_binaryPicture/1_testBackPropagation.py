@@ -16,6 +16,7 @@ from collections import Iterable
 from enum import Enum, unique
 from copy import deepcopy
 from statistics import mean
+from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, show
 # sigmoid
 # TODO : create an abstract class for all future functions
 # TODO : compute with spark each method
@@ -220,16 +221,16 @@ class Perceptron():
         errors=dict()
         for input in sequences.keys():
             errors[input]=list()
-        nextErrorsMeasureStep = maximumLoopNumber / errorsRecordNumber
-        nextErrorsMeasureStep = int(nextErrorsMeasureStep)
+        errorsMeasureStep = maximumLoopNumber / errorsRecordNumber
+        errorsMeasureLoop = int(errorsMeasureStep)
         # train has necessary
         for loopNumber in range(maximumLoopNumber):
             currentErrors = self.trainRandomized(sequences)
             # keep error measure if necessary
-            if loopNumber == nextErrorsMeasureStep:
+            if loopNumber == errorsMeasureLoop:
                 [errors[input].append(error) for input, error in currentErrors.items()]
                 # set next error measurement step
-                nextErrorsMeasureStep = int(nextErrorsMeasureStep+nextErrorsMeasureStep)
+                errorsMeasureLoop = int(errorsMeasureLoop+errorsMeasureStep)
             # test if error is sufficient
             meanError = mean(currentErrors.values())
             if meanError <= minimumMeanError :
@@ -312,12 +313,24 @@ sequences = dict({
     ((0.01, 0.99)): ((0.05, 0.1)),
     ((0.99, 0.01)): ((0.1, 0.05)),
 })
-loopNumber = int(1e3)
+loopNumber = int(1e5)
 print("loop number = " + str(loopNumber))
 errors = perceptron.train(sequences,loopNumber)
 for input, expectedOutput in sequences.items():
+    # print results
     actualOutput = perceptron.passForward(input)
-    print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input]))
+    print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input][-1]))
+    # prepare graph
+    plot(errors[input], label=str(input))
+#tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
+#allWeights = tuple(weightsCoalescence[0] + weightsCoalescence[1])
+#yticks(arange(round(min(allWeights), 1) - .1, round(max(allWeights), 1) + .1, .1))
+title("errors evolution")
+xlabel("training step")
+ylabel("error")
+grid(linestyle="-.")
+legend()
+show()
 # train with multiple input / expected output
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
