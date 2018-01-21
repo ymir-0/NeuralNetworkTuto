@@ -15,6 +15,12 @@ from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
 from copy import deepcopy
+# sigmoid
+class Sigmoid():
+    @staticmethod
+    def value(variables, uncertainties=1, dilatations=1, offsets=0):
+        value = dilatations / (1 + exp(-variables * uncertainties)) + offsets
+        return value
 # training draft
 class TrainingDraft():
     def __init__(self,input,weightsBiasInput,output):
@@ -80,8 +86,7 @@ class Layer():
     def passForward(self,input,training=False):
         # compute ouput
         weightsBiasInput = self.weights.dot(input) + self.biases
-        # TODO : merge into sigmoïde fct°
-        output = self.dilatations / (1 + exp( -weightsBiasInput * self.uncertainties)) + self.offsets
+        output = Sigmoid.value(weightsBiasInput, self.uncertainties, self.dilatations, self.offsets)
         # initialize training draft (if justified by context)
         if training:
             self.trainingDraft = TrainingDraft(input, weightsBiasInput, output)
@@ -106,8 +111,7 @@ class Layer():
         newBiases = self.biases - 0.5 * newDifferentialErrorWeightsBiases.T
         self.biases = tuple(newBiases[0])
         # compute new dilatations
-        # TODO : merge into sigmoïde fct°
-        differentialOutputDilatations = 1 / (1 + exp( -self.trainingDraft.weightsBiasInput * self.uncertainties))
+        differentialOutputDilatations = Sigmoid.value(self.trainingDraft.weightsBiasInput, self.uncertainties)
         differentialErrorDilatations = differentialErrorLayer * differentialOutputDilatations
         newDilatations = self.dilatations - 0.5 * differentialErrorDilatations
         self.dilatations = newDilatations
