@@ -93,6 +93,9 @@ class Layer():
         # INFO : old weights will be used on next computation
         oldWeights = self.weights
         self.weights = oldWeights - 0.5 * differentialErrorWeights
+        # compute new bias
+        newBiases = self.biases - 0.5 * newDifferentialErrorWeightsBiasInput.T
+        self.biases = tuple(newBiases[0])
         # return
         return newDifferentialErrorWeightsBiasInput, oldWeights
     # get differential error on output layer
