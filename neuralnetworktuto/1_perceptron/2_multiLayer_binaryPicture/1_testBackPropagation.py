@@ -283,8 +283,32 @@ class Perceptron():
         # freeze all layers
         self.layers = tuple(self.layers)
     pass
+# test perceptrons
+TEST_COUNTER = 0
+def testParceptron(perceptron,sequences,loopNumber):
+    # train perceptron
+    global TEST_COUNTER
+    print("test # " + str(TEST_COUNTER))
+    print("loop number = " + str(loopNumber))
+    errors = perceptron.train(sequences, loopNumber)
+    # display results
+    for input, expectedOutput in sequences.items():
+        # print results
+        actualOutput = perceptron.passForward(input)
+        print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
+            actualOutput) + "\terror = " + str(errors[input][-1]))
+        # prepare graph
+        plot(errors["loopNumbers"], errors[input], label=str(input))
+    title("errors evolution (test # " + str(TEST_COUNTER) + ")")
+    xlabel("training step")
+    ylabel("error")
+    grid(linestyle="-.")
+    legend()
+    show()
+    # next test
+    TEST_COUNTER = TEST_COUNTER + 1
+    pass
 # ***** 1 hidden layer , 2 neurons on each layer, no random
-'''
 # initialize perceptron
 weights=((
     array(((
@@ -310,26 +334,8 @@ sequences = dict({
     ((0.01, 0.05)): ((0.99, 0.1)),
     ((0.01, 0.1)): ((0.05, 0.99)),
     ((0.99, 0.01)): ((0.1, 0.05)),
-    #((0.99, 0.1)): ((0.01, 0.05)),
-    #((0.99, 0.05)): ((0.1, 0.01)),
 })
-loopNumber = int(6e4)
-print("loop number = " + str(loopNumber))
-errors = perceptron.train(sequences,loopNumber)
-# display results
-for input, expectedOutput in sequences.items():
-    # print results
-    actualOutput = perceptron.passForward(input)
-    print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input][-1]))
-    # prepare graph
-    plot(errors["loopNumbers"],errors[input], label=str(input))
-title("errors evolution")
-xlabel("training step")
-ylabel("error")
-grid(linestyle="-.")
-legend()
-show()
-'''
+testParceptron(perceptron,sequences,int(6e4))
 # ***** 2 hidden layers , 2 neurons on each layer, no random
 # initialize perceptron
 weights=((
@@ -349,36 +355,12 @@ weights=((
 biases=((0.35,0.475,0.6))
 perceptron = Perceptron(weights=weights,biases=biases,uncertainties=.99)
 # train perceptron
-sequences = dict({
-    ((0.05, 0.1)): ((0.01, 0.99)),
-    ((0.05, 0.01)): ((0.1, 0.99)),
-    ((0.05, 0.99)): ((0.01, 0.1)),
-    ((0.1, 0.05)): ((0.99, 0.01)),
-    ((0.1, 0.99)): ((0.05, 0.01)),
-    ((0.1, 0.01)): ((0.99, 0.05)),
-    ((0.01, 0.99)): ((0.05, 0.1)),
-    ((0.01, 0.05)): ((0.99, 0.1)),
-    ((0.01, 0.1)): ((0.05, 0.99)),
-    ((0.99, 0.01)): ((0.1, 0.05)),
+sequences.update(dict({
     ((0.99, 0.1)): ((0.01, 0.05)),
     ((0.99, 0.05)): ((0.1, 0.01)),
-})
+}))
 loopNumber = int(6.5e4)
-print("loop number = " + str(loopNumber))
-errors = perceptron.train(sequences,loopNumber)
-# display results
-for input, expectedOutput in sequences.items():
-    # print results
-    actualOutput = perceptron.passForward(input)
-    print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input][-1]))
-    # prepare graph
-    plot(errors["loopNumbers"],errors[input], label=str(input))
-title("errors evolution")
-xlabel("training step")
-ylabel("error")
-grid(linestyle="-.")
-legend()
-show()
+#testParceptron(perceptron,sequences,int(6.5e4))
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
 # perceptron initialization
