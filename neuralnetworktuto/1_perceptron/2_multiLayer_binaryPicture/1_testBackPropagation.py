@@ -100,21 +100,21 @@ class Layer():
         if training:
             self.trainingDraft = TrainingDraft(input, weightsBiasInput, output)
         return tuple(output)
-    def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None):
+    def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None, learningRate=0.5):
         # TODO : compute with spark each parameter
-        # TODO : set learning rate 0.5 has variable (and add inertia)
+        # TODO : add inertia
         # get differential error on layer regarding output or hidden one
         if expectedOutput is not None:
             differentialErrorLayer = self.differentialErrorOutput(expectedOutput)
         else:
             differentialErrorLayer = self.differentialErrorHidden(differentialErrorWeightsBiasInput,previousLayerWeights)
         # compute new weights
-        newDifferentialErrorWeightsBiases, oldWeights = self.computeNewWeights(differentialErrorLayer)
+        newDifferentialErrorWeightsBiases, oldWeights = self.computeNewWeights(differentialErrorLayer, learningRate)
         # compute new extra parameters
-        self.computeNewBiases(newDifferentialErrorWeightsBiases)
-        self.computeNewUncertainties(differentialErrorLayer)
-        self.computeNewDilatations(differentialErrorLayer)
-        self.computeNewOffsets(differentialErrorLayer)
+        self.computeNewBiases(newDifferentialErrorWeightsBiases, learningRate)
+        self.computeNewUncertainties(differentialErrorLayer, learningRate)
+        self.computeNewDilatations(differentialErrorLayer, learningRate)
+        self.computeNewOffsets(differentialErrorLayer, learningRate)
         # discard training draft
         del self.trainingDraft
         # return
@@ -130,30 +130,30 @@ class Layer():
         differentialErrors = differentialErrorWeightsBiasInput * previousLayerWeights
         differentialError = sum(differentialErrors, 0)
         return differentialError
-    def computeNewWeights(self,differentialErrorLayer):
+    def computeNewWeights(self,differentialErrorLayer, learningRate=0.5):
         differentialOutputWeightsBiasInput = Sigmoid.derivativeFromValue(array([self.trainingDraft.output]), self.uncertainties, array([self.dilatations]))
         # INFO : new differential error on layer will be used on next computation
         newDifferentialErrorWeightsBiases = (differentialErrorLayer * differentialOutputWeightsBiasInput).T
         differentialErrorWeights = newDifferentialErrorWeightsBiases * self.trainingDraft.input
         # INFO : old weights will be used on next computation
         oldWeights = self.weights
-        self.weights = oldWeights - 0.5 * differentialErrorWeights
+        self.weights = oldWeights - learningRate * differentialErrorWeights
         return newDifferentialErrorWeightsBiases, oldWeights
-    def computeNewBiases(self,differentialErrorWeightsBiases):
-        newBiases = self.biases - 0.5 * differentialErrorWeightsBiases.T
+    def computeNewBiases(self,differentialErrorWeightsBiases, learningRate=0.5):
+        newBiases = self.biases - learningRate * differentialErrorWeightsBiases.T
         self.biases = newBiases[0]
-    def computeNewUncertainties(self,differentialErrorLayer):
+    def computeNewUncertainties(self,differentialErrorLayer, learningRate=0.5):
         differentialOutputUncertainties = Sigmoid.derivativeFromValue(array([self.uncertainties]), self.trainingDraft.output, array([self.dilatations]))
         differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
-        newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
+        newUncertainties = self.uncertainties - learningRate * differentialErrorUncertainties
         self.uncertainties = newUncertainties[0]
-    def computeNewDilatations(self,differentialErrorLayer):
+    def computeNewDilatations(self,differentialErrorLayer, learningRate=0.5):
         differentialOutputDilatations = Sigmoid.value(self.trainingDraft.weightsBiasInput, self.uncertainties)
         differentialErrorDilatations = differentialErrorLayer * differentialOutputDilatations
-        newDilatations = self.dilatations - 0.5 * differentialErrorDilatations
+        newDilatations = self.dilatations - learningRate * differentialErrorDilatations
         self.dilatations = newDilatations
-    def computeNewOffsets(self,differentialErrorLayer):
-        newOffsets = self.offsets - 0.5 * differentialErrorLayer
+    def computeNewOffsets(self,differentialErrorLayer, learningRate=0.5):
+        newOffsets = self.offsets - learningRate * differentialErrorLayer
         self.offsets = newOffsets
     def freeze(self):
         # freeze weights
