@@ -111,10 +111,11 @@ class Layer():
         # compute new weights
         newDifferentialErrorWeightsBiases, oldWeights = self.computeNewWeights(differentialErrorLayer, learningRate)
         # compute new extra parameters
+        # TODO : set extra parameters to update
         self.computeNewBiases(newDifferentialErrorWeightsBiases, learningRate)
-        self.computeNewUncertainties(differentialErrorLayer, learningRate)
-        self.computeNewDilatations(differentialErrorLayer, learningRate)
-        self.computeNewOffsets(differentialErrorLayer, learningRate)
+        #self.computeNewUncertainties(differentialErrorLayer, learningRate)
+        #self.computeNewDilatations(differentialErrorLayer, learningRate)
+        #self.computeNewOffsets(differentialErrorLayer, learningRate)
         # discard training draft
         del self.trainingDraft
         # return
@@ -213,12 +214,26 @@ class Perceptron():
         for layer in self.layers:
             inputOutput = layer.passForward(inputOutput,training)
         return inputOutput
+    def trainRandomized(self,sequences):
+        # initialize errors
+        errors = dict()
+        # randomize sequence
+        randomizedInputs = list(sequences.keys())
+        shuffle(randomizedInputs)
+        randomizedInputs = tuple(randomizedInputs)
+        # run forward & backward for each training input / expected output
+        for input in randomizedInputs:
+            expectedOutput = sequences[input]
+            error = self.passForwardBackward(input, expectedOutput)
+            errors[input] = error
+        # return
+        return errors
     def passForwardBackward(self,input,expectedOutput):
         # pass forward
         actualOutput = self.passForward(input=input,training=True)
         # compute total error
         outputError = ( ( expectedOutput - array([actualOutput]) ) ** 2 ) / 2
-        totalError = sum(outputError,0)
+        totalError = sum(outputError)
         # pass backward
         self.passBackward(expectedOutput)
         # return
@@ -252,7 +267,7 @@ weights=((
 ))
 biases=((0.35,0.6))
 perceptronModel = Perceptron(weights=weights,biases=biases,uncertainties=.99)
-# make many forward & backward pass
+# run many forward & backward pass
 perceptron = deepcopy(perceptronModel)
 input = ((0.05,0.1))
 expectedOutput = ((0.01,0.99))
@@ -263,6 +278,22 @@ actualOutput = perceptron.passForward(input)
 print("total error = " + str(totalError))
 print("expected output = " + str(expectedOutput))
 print("actual output = " + str(actualOutput))
+# run many randomized sequences
+perceptron = deepcopy(perceptronModel)
+sequences = dict({
+    ((0.05, 0.1)): ((0.01, 0.99)),
+    ((0.1, 0.05)): ((0.99, 0.01)),
+    ((0.01, 0.99)): ((0.05, 0.1)),
+    ((0.99, 0.01)): ((0.1, 0.05)),
+})
+loopNumber = int(1e5)
+print("loop number = " + str(loopNumber))
+for loopNumber in range(loopNumber):
+    errors = perceptron.trainRandomized(sequences)
+perceptron.freeze()
+for input, expectedOutput in sequences.items():
+    actualOutput = perceptron.passForward(input)
+    print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input]))
 # train with multiple input / expected output
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
