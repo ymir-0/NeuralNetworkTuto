@@ -215,17 +215,28 @@ class Perceptron():
         for layer in self.layers:
             inputOutput = layer.passForward(inputOutput,training)
         return inputOutput
-    def train(self,maximumLoopNumber=int(1e5),minimumMeanError=1e-10):
+    def train(self,sequences,maximumLoopNumber=int(1e5),minimumMeanError=1e-10,errorsRecordNumber=100):
         # initialize errors
-        # TODO : set a number of errors to record
+        errors=dict()
+        for input in sequences.keys():
+            errors[input]=list()
+        nextErrorsMeasureStep = maximumLoopNumber / errorsRecordNumber
+        nextErrorsMeasureStep = int(nextErrorsMeasureStep)
         # train has necessary
         for loopNumber in range(maximumLoopNumber):
-            errors = self.trainRandomized(sequences)
+            currentErrors = self.trainRandomized(sequences)
+            # keep error measure if necessary
+            if loopNumber == nextErrorsMeasureStep:
+                [errors[input].append(error) for input, error in currentErrors.items()]
+                # set next error measurement step
+                nextErrorsMeasureStep = int(nextErrorsMeasureStep+nextErrorsMeasureStep)
             # test if error is sufficient
-            meanError = mean(list(errors.values()))
+            meanError = mean(currentErrors.values())
             if meanError <= minimumMeanError :
                 break
         # freeze when trained
+        for input, error in errors.items():
+            errors[input]=tuple(error)
         self.freeze()
         # return
         return errors
@@ -301,9 +312,9 @@ sequences = dict({
     ((0.01, 0.99)): ((0.05, 0.1)),
     ((0.99, 0.01)): ((0.1, 0.05)),
 })
-loopNumber = int(1e5)
+loopNumber = int(1e3)
 print("loop number = " + str(loopNumber))
-errors = perceptron.train(loopNumber)
+errors = perceptron.train(sequences,loopNumber)
 for input, expectedOutput in sequences.items():
     actualOutput = perceptron.passForward(input)
     print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input]))
