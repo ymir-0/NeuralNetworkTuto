@@ -84,7 +84,7 @@ class Layer():
             value = parameters[name] if name in parameters else metaParameters[name]
             if not isinstance(value, Iterable):
                 value = [value] * height
-            metaParameters[name] = tuple(value)
+            metaParameters[name] = value
         # set meta parameters has enumerates
         for name , value in metaParameters.items():
             setattr(self, name , value)
@@ -113,7 +113,7 @@ class Layer():
         self.weights = oldWeights - 0.5 * differentialErrorWeights
         # compute new biases
         newBiases = self.biases - 0.5 * newDifferentialErrorWeightsBiases.T
-        self.biases = tuple(newBiases[0])
+        self.biases = newBiases[0]
         # compute new dilatations
         differentialOutputDilatations = Sigmoid.value(self.trainingDraft.weightsBiasInput, self.uncertainties)
         differentialErrorDilatations = differentialErrorLayer * differentialOutputDilatations
@@ -123,7 +123,7 @@ class Layer():
         differentialOutputUncertainties = Sigmoid.derivativeFromValue(array([self.uncertainties]), self.trainingDraft.output, array([self.dilatations]))
         differentialErrorUncertainties = differentialErrorLayer * differentialOutputUncertainties
         newUncertainties = self.uncertainties - 0.5 * differentialErrorUncertainties
-        self.uncertainties = tuple(newUncertainties[0])
+        self.uncertainties = newUncertainties[0]
         # compute new offsets
         newOffsets = self.offsets - 0.5 * differentialErrorLayer
         self.offsets = newOffsets
@@ -140,6 +140,18 @@ class Layer():
         differentialErrors = differentialErrorWeightsBiasInput * previousLayerWeights
         differentialError = sum(differentialErrors, 0)
         return differentialError
+    def freeze(self):
+        # freeze weights
+        frozenWeights = list()
+        for weightsColumn in self.weights:
+            frozenWeights.append(tuple(weightsColumn))
+        frozenWeights = tuple(frozenWeights)
+        self.weights = array(frozenWeights)
+        # freeze meta parameters
+        self.biases = tuple(self.biases)
+        self.uncertainties = tuple(self.uncertainties)
+        self.dilatations = tuple(self.dilatations)
+        self.offsets = tuple(self.offsets)
     pass
 class Perceptron():
     # TODO : add methods to manipulate perceptron : remove weight between 2 neurons, remove specific neuron, edit specific neuron meta parameter
@@ -180,7 +192,6 @@ class Perceptron():
             # create layer
             layer = Layer(**layerParameters)
             self.layers.append(layer)
-        # TODO : tuple layers after training ?
     def passForward(self,input,training=False):
         # INFO : next input is actual output
         inputOutput = input
@@ -205,6 +216,12 @@ class Perceptron():
         for hiddenLayerIndex in range(2, len(self.layers)+1):
             layer = self.layers[-hiddenLayerIndex]
             differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(differentialErrorWeightsBiasInput=differentialErrorWeightsBiasInput,previousLayerWeights=previousLayerWeights)
+    def freeze(self):
+        # freeze layer details
+        for layer in self.layers:
+            layer.freeze()
+        # freeze all layers
+        self.layers = tuple(self.layers)
     pass
 # ***** 1 hidden layer , 2 neurons on each layer
 # perceptron initialization
@@ -226,6 +243,7 @@ input = ((0.05,0.1))
 expectedOutput = ((0.01,0.99))
 for loopNumber in range(6):
     totalError = perceptron.passForwardBackward(input, expectedOutput)
+perceptron.freeze()
 output = perceptron.passForward(input)
 print("total error = " + str(totalError))
 print("pass forward output = " + str(output))
