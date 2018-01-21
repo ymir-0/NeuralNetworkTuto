@@ -311,11 +311,19 @@ print("actual output = " + str(actualOutput))
 perceptron = deepcopy(perceptronModel)
 sequences = dict({
     ((0.05, 0.1)): ((0.01, 0.99)),
+    ((0.05, 0.01)): ((0.1, 0.99)),
+    ((0.05, 0.99)): ((0.01, 0.1)),
     ((0.1, 0.05)): ((0.99, 0.01)),
+    ((0.1, 0.99)): ((0.05, 0.01)),
+    ((0.1, 0.01)): ((0.99, 0.05)),
     ((0.01, 0.99)): ((0.05, 0.1)),
+    ((0.01, 0.05)): ((0.99, 0.1)),
+    ((0.01, 0.1)): ((0.05, 0.99)),
     ((0.99, 0.01)): ((0.1, 0.05)),
+    #((0.99, 0.1)): ((0.01, 0.05)),
+    #((0.99, 0.05)): ((0.1, 0.01)),
 })
-loopNumber = int(1.5e4)
+loopNumber = int(6e4)
 print("loop number = " + str(loopNumber))
 errors = perceptron.train(sequences,loopNumber)
 for input, expectedOutput in sequences.items():
@@ -324,9 +332,6 @@ for input, expectedOutput in sequences.items():
     print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(actualOutput) + "\terror = " + str(errors[input][-1]))
     # prepare graph
     plot(errors["loopNumbers"],errors[input], label=str(input))
-#tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
-#allWeights = tuple(weightsCoalescence[0] + weightsCoalescence[1])
-#yticks(arange(round(min(allWeights), 1) - .1, round(max(allWeights), 1) + .1, .1))
 title("errors evolution")
 xlabel("training step")
 ylabel("error")
