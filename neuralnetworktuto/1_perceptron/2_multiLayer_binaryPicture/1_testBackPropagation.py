@@ -232,15 +232,18 @@ class Perceptron():
         # initialize errors
         errors=dict()
         errors["loopNumbers"]=list()
-        for expectedOutput in sequences.values():
-            errors[expectedOutput]=list()
-        errorsMeasureStep = maximumLoopNumber / errorsRecordNumber
-        errorsMeasureLoop = int(errorsMeasureStep)
+        # initialize error conter
+        keepErrorMeasures = errorsRecordNumber is not None and errorsRecordNumber > 0
+        if keepErrorMeasures:
+            for expectedOutput in sequences.values():
+                errors[expectedOutput]=list()
+            errorsMeasureStep = maximumLoopNumber / errorsRecordNumber
+            errorsMeasureLoop = int(errorsMeasureStep)
         # train has necessary
         for loopNumber in range(maximumLoopNumber):
             currentErrors = self.trainRandomized(sequences)
             # keep error measure if necessary
-            if loopNumber == errorsMeasureLoop:
+            if keepErrorMeasures and loopNumber == errorsMeasureLoop:
                 errors["loopNumbers"].append(loopNumber)
                 [errors[expectedOutput].append(error) for expectedOutput, error in currentErrors.items()]
                 # set next error measurement step
@@ -250,8 +253,9 @@ class Perceptron():
             if meanError <= minimumMeanError :
                 break
         # freeze when trained
-        for expectedOutput, error in errors.items():
-            errors[expectedOutput]=tuple(error)
+        if keepErrorMeasures:
+            for expectedOutput, error in errors.items():
+                errors[expectedOutput]=tuple(error)
         self.freeze()
         # return
         return errors
@@ -369,7 +373,7 @@ sequences.update(dict({
     ((0.99, 0.1)): ((0.01, 0.05)),
     ((0.99, 0.05)): ((0.1, 0.01)),
 }))
-#testPerceptron(perceptron,sequences,int(6.5e4))
+testPerceptron(perceptron,sequences,int(6.5e4))
 # ***** 3 hidden layers , 2 neurons on each layer, randomized
 # WARNING : some randomized choice may not converge
 # TODO : add meta parameters to update
@@ -377,7 +381,7 @@ sequences.update(dict({
 layerHeights = tuple([2]*4)
 perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
 # train perceptron
-testPerceptron(perceptron,sequences,int(6.5e4))
+#testPerceptron(perceptron,sequences,int(6.5e4))
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
 # perceptron initialization
