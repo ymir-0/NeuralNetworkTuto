@@ -43,6 +43,12 @@ class PerceptronParameters(Enum):
     WEIGHTS="weights"
     LAYER_HEIGHTS="layerHeights"
     WEIGHT_LIMIT="weightLimit"
+    @staticmethod
+    def defaultValues():
+        defaultValues = {
+            "weightLimit" : 1,
+        }
+        return defaultValues
 @unique
 class WeightParameters(Enum):
     WEIGHTS="weights"
@@ -181,9 +187,14 @@ class Perceptron():
         self.layers = list()
         # test planned weights
         plannedWeights = WeightParameters.WEIGHTS.value in parameters
-        # set layer number
+        # set layer number & weights limit
         # INFO : we do not create the input layer because it will be the input vector to forward pass with
-        layerNumber = len(parameters[PerceptronParameters.WEIGHTS.value]) if plannedWeights else parameters[PerceptronParameters.LAYER_HEIGHTS.value] - 1
+        layerNumber = len(parameters[PerceptronParameters.WEIGHTS.value]) if plannedWeights else len(parameters[PerceptronParameters.LAYER_HEIGHTS.value]) -1
+        if PerceptronParameters.WEIGHT_LIMIT.value not in parameters:
+            parameters[PerceptronParameters.WEIGHT_LIMIT.value] = PerceptronParameters.defaultValues()[PerceptronParameters.WEIGHT_LIMIT.value]
+        if not isinstance(parameters[PerceptronParameters.WEIGHT_LIMIT.value], Iterable):
+            parameters[PerceptronParameters.WEIGHT_LIMIT.value] = [parameters[PerceptronParameters.WEIGHT_LIMIT.value]]*layerNumber
+        parameters[PerceptronParameters.WEIGHT_LIMIT.value] = tuple(parameters[PerceptronParameters.WEIGHT_LIMIT.value])
         # initialize meta parameters
         metaParameters = MetaParameters.defaultValues()
         # set meta parameters has enumerates
@@ -334,7 +345,7 @@ sequences = dict({
     ((0.01, 0.1)): ((0.05, 0.99)),
     ((0.99, 0.01)): ((0.1, 0.05)),
 })
-testPerceptron(perceptron,sequences,int(6e4))
+#testPerceptron(perceptron,sequences,int(6e4))
 # ***** 2 hidden layers , 2 neurons on each layer, no random
 # initialize perceptron
 weights=((
@@ -358,8 +369,15 @@ sequences.update(dict({
     ((0.99, 0.1)): ((0.01, 0.05)),
     ((0.99, 0.05)): ((0.1, 0.01)),
 }))
-loopNumber = int(6.5e4)
 #testPerceptron(perceptron,sequences,int(6.5e4))
+# ***** 3 hidden layers , 2 neurons on each layer, randomized
+# WARNING : some randomized choice may not converge
+# TODO : add meta parameters to update
+# initialize perceptron
+layerHeights = tuple([2]*4)
+perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
+# train perceptron
+testPerceptron(perceptron,sequences,int(6.5e4))
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
 # perceptron initialization
