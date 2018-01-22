@@ -108,7 +108,7 @@ class Layer():
         if training:
             self.trainingDraft = TrainingDraft(input, weightsBiasInput, output)
         return tuple(output)
-    def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None, learningRate=0.5):
+    def passBackward(self,expectedOutput=None,differentialErrorWeightsBiasInput=None,previousLayerWeights=None, learningRate=0.5, metaParametersUpdate=((MetaParameters.BIASES.value))):
         # TODO : compute with spark each parameter
         # TODO : add inertia
         # get differential error on layer regarding output or hidden one
@@ -120,10 +120,14 @@ class Layer():
         newDifferentialErrorWeightsBiases, oldWeights = self.computeNewWeights(differentialErrorLayer, learningRate)
         # compute new extra parameters
         # TODO : set extra parameters to update
-        self.computeNewBiases(newDifferentialErrorWeightsBiases, learningRate)
-        #self.computeNewUncertainties(differentialErrorLayer, learningRate)
-        #self.computeNewDilatations(differentialErrorLayer, learningRate)
-        #self.computeNewOffsets(differentialErrorLayer, learningRate)
+        if MetaParameters.BIASES.value in metaParametersUpdate:
+            self.computeNewBiases(newDifferentialErrorWeightsBiases, learningRate)
+        if MetaParameters.UNCERTAINTIES.value in metaParametersUpdate:
+            self.computeNewUncertainties(differentialErrorLayer, learningRate)
+        if MetaParameters.DILATATIONS.value in metaParametersUpdate:
+            self.computeNewDilatations(differentialErrorLayer, learningRate)
+        if MetaParameters.OFFSETS.value in metaParametersUpdate:
+            self.computeNewOffsets(differentialErrorLayer, learningRate)
         # discard training draft
         del self.trainingDraft
         # return
@@ -228,7 +232,7 @@ class Perceptron():
         for layer in self.layers:
             inputOutput = layer.passForward(inputOutput,training)
         return inputOutput
-    def train(self,sequences,maximumLoopNumber=int(1e5),minimumMeanError=1e-10,errorsRecordNumber=100):
+    def train(self,sequences,maximumLoopNumber=int(1e5),minimumMeanError=1e-10,errorsRecordNumber=100, metaParametersUpdate=((MetaParameters.BIASES.value))):
         # initialize errors
         errors=dict()
         errors["loopNumbers"]=list()
@@ -241,7 +245,7 @@ class Perceptron():
             errorsMeasureLoop = int(errorsMeasureStep)
         # train has necessary
         for loopNumber in range(maximumLoopNumber):
-            currentErrors = self.trainRandomized(sequences)
+            currentErrors = self.trainRandomized(sequences, metaParametersUpdate)
             # keep error measure if necessary
             if keepErrorMeasures and loopNumber == errorsMeasureLoop:
                 errors["loopNumbers"].append(loopNumber)
@@ -259,7 +263,7 @@ class Perceptron():
         self.freeze()
         # return
         return errors
-    def trainRandomized(self,sequences):
+    def trainRandomized(self,sequences, metaParametersUpdate=((MetaParameters.BIASES.value))):
         # initialize errors
         errors = dict()
         # randomize sequence
@@ -269,28 +273,28 @@ class Perceptron():
         # run forward & backward for each training input / expected output
         for input in randomizedInputs:
             expectedOutput = sequences[input]
-            error = self.passForwardBackward(input, expectedOutput)
+            error = self.passForwardBackward(input, expectedOutput, metaParametersUpdate)
             errors[expectedOutput] = error
         # return
         return errors
-    def passForwardBackward(self,input,expectedOutput):
+    def passForwardBackward(self,input,expectedOutput, metaParametersUpdate=((MetaParameters.BIASES.value))):
         # pass forward
         actualOutput = self.passForward(input=input,training=True)
         # compute total error
         outputError = ( ( expectedOutput - array([actualOutput]) ) ** 2 ) / 2
         totalError = sum(outputError)
         # pass backward
-        self.passBackward(expectedOutput)
+        self.passBackward(expectedOutput, metaParametersUpdate)
         # return
         return totalError
-    def passBackward(self,expectedOutput):
+    def passBackward(self,expectedOutput, metaParametersUpdate=((MetaParameters.BIASES.value))):
         # pass on output
         layer = self.layers[-1]
-        differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(expectedOutput=expectedOutput)
+        differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(expectedOutput=expectedOutput, metaParametersUpdate=metaParametersUpdate)
         # pass on hidden layers
         for hiddenLayerIndex in range(2, len(self.layers)+1):
             layer = self.layers[-hiddenLayerIndex]
-            differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(differentialErrorWeightsBiasInput=differentialErrorWeightsBiasInput,previousLayerWeights=previousLayerWeights)
+            differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(differentialErrorWeightsBiasInput=differentialErrorWeightsBiasInput,previousLayerWeights=previousLayerWeights, metaParametersUpdate=metaParametersUpdate)
     def freeze(self):
         # freeze layer details
         for layer in self.layers:
@@ -373,7 +377,7 @@ sequences.update(dict({
     ((0.99, 0.1)): ((0.01, 0.05)),
     ((0.99, 0.05)): ((0.1, 0.01)),
 }))
-testPerceptron(perceptron,sequences,int(6.5e4))
+#testPerceptron(perceptron,sequences,int(6.5e4))
 # ***** 3 hidden layers , 2 neurons on each layer, randomized
 # WARNING : some randomized choice may not converge
 # TODO : add meta parameters to update
@@ -381,7 +385,7 @@ testPerceptron(perceptron,sequences,int(6.5e4))
 layerHeights = tuple([2]*4)
 perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
 # train perceptron
-#testPerceptron(perceptron,sequences,int(6.5e4))
+testPerceptron(perceptron,sequences,int(6.5e4))
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
 # perceptron initialization
