@@ -378,13 +378,14 @@ sequences.update(dict({
     ((0.99, 0.05)): ((0.1, 0.01)),
 }))
 #testPerceptron(perceptron,sequences,int(6.5e4))
-# ***** 3 hidden layers , 2 neurons on each layer, randomized
+# ***** 3 hidden layers , 2 neurons on each layer, randomized, all extra parameters updated on training
 # WARNING : some randomized choice may not converge
 # TODO : add meta parameters to update
 # initialize perceptron
 layerHeights = tuple([2]*4)
 perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
 # train perceptron
+metaParametersUpdate=((MetaParameters.BIASES.value,MetaParameters.UNCERTAINTIES.value,MetaParameters.DILATATIONS.value,MetaParameters.OFFSETS.value))
 testPerceptron(perceptron,sequences,int(6.5e4))
 '''
 # ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
