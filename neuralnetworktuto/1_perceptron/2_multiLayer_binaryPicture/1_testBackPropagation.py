@@ -304,12 +304,12 @@ class Perceptron():
     pass
 # test perceptrons
 TEST_COUNTER = 0
-def testPerceptron(perceptron,sequences,loopNumber):
+def testPerceptron(perceptron,sequences,loopNumber,metaParametersUpdate=((MetaParameters.BIASES.value))):
     # train perceptron
     global TEST_COUNTER
     print("test # " + str(TEST_COUNTER))
     print("loop number = " + str(loopNumber))
-    errors = perceptron.train(sequences, loopNumber)
+    errors = perceptron.train(sequences, loopNumber,metaParametersUpdate=metaParametersUpdate)
     # display results
     for input, expectedOutput in sequences.items():
         # print results
@@ -380,38 +380,14 @@ sequences.update(dict({
 #testPerceptron(perceptron,sequences,int(6.5e4))
 # ***** 3 hidden layers , 2 neurons on each layer, randomized, all extra parameters updated on training
 # WARNING : some randomized choice may not converge
-# TODO : add meta parameters to update
 # initialize perceptron
 layerHeights = tuple([2]*4)
 perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
 # train perceptron
-metaParametersUpdate=((MetaParameters.BIASES.value,MetaParameters.UNCERTAINTIES.value,MetaParameters.DILATATIONS.value,MetaParameters.OFFSETS.value))
-testPerceptron(perceptron,sequences,int(6.5e4))
-'''
-# ***** 1 hidden layer , 3 neurons on input&output layer, 2 neurons on hidden layer
-# perceptron initialization
-weights=((
-    array(((
-        ((0.5, 0.3, 0.1)),
-        ((0.3, 0.2, 0.1)),
-    ))),
-    array(((
-        ((0.1,0.2)),
-        ((0.3,0.4)),
-        ((0.5, 0.6)),
-    ))),
-))
-perceptron = Perceptron(weights=weights)
-# forward pass
-input = ((1,2,3))
-output =  perceptron.passForward(input)
-print("expected pass forward output =\n[0.5564 0.6302 0.6984]")
-print("actual pass forward output =\n" + str(output))
-# complete backward pass
-perceptron.passBackward(((0.1,0.3,0.7)))
-#print("expected pass backward output =\n[[0.35891648 0.408666186]\n[0.51130127 0.561370121]]")
-print("actual pass backward output =\n" + str(perceptron.layers[-1].weights))
-#print("expected pass backward hidden =\n[[0.4946 0.2892 0.0837]\n[0.2896 0.1791 0.0687]]")
-print("actual pass backward hidden =\n" + str(perceptron.layers[-2].weights))
-'''
+testPerceptron(perceptron,sequences,int(6e4))
+# ***** 3 hidden layers , 2 neurons on each layer, randomized, all extra parameters updated on training
+# WARNING : some randomized choice may not converge
+# initialize perceptron
+#layerHeights = ((4,3,2))
+#perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
 pass
