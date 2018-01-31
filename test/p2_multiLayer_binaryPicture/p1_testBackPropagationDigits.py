@@ -19,18 +19,18 @@ from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, gri
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 # utility methods
-def readTest(dataFolder):
+def readTest():
     # initialize data
     sequences = dict()
     # for each data file
-    for dataFileShortName in listdir(dataFolder):
+    for dataFileShortName in listdir(INPUT_DIRECTORY):
         # extract data key
         expectedDigit = int(dataFileShortName.split(".")[0])
         digits = [0]*10
         digits[expectedDigit] = 1
         digits = tuple(digits)
         # read it
-        dataFileFullName = join(dataFolder, dataFileShortName)
+        dataFileFullName = join(INPUT_DIRECTORY, dataFileShortName)
         dataFile = open(dataFileFullName)
         rawData = dataFile.read()
         dataFile.close()
@@ -44,13 +44,18 @@ def readTest(dataFolder):
         sequences[image] = digits
     # return
     return sequences
-def trainPerceptron(name, perceptron, sequences, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
+SEQUENCES = readTest()
+def generateLayerHeights(layersNumber):
+    layerHeights =[int(layerHeight * 20 / (layersNumber-1) + 10) for layerHeight in range(0, layersNumber)]
+    layerHeights.reverse()
+    return tuple(layerHeights)
+def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
     # train perceptron
     print("test : " + name)
     print("loop number = " + str(loopNumber))
-    errors = perceptron.train(sequences, loopNumber, metaParametersUpdate=metaParametersUpdate)
+    errors = perceptron.train(SEQUENCES, loopNumber, metaParametersUpdate=metaParametersUpdate)
     # display results
-    for input, expectedOutput in sequences.items():
+    for input, expectedOutput in SEQUENCES.items():
         # print results
         actualOutput = perceptron.passForward(input)
         print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
@@ -64,96 +69,36 @@ def trainPerceptron(name, perceptron, sequences, loopNumber, metaParametersUpdat
     legend()
     show()
     pass
+def testMultipleLayers(layersNumber,loopNumber):
+    # initialize perceptron
+    layerHeights = generateLayerHeights(layersNumber)
+    perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
+    # train perceptron
+    sequences = readTest()
+    trainPerceptron("test"+str(layersNumber)+"Layers", perceptron, loopNumber)
+    pass
 # define test
 class TestBackPropagationDigits(unittest.TestCase):
-    def test0Hidden(self):
-        # initialize perceptron
-        layerHeights = ((30, 10))
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences=readTest(INPUT_DIRECTORY)
-        trainPerceptron("testDigits",perceptron,sequences,int(1e3))
+    def test2Layers(self):
+        testMultipleLayers(2, int(1e3))
         pass
     pass
-    def test1Hidden(self):
-        # initialize perceptron
-        layerHeights = ((30, 20, 10))
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences = readTest(INPUT_DIRECTORY)
-        trainPerceptron("test1Hidden", perceptron, sequences, int(5e2))
+    def test3Layers(self):
+        testMultipleLayers(3, int(5e2))
         pass
-    def test2Hidden(self):
-        # initialize perceptron
-        layerHeights = ((30, 23, 16, 10))
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences = readTest(INPUT_DIRECTORY)
-        trainPerceptron("test2Hidden", perceptron, sequences, int(5e2))
+    def test4Layers(self):
+        testMultipleLayers(4, int(5e2))
         pass
-    def test10Hidden(self):
-        # initialize perceptron
-        layerHeights = list()
-        for layerHeight in range(0,10):
-            layerHeights.append(int(layerHeight*20/9+10))
-        layerHeights.reverse()
-        layerHeights = tuple(layerHeights)
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences = readTest(INPUT_DIRECTORY)
-        trainPerceptron("test10Hidden", perceptron, sequences, int(5e3))
+    def test10Layers(self):
+        testMultipleLayers(10, int(5e3))
         pass
     pass
-    def test11Hidden(self):
-        # initialize perceptron
-        layerHeights = list()
-        for layerHeight in range(0,11):
-            layerHeights.append(int(layerHeight*20/10+10))
-        layerHeights.reverse()
-        layerHeights = tuple(layerHeights)
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences = readTest(INPUT_DIRECTORY)
-        trainPerceptron("test11Hidden", perceptron, sequences, int(1e4))
+    def test11Layers(self):
+        testMultipleLayers(11, int(1e4))
         pass
     pass
-    def test13Hidden(self):
-        # initialize perceptron
-        layerHeights = list()
-        for layerHeight in range(0,13):
-            layerHeights.append(int(layerHeight*20/12+10))
-        layerHeights.reverse()
-        layerHeights = tuple(layerHeights)
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences = readTest(INPUT_DIRECTORY)
-        trainPerceptron("test13Hidden", perceptron, sequences, int(1e4))
-        pass
-    pass
-    def test15Hidden(self):
-        # initialize perceptron
-        layerHeights = list()
-        for layerHeight in range(0,15):
-            layerHeights.append(int(layerHeight*20/14+10))
-        layerHeights.reverse()
-        layerHeights = tuple(layerHeights)
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences = readTest(INPUT_DIRECTORY)
-        trainPerceptron("test15Hidden", perceptron, sequences, int(1e4))
-        pass
-    pass
-    def test20Hidden(self):
-        # initialize perceptron
-        layerHeights = list()
-        for layerHeight in range(10,31):
-            layerHeights.append(layerHeight)
-        layerHeights.reverse()
-        layerHeights = tuple(layerHeights)
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        # train perceptron
-        sequences = readTest(INPUT_DIRECTORY)
-        trainPerceptron("test20Hidden", perceptron, sequences, int(1e4))
+    def test20Layers(self):
+        testMultipleLayers(20, int(1e4))
         pass
     pass
 pass
