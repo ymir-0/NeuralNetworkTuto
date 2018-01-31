@@ -384,10 +384,24 @@ sequences.update(dict({
 layerHeights = tuple([2]*4)
 perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
 # train perceptron
-testPerceptron(perceptron,sequences,int(6e4))
-# ***** 3 hidden layers , 2 neurons on each layer, randomized, all extra parameters updated on training
+#testPerceptron(perceptron,sequences,int(6e4))
+# ***** 4 neurons on input, 3 neurons on single hidden one, 2 neurons on output one, random
 # WARNING : some randomized choice may not converge
 # initialize perceptron
-#layerHeights = ((4,3,2))
-#perceptron = Perceptron(layerHeights=layerHeights,uncertainties=.99)
+layerHeights = ((4,3,2))
+perceptron = Perceptron(layerHeights=layerHeights,weightLimit=10,uncertainties=.99)
+# train perceptron
+sequences = dict({
+    ((0.71,0.21,0.17,0.26)): ((0.28,0.04)),
+    ((0.14,0.11,0.81,0.01)): ((0.11,0.32)),
+    ((0.91,0.83,0.79,0.33)): ((0.67,0.2)),
+    ((0.37,0.86,0.09,0.9)): ((0.4,0.34)),
+    ((0.71,0.77,0.55,0.32)): ((0.56,0.16)),
+    ((0.08,0.8,0.31,0.88)): ((0.36,0.25)),
+    ((0.47,0.08,0.48,0.42)): ((0.3,0.15)),
+    ((0.36,0.1,0.32,0.23)): ((0.23,0.08)),
+    ((0.33,0.94,0.42,0.81)): ((0.57,0.2)),
+    ((0.58,0.7,0.17,0.86)): ((0.49,0.26)),
+})
+testPerceptron(perceptron,sequences,int(5e3))
 pass
