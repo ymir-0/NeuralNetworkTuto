@@ -123,7 +123,7 @@ class TestBackPropagationDummy(unittest.TestCase):
         # WARNING : some randomized choice may not converge
         # initialize perceptron
         layerHeights = ((4, 3, 2))
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=10, uncertainties=.99)
+        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
         # train perceptron
         # INFO : input is 4 numbers, output is mean & standard deviation
         sequences = dict({
