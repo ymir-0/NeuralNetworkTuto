@@ -5,30 +5,29 @@ import unittest
 from numpy import array
 from neuralnetworktuto.p1_perceptron.p2_multiLayer_binaryPicture.p1_testBackPropagation import Perceptron, MetaParameters
 from matplotlib.pyplot import plot, title , xlabel , ylabel, grid, legend, show
+# train perceptron
+def trainPerceptron(name, perceptron, sequences, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
+    # train perceptron
+    print("test : " + name)
+    print("loop number = " + str(loopNumber))
+    errors = perceptron.train(sequences, loopNumber, metaParametersUpdate=metaParametersUpdate)
+    # display results
+    for input, expectedOutput in sequences.items():
+        # print results
+        actualOutput = perceptron.passForward(input)
+        print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
+            actualOutput) + "\terror = " + str(errors[expectedOutput][-1]))
+        # prepare graph
+        plot(errors["loopNumbers"], errors[expectedOutput], label=str(expectedOutput))
+    title("errors evolution (test : " + name + ")")
+    xlabel("training step")
+    ylabel("error")
+    grid(linestyle="-.")
+    legend()
+    show()
+    pass
 # define test
 class TestBackPropagationDummy(unittest.TestCase):
-    # train perceptron
-    @staticmethod
-    def trainPerceptron(name, perceptron, sequences, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
-        # train perceptron
-        print("test : " + name)
-        print("loop number = " + str(loopNumber))
-        errors = perceptron.train(sequences, loopNumber, metaParametersUpdate=metaParametersUpdate)
-        # display results
-        for input, expectedOutput in sequences.items():
-            # print results
-            actualOutput = perceptron.passForward(input)
-            print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
-                actualOutput) + "\terror = " + str(errors[expectedOutput][-1]))
-            # prepare graph
-            plot(errors["loopNumbers"], errors[expectedOutput], label=str(expectedOutput))
-        title("errors evolution (test : " + name + ")")
-        xlabel("training step")
-        ylabel("error")
-        grid(linestyle="-.")
-        legend()
-        show()
-        pass
     # 1 hidden layer , 2 neurons on each layer, no random
     def testDummy0(self):
         # initialize perceptron
@@ -58,7 +57,7 @@ class TestBackPropagationDummy(unittest.TestCase):
             ((0.01, 0.1)): ((0.05, 0.99)),
             ((0.99, 0.01)): ((0.1, 0.05)),
         })
-        TestHyperoperation.trainPerceptron("dummy0",perceptron,sequences,int(6e4))
+        trainPerceptron("dummy0",perceptron,sequences,int(6e4))
     # 2 hidden layers , 2 neurons on each layer, no random
     def testDummy1(self):
         # initialize perceptron
@@ -94,7 +93,7 @@ class TestBackPropagationDummy(unittest.TestCase):
             ((0.99, 0.1)): ((0.01, 0.05)),
             ((0.99, 0.05)): ((0.1, 0.01)),
         })
-        TestHyperoperation.trainPerceptron("dummy1",perceptron, sequences, int(6.5e4))
+        trainPerceptron("dummy1",perceptron, sequences, int(6.5e4))
     # 3 hidden layers , 2 neurons on each layer, randomized, all extra parameters updated on training
     def testDummy2(self):
         # WARNING : some randomized choice may not converge
@@ -117,7 +116,7 @@ class TestBackPropagationDummy(unittest.TestCase):
             ((0.99, 0.1)): ((0.01, 0.05)),
             ((0.99, 0.05)): ((0.1, 0.01)),
         })
-        TestHyperoperation.trainPerceptron("dummy2",perceptron, sequences, int(6e4))
+        trainPerceptron("dummy2",perceptron, sequences, int(6e4))
         pass
     # 4 neurons on input, 3 neurons on single hidden one, 2 neurons on output one, random
     def testDummy3(self):
@@ -139,7 +138,7 @@ class TestBackPropagationDummy(unittest.TestCase):
             ((0.33, 0.94, 0.42, 0.81)): ((0.57, 0.2)),
             ((0.58, 0.7, 0.17, 0.86)): ((0.49, 0.26)),
         })
-        TestHyperoperation.trainPerceptron("dummy3",perceptron,sequences,int(5e3))
+        trainPerceptron("dummy3",perceptron,sequences,int(5e3))
         pass
     pass
 pass
