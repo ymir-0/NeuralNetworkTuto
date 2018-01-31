@@ -6,7 +6,7 @@ from numpy import array
 from neuralnetworktuto.p1_perceptron.p2_multiLayer_binaryPicture.p1_testBackPropagation import Perceptron, MetaParameters
 from matplotlib.pyplot import plot, title , xlabel , ylabel, grid, legend, show
 # define test
-class TestHyperoperation(unittest.TestCase):
+class TestBackPropagationDummy(unittest.TestCase):
     # train perceptron
     @staticmethod
     def trainPerceptron(name, perceptron, sequences, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
