@@ -237,6 +237,7 @@ class Perceptron():
         errors=dict()
         errors["loopNumbers"]=list()
         # initialize error conter
+        # TODO : simplify error mesures : send all mesure as bulk in a DB, and unstack table later (regarding needed number of results)
         keepErrorMeasures = errorsRecordNumber is not None and errorsRecordNumber > 0
         if keepErrorMeasures:
             for expectedOutput in sequences.values():
