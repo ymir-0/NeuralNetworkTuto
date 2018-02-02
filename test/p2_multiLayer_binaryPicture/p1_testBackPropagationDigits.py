@@ -17,10 +17,11 @@ from statistics import mean
 from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, show
 from networkx import Graph, get_node_attributes, draw, draw_networkx_labels
 from matplotlib import cm
-from matplotlib.pyplot import text
+from matplotlib.pyplot import text, xlim, ylim
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
+OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # utility methods
 def readTest():
     # initialize data
@@ -58,6 +59,7 @@ def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaPar
     print("loop number = " + str(loopNumber))
     errors = perceptron.train(SEQUENCES, loopNumber, metaParametersUpdate=metaParametersUpdate)
     # display results
+    figure()
     for input, expectedOutput in SEQUENCES.items():
         # print results
         actualOutput = perceptron.passForward(input)
@@ -70,7 +72,7 @@ def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaPar
     ylabel("error")
     grid(linestyle="-.")
     legend()
-    show()
+    saveFigure("trainingErrorEvolution_" + name)
     pass
 def testMultipleLayers(layersNumber,loopNumber):
     # initialize perceptron
@@ -92,6 +94,13 @@ def addNodesToGraph(graph,layerIndex, layerValues):
         graph.add_node(position, position=position,label=label,intensity=approximativeLayerValue)
         pass
     pass
+def saveFigure(name):
+    figurePath = join(OUTPUT_DIRECTORY, name + ".png")
+    savefig(figurePath)
+# empty output folder
+if exists(OUTPUT_DIRECTORY):
+    rmtree(OUTPUT_DIRECTORY)
+makedirs(OUTPUT_DIRECTORY)
 # define test
 class TestBackPropagationDigits(unittest.TestCase):
     def test2Layers(self):
@@ -134,6 +143,7 @@ class TestBackPropagationDigits(unittest.TestCase):
                 inputOutput = layer.passForward(inputOutput)
                 addNodesToGraph(graph,layerIndex+1, inputOutput)
             # draw graph
+            figure(figsize=(10,10))
             # INFO : positions & labels must be DICT type
             positions = get_node_attributes(graph, 'position')
             labels = get_node_attributes(graph, 'label')
@@ -142,7 +152,8 @@ class TestBackPropagationDigits(unittest.TestCase):
             draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
             draw_networkx_labels(graph, positions, labels)
             text(1,1,"neurons activation for digit " + str(digit), size=15)
-            show()
+            ylim (-31,2)
+            saveFigure("neuronActivationDigit" + str(digit))
             pass
         pass
     pass
