@@ -84,12 +84,12 @@ def addNodesToGraph(graph,layerIndex, layerValues):
     for nodeIndex, layerValue in enumerate(layerValues):
         # set node property
         # INFO : 'y' axis is reversed to read network from top to bottom
-        key = (layerIndex, -nodeIndex)
         position = (layerIndex, -nodeIndex)
         approximativeLayerValue=round(layerValue,2)
         label = "L"+str(layerIndex)+"N"+str(nodeIndex)+"V"+str(approximativeLayerValue)
         # add node
-        graph.add_node(key, position=position,label=label,intensity=approximativeLayerValue)
+        # INFO : position is also key
+        graph.add_node(position, position=position,label=label,intensity=approximativeLayerValue)
         pass
     pass
 # define test
@@ -139,7 +139,6 @@ class TestBackPropagationDigits(unittest.TestCase):
             labels = get_node_attributes(graph, 'label')
             # INFO : intensities must be LIST type
             intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
-            figure()
             draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
             draw_networkx_labels(graph, positions, labels)
             text(1,1,"neurons activation for digit " + str(digit), size=15)
