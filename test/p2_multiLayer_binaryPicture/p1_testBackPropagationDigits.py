@@ -15,6 +15,8 @@ from enum import Enum, unique
 from copy import deepcopy
 from statistics import mean
 from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, show
+from networkx import Graph, get_node_attributes, draw, draw_networkx_labels
+from matplotlib import cm
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
@@ -74,8 +76,20 @@ def testMultipleLayers(layersNumber,loopNumber):
     layerHeights = generateLayerHeights(layersNumber)
     perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
     # train perceptron
-    sequences = readTest()
     trainPerceptron("test"+str(layersNumber)+"Layers", perceptron, loopNumber)
+    pass
+def addNodesToGraph(graph,layerIndex, layerValues):
+    # for each layer value
+    for nodeIndex, layerValue in enumerate(layerValues):
+        # set node property
+        # INFO : 'y' axis is reversed to read network from top to bottom
+        key = (layerIndex, -nodeIndex)
+        position = (layerIndex, -nodeIndex)
+        approximativeLayerValue=round(layerValue,2)
+        label = "L"+str(layerIndex)+"N"+str(nodeIndex)+"V"+str(approximativeLayerValue)
+        # add node
+        graph.add_node(key, position=position,label=label,intensity=approximativeLayerValue)
+        pass
     pass
 # define test
 class TestBackPropagationDigits(unittest.TestCase):
@@ -99,6 +113,33 @@ class TestBackPropagationDigits(unittest.TestCase):
     pass
     def test20Layers(self):
         testMultipleLayers(20, int(1e4))
+        pass
+    pass
+    def testMapNeuronsActivation(self):
+        # train without report
+        layerHeights = generateLayerHeights(4)
+        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
+        perceptron.train(SEQUENCES, int(5e2))
+        # for each input
+        # INFO : outpout of a layer is also output for the next one
+        for inputOutput in SEQUENCES.keys():
+            # initialize graph
+            graph = Graph()
+            addNodesToGraph(graph, 0, inputOutput)
+            # for each layer
+            for layerIndex, layer in enumerate(perceptron.layers):
+                inputOutput = layer.passForward(inputOutput)
+                addNodesToGraph(graph,layerIndex+1, inputOutput)
+            # draw graph
+            # INFO : positions & labels must be DICT type
+            positions = get_node_attributes(graph, 'position')
+            labels = get_node_attributes(graph, 'label')
+            # INFO : intensities must be LIST type
+            intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
+            draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
+            draw_networkx_labels(graph, positions, labels)
+            show()
+            pass
         pass
     pass
 pass
