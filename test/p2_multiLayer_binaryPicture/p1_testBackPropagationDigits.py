@@ -17,6 +17,7 @@ from statistics import mean
 from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, show
 from networkx import Graph, get_node_attributes, draw, draw_networkx_labels
 from matplotlib import cm
+from matplotlib.pyplot import text
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
@@ -122,7 +123,9 @@ class TestBackPropagationDigits(unittest.TestCase):
         perceptron.train(SEQUENCES, int(5e2))
         # for each input
         # INFO : outpout of a layer is also output for the next one
-        for inputOutput in SEQUENCES.keys():
+        for inputOutput, expectedOutput in SEQUENCES.items():
+            # get related digit
+            digit = expectedOutput.index(1)
             # initialize graph
             graph = Graph()
             addNodesToGraph(graph, 0, inputOutput)
@@ -136,8 +139,10 @@ class TestBackPropagationDigits(unittest.TestCase):
             labels = get_node_attributes(graph, 'label')
             # INFO : intensities must be LIST type
             intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
+            figure()
             draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
             draw_networkx_labels(graph, positions, labels)
+            text(1,1,"neurons activation for digit " + str(digit), size=15)
             show()
             pass
         pass
