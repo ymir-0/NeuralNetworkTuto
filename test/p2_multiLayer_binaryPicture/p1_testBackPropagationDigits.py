@@ -102,3 +102,6 @@ class TestBackPropagationDigits(unittest.TestCase):
         pass
     pass
 pass
+# TODO : color neurons activation for each digits (try to find some convolution ?)
+# TODO : blur each digit bit by bit and mesure errors evolution
+# TODO : save each figure and file in output folder
