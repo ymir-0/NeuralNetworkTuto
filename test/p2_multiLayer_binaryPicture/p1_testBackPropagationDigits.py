@@ -66,7 +66,9 @@ def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaPar
         print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
             actualOutput) + "\terror = " + str(errors[expectedOutput][-1]))
         # prepare graph
-        plot(errors["loopNumbers"], errors[expectedOutput], label=str(expectedOutput))
+        # get related digit
+        digit = expectedOutput.index(1)
+        plot(errors["loopNumbers"], errors[expectedOutput], label=str(digit))
     title("errors evolution (test : " + name + ")")
     xlabel("training step")
     ylabel("error")
