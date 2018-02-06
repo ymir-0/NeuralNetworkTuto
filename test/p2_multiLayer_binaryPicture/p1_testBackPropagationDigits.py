@@ -54,27 +54,34 @@ def generateLayerHeights(layersNumber):
     layerHeights.reverse()
     return tuple(layerHeights)
 def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
+    # initialize report
+    report = ""
     # train perceptron
-    print("test : " + name)
-    print("loop number = " + str(loopNumber))
+    report = report + "test : " + name + linesep
+    report = report + "loop number = " + str(loopNumber) + linesep
     errors = perceptron.train(SEQUENCES, loopNumber, metaParametersUpdate=metaParametersUpdate)
     # display results
     figure()
     for input, expectedOutput in SEQUENCES.items():
         # print results
         actualOutput = perceptron.passForward(input)
-        print("input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
-            actualOutput) + "\terror = " + str(errors[expectedOutput][-1]))
-        # prepare graph
+        report = report + "input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
+            actualOutput) + "\terror = " + str(errors[expectedOutput][-1]) + linesep
         # get related digit
         digit = expectedOutput.index(1)
+        # prepare graph
         plot(errors["loopNumbers"], errors[expectedOutput], label=str(digit))
+    # set output file
+    outputFile = "trainingErrorEvolution_" + name
+    # write report
+    writeReport(outputFile,report)
+    # plot graph
     title("errors evolution (test : " + name + ")")
     xlabel("training step")
     ylabel("error")
     grid(linestyle="-.")
     legend()
-    saveFigure("trainingErrorEvolution_" + name)
+    saveFigure(outputFile)
     pass
 def testMultipleLayers(layersNumber,loopNumber):
     # initialize perceptron
@@ -96,6 +103,11 @@ def addNodesToGraph(graph,layerIndex, layerValues):
         graph.add_node(position, position=position,label=label,intensity=approximativeLayerValue)
         pass
     pass
+def writeReport(name,report):
+    filePath = join(OUTPUT_DIRECTORY, name + ".txt")
+    file = open(filePath, "wt")
+    file.write(report)
+    file.close()
 def saveFigure(name):
     figurePath = join(OUTPUT_DIRECTORY, name + ".png")
     savefig(figurePath)
