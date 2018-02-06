@@ -23,18 +23,19 @@ CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # utility methods
-def readTest():
+def readDigits():
     # initialize data
     sequences = dict()
     # for each data file
-    for dataFileShortName in listdir(INPUT_DIRECTORY):
+    digitDirectory = join(INPUT_DIRECTORY , "digit")
+    for dataFileShortName in listdir(digitDirectory):
         # extract data key
         expectedDigit = int(dataFileShortName.split(".")[0])
         digits = [0]*10
         digits[expectedDigit] = 1
         digits = tuple(digits)
         # read it
-        dataFileFullName = join(INPUT_DIRECTORY, dataFileShortName)
+        dataFileFullName = join(digitDirectory, dataFileShortName)
         dataFile = open(dataFileFullName)
         rawData = dataFile.read()
         dataFile.close()
@@ -48,7 +49,29 @@ def readTest():
         sequences[image] = digits
     # return
     return sequences
-SEQUENCES = readTest()
+DIGITS = readDigits()
+def readParts():
+    # initialize data
+    sequences = dict()
+    # for each data file
+    digitDirectory = join(INPUT_DIRECTORY , "part")
+    for dataFileShortName in listdir(digitDirectory):
+        partName=dataFileShortName.split(".")[0]
+        # read it
+        dataFileFullName = join(digitDirectory, dataFileShortName)
+        dataFile = open(dataFileFullName)
+        rawData = dataFile.read()
+        dataFile.close()
+        # construct image
+        dataPivot = rawData.replace(linesep, "")
+        image = list()
+        for pixel in dataPivot:
+            image.append(int(pixel))
+        image = tuple(image)
+        # fill data
+        sequences[image] = partName
+    # return
+    return sequences
 def generateLayerHeights(layersNumber):
     layerHeights =[int(layerHeight * 20 / (layersNumber-1) + 10) for layerHeight in range(0, layersNumber)]
     layerHeights.reverse()
@@ -59,10 +82,10 @@ def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaPar
     # train perceptron
     report = report + "test : " + name + linesep
     report = report + "loop number = " + str(loopNumber) + linesep
-    errors = perceptron.train(SEQUENCES, loopNumber, metaParametersUpdate=metaParametersUpdate)
+    errors = perceptron.train(DIGITS, loopNumber, metaParametersUpdate=metaParametersUpdate)
     # display results
     figure()
-    for input, expectedOutput in SEQUENCES.items():
+    for input, expectedOutput in DIGITS.items():
         # print results
         actualOutput = perceptron.passForward(input)
         report = report + "input = " + str(input) + "\texpected output = " + str(expectedOutput) + "\tactual output = " + str(
@@ -143,10 +166,10 @@ class TestBackPropagationDigits(unittest.TestCase):
         # train without report
         layerHeights = generateLayerHeights(4)
         perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        perceptron.train(SEQUENCES, int(5e2))
+        perceptron.train(DIGITS, int(5e2))
         # for each input
-        # INFO : outpout of a layer is also output for the next one
-        for inputOutput, expectedOutput in SEQUENCES.items():
+        # INFO : output of a layer is also output for the next one
+        for inputOutput, expectedOutput in DIGITS.items():
             # get related digit
             digit = expectedOutput.index(1)
             # initialize graph
@@ -171,7 +194,38 @@ class TestBackPropagationDigits(unittest.TestCase):
             pass
         pass
     pass
+    def testSearchConvolution(self):
+        # initialize perceptron
+        layerHeights = generateLayerHeights(4)
+        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1)
+        perceptron.train(DIGITS, int(5e2))
+        # run each part
+        parts=readParts()
+        for inputOutput, expectedOutput in parts.items():
+            # initialize graph
+            graph = Graph()
+            addNodesToGraph(graph, 0, inputOutput)
+            # for each layer
+            for layerIndex, layer in enumerate(perceptron.layers):
+                inputOutput = layer.passForward(inputOutput)
+                addNodesToGraph(graph,layerIndex+1, inputOutput)
+            # draw graph
+            figure(figsize=(10,10))
+            # INFO : positions & labels must be DICT type
+            positions = get_node_attributes(graph, 'position')
+            labels = get_node_attributes(graph, 'label')
+            # INFO : intensities must be LIST type
+            intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
+            draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
+            draw_networkx_labels(graph, positions, labels)
+            text(1,1,"neurons activation for part " + str(expectedOutput), size=15)
+            ylim (-31,2)
+            saveFigure("neuronActivationPart_" + str(expectedOutput))
+            pass
+        pass
+    pass
 pass
 # TODO : color neurons activation for each digits (try to find some convolution ?)
 # TODO : blur each digit bit by bit and mesure errors evolution
 # TODO : save each figure and file in output folder
+# TODO : merge readDigits/Parts and loop inside testMapNeuronsActivation/testSearchConvolution
