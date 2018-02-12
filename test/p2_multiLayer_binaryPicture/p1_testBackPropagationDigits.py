@@ -46,15 +46,18 @@ def readInputs(label,readFunction):
     # return
     return sequences
 def readDigits(dataFileName):
-    # extract data key
+    # get digit name
     expectedDigit = int(dataFileName.split(".")[0])
     digits = [0]*10
     digits[expectedDigit] = 1
     digits = tuple(digits)
+    # return
     return digits
 DIGITS = readInputs("digit",readDigits)
 def readParts(dataFileName):
+    # get part name
     partName=dataFileName.split(".")[0]
+    # return
     return partName
 def generateLayerHeights(layersNumber):
     layerHeights =[int(layerHeight * 20 / (layersNumber-1) + 10) for layerHeight in range(0, layersNumber)]
@@ -118,6 +121,27 @@ def writeReport(name,report):
 def saveFigure(name):
     figurePath = join(OUTPUT_DIRECTORY, name + ".png")
     savefig(figurePath)
+def writeNeuronsActivationReport(reportName,perceptron,inputOutput,expectedOutput):
+    # initialize graph
+    graph = Graph()
+    addNodesToGraph(graph, 0, inputOutput)
+    # for each layer
+    for layerIndex, layer in enumerate(perceptron.layers):
+        inputOutput = layer.passForward(inputOutput)
+        addNodesToGraph(graph, layerIndex + 1, inputOutput)
+    # draw graph
+    figure(figsize=(10, 10))
+    # INFO : positions & labels must be DICT type
+    positions = get_node_attributes(graph, 'position')
+    labels = get_node_attributes(graph, 'label')
+    # INFO : intensities must be LIST type
+    intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
+    draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
+    draw_networkx_labels(graph, positions, labels)
+    text(1, 1, "neurons activation for " + str(reportName) + " " + str(expectedOutput), size=15)
+    ylim(-31, 2)
+    saveFigure("neuronActivation_" + str(reportName) + "#" + str(expectedOutput))
+pass
 # empty output folder
 if exists(OUTPUT_DIRECTORY):
     rmtree(OUTPUT_DIRECTORY)
@@ -156,25 +180,8 @@ class TestBackPropagationDigits(unittest.TestCase):
         for inputOutput, expectedOutput in DIGITS.items():
             # get related digit
             digit = expectedOutput.index(1)
-            # initialize graph
-            graph = Graph()
-            addNodesToGraph(graph, 0, inputOutput)
-            # for each layer
-            for layerIndex, layer in enumerate(perceptron.layers):
-                inputOutput = layer.passForward(inputOutput)
-                addNodesToGraph(graph,layerIndex+1, inputOutput)
-            # draw graph
-            figure(figsize=(10,10))
-            # INFO : positions & labels must be DICT type
-            positions = get_node_attributes(graph, 'position')
-            labels = get_node_attributes(graph, 'label')
-            # INFO : intensities must be LIST type
-            intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
-            draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
-            draw_networkx_labels(graph, positions, labels)
-            text(1,1,"neurons activation for digit " + str(digit), size=15)
-            ylim (-31,2)
-            saveFigure("neuronActivationDigit" + str(digit))
+            # wite report
+            writeNeuronsActivationReport("digit", perceptron, inputOutput, digit)
             pass
         pass
     pass
@@ -186,25 +193,8 @@ class TestBackPropagationDigits(unittest.TestCase):
         # run each part
         parts=readInputs("part",readParts)
         for inputOutput, expectedOutput in parts.items():
-            # initialize graph
-            graph = Graph()
-            addNodesToGraph(graph, 0, inputOutput)
-            # for each layer
-            for layerIndex, layer in enumerate(perceptron.layers):
-                inputOutput = layer.passForward(inputOutput)
-                addNodesToGraph(graph,layerIndex+1, inputOutput)
-            # draw graph
-            figure(figsize=(10,10))
-            # INFO : positions & labels must be DICT type
-            positions = get_node_attributes(graph, 'position')
-            labels = get_node_attributes(graph, 'label')
-            # INFO : intensities must be LIST type
-            intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
-            draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
-            draw_networkx_labels(graph, positions, labels)
-            text(1,1,"neurons activation for part " + str(expectedOutput), size=15)
-            ylim (-31,2)
-            saveFigure("neuronActivationPart_" + str(expectedOutput))
+            # wite report
+            writeNeuronsActivationReport("part", perceptron, inputOutput, expectedOutput)
             pass
         pass
     pass
@@ -212,4 +202,3 @@ pass
 # TODO : color neurons activation for each digits (try to find some convolution ?)
 # TODO : blur each digit bit by bit and mesure errors evolution
 # TODO : save each figure and file in output folder
-# TODO : merge loop inside testMapNeuronsActivation/testSearchConvolution
