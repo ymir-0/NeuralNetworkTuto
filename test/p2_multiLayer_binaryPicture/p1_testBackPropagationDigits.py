@@ -23,40 +23,13 @@ CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
 OUTPUT_DIRECTORY = join(CURRENT_DIRECTORY,"output")
 # utility methods
-def readDigits():
+def readInputs(label,readFunction):
     # initialize data
     sequences = dict()
     # for each data file
-    digitDirectory = join(INPUT_DIRECTORY , "digit")
+    digitDirectory = join(INPUT_DIRECTORY , label)
     for dataFileShortName in listdir(digitDirectory):
-        # extract data key
-        expectedDigit = int(dataFileShortName.split(".")[0])
-        digits = [0]*10
-        digits[expectedDigit] = 1
-        digits = tuple(digits)
-        # read it
-        dataFileFullName = join(digitDirectory, dataFileShortName)
-        dataFile = open(dataFileFullName)
-        rawData = dataFile.read()
-        dataFile.close()
-        # construct image
-        dataPivot = rawData.replace(linesep, "")
-        image = list()
-        for pixel in dataPivot:
-            image.append(int(pixel))
-        image = tuple(image)
-        # fill data
-        sequences[image] = digits
-    # return
-    return sequences
-DIGITS = readDigits()
-def readParts():
-    # initialize data
-    sequences = dict()
-    # for each data file
-    digitDirectory = join(INPUT_DIRECTORY , "part")
-    for dataFileShortName in listdir(digitDirectory):
-        partName=dataFileShortName.split(".")[0]
+        partName=readFunction(dataFileShortName)
         # read it
         dataFileFullName = join(digitDirectory, dataFileShortName)
         dataFile = open(dataFileFullName)
@@ -72,6 +45,17 @@ def readParts():
         sequences[image] = partName
     # return
     return sequences
+def readDigits(dataFileName):
+    # extract data key
+    expectedDigit = int(dataFileName.split(".")[0])
+    digits = [0]*10
+    digits[expectedDigit] = 1
+    digits = tuple(digits)
+    return digits
+DIGITS = readInputs("digit",readDigits)
+def readParts(dataFileName):
+    partName=dataFileName.split(".")[0]
+    return partName
 def generateLayerHeights(layersNumber):
     layerHeights =[int(layerHeight * 20 / (layersNumber-1) + 10) for layerHeight in range(0, layersNumber)]
     layerHeights.reverse()
@@ -196,11 +180,11 @@ class TestBackPropagationDigits(unittest.TestCase):
     pass
     def testSearchConvolution(self):
         # initialize perceptron
-        layerHeights = generateLayerHeights(4)
+        layerHeights = generateLayerHeights(7)
         perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1)
         perceptron.train(DIGITS, int(5e2))
         # run each part
-        parts=readParts()
+        parts=readInputs("part",readParts)
         for inputOutput, expectedOutput in parts.items():
             # initialize graph
             graph = Graph()
@@ -228,4 +212,4 @@ pass
 # TODO : color neurons activation for each digits (try to find some convolution ?)
 # TODO : blur each digit bit by bit and mesure errors evolution
 # TODO : save each figure and file in output folder
-# TODO : merge readDigits/Parts and loop inside testMapNeuronsActivation/testSearchConvolution
+# TODO : merge loop inside testMapNeuronsActivation/testSearchConvolution
