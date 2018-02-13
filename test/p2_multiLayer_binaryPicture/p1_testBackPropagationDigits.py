@@ -143,6 +143,18 @@ def addNodesToGraph(graph,layerIndex, layerValues):
 def saveFigure(name):
     figurePath = join(OUTPUT_DIRECTORY, name + ".png")
     savefig(figurePath)
+def testSearchConvolution(name,perceptron):
+    # run each part
+    parts = readInputs("part", readParts)
+    for inputOutput, expectedOutput in parts.items():
+        # wite report
+        writeNeuronsActivationReport(name, perceptron, inputOutput, expectedOutput)
+        pass
+    pass
+def testErrorsEvolution(self):
+    # INFO : from p1_binary_no_deterministic.py l.117 drawErrorsEvolution
+    pass
+pass
 def testMultipleLayers(layersNumber,loopNumber):
     # initialize perceptron
     layerHeights = generateLayerHeights(layersNumber)
@@ -152,6 +164,8 @@ def testMultipleLayers(layersNumber,loopNumber):
     trainPerceptron(name, perceptron, loopNumber)
     # map neurons activation
     testMapNeuronsActivation(name, perceptron)
+    # search convolutions
+    testSearchConvolution(name, perceptron)
     pass
 # empty output folder
 if exists(OUTPUT_DIRECTORY):
@@ -179,22 +193,6 @@ class TestBackPropagationDigits(unittest.TestCase):
     pass
     def test20Layers(self):
         testMultipleLayers(20, int(1e4))
-        pass
-    pass
-    def testSearchConvolution(self):
-        # initialize perceptron
-        layerHeights = generateLayerHeights(7)
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1)
-        perceptron.train(DIGITS, int(5e2))
-        # run each part
-        parts=readInputs("part",readParts)
-        for inputOutput, expectedOutput in parts.items():
-            # wite report
-            writeNeuronsActivationReport("part", perceptron, inputOutput, expectedOutput)
-            pass
-        pass
-    def testErrorsEvolution(self):
-        # INFO : from p1_binary_no_deterministic.py l.117 drawErrorsEvolution
         pass
     pass
 pass
