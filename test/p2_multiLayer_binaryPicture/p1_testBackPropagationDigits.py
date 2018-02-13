@@ -63,12 +63,12 @@ def generateLayerHeights(layersNumber):
     layerHeights =[int(layerHeight * 20 / (layersNumber-1) + 10) for layerHeight in range(0, layersNumber)]
     layerHeights.reverse()
     return tuple(layerHeights)
-def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
+def trainPerceptron(layersNumber, perceptron, loopNumber, metaParametersUpdate=((MetaParameters.BIASES.value))):
     # initialize report
     report = ""
     # train perceptron
-    report = report + "test : " + name + linesep
-    report = report + "loop number = " + str(loopNumber) + linesep
+    report = report + "test : " + str(layersNumber) + " layers" + linesep
+    report = report + "loop number : " + str(loopNumber) + linesep
     errors = perceptron.train(DIGITS, loopNumber, metaParametersUpdate=metaParametersUpdate)
     # display results
     figure()
@@ -82,31 +82,40 @@ def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaPar
         # prepare graph
         plot(errors["loopNumbers"], errors[expectedOutput], label=str(digit))
     # set output file
-    outputFile = "trainingErrorEvolution_" + name
+    reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers", "training")
+    makedirs(reportFolder)
+    reportFile = join(reportFolder,"errorEvolution")
     # write report
-    writeReport(outputFile,report)
+    writeTrainingReport(reportFile,report)
     # plot graph
-    title("errors evolution (test : " + name + ")")
+    title("errors evolution ( " + str(layersNumber) + " layers)")
     xlabel("training step")
     ylabel("error")
     grid(linestyle="-.")
     legend()
-    saveFigure(outputFile)
+    saveFigure(reportFile)
     pass
-def writeReport(name,report):
-    filePath = join(OUTPUT_DIRECTORY, name + ".txt")
+def writeTrainingReport(name,report):
+    filePath = name + ".txt"
     file = open(filePath, "wt")
     file.write(report)
     file.close()
-def testMapNeuronsActivation(name, perceptron):
+def saveFigure(name):
+    figurePath = name + ".png"
+    savefig(figurePath)
+def testMapNeuronsActivation(layersNumber, perceptron):
+    # set report folder
+    reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers", "neuronsActivations", "digits")
+    makedirs(reportFolder)
+    # activate all digits
     for inputOutput, expectedOutput in DIGITS.items():
         # get related digit
         digit = expectedOutput.index(1)
         # wite report
-        writeNeuronsActivationReport(name, perceptron, inputOutput, digit)
+        writeNeuronsActivationReport(layersNumber, perceptron, inputOutput, digit, reportFolder)
         pass
     pass
-def writeNeuronsActivationReport(reportName,perceptron,inputOutput,expectedOutput):
+def writeNeuronsActivationReport(layersNumber,perceptron,inputOutput,expectedOutput, reportFolder):
     # initialize graph
     graph = Graph()
     addNodesToGraph(graph, 0, inputOutput)
@@ -123,9 +132,11 @@ def writeNeuronsActivationReport(reportName,perceptron,inputOutput,expectedOutpu
     intensities = tuple([graph.nodes(data='intensity')[node] for node in graph.nodes])
     draw(graph, pos=positions, cmap=cm.Reds, node_color=intensities)
     draw_networkx_labels(graph, positions, labels)
-    text(1, 1, "neurons activation for " + str(reportName) + " " + str(expectedOutput), size=15)
+    text(0, 1, "neurons activation for digit " + str(expectedOutput), size=15)
     ylim(-31, 2)
-    saveFigure("neuronActivation_" + str(reportName) + "#" + str(expectedOutput))
+    # set output file
+    reportFile = join(reportFolder,str(expectedOutput))
+    saveFigure(reportFile)
 pass
 def addNodesToGraph(graph,layerIndex, layerValues):
     # for each layer value
@@ -140,32 +151,35 @@ def addNodesToGraph(graph,layerIndex, layerValues):
         graph.add_node(position, position=position,label=label,intensity=approximativeLayerValue)
         pass
     pass
-def saveFigure(name):
-    figurePath = join(OUTPUT_DIRECTORY, name + ".png")
-    savefig(figurePath)
-def testSearchConvolution(name,perceptron):
+def testSearchConvolution(layersNumber,perceptron):
+    # set report folder
+    reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers", "neuronsActivations", "parts")
+    makedirs(reportFolder)
     # run each part
     parts = readInputs("part", readParts)
     for inputOutput, expectedOutput in parts.items():
         # wite report
-        writeNeuronsActivationReport(name, perceptron, inputOutput, expectedOutput)
+        writeNeuronsActivationReport(layersNumber, perceptron, inputOutput, expectedOutput, reportFolder)
         pass
     pass
-def testErrorsEvolution(self):
+def testErrorsEvolution():
     # INFO : from p1_binary_no_deterministic.py l.117 drawErrorsEvolution
     pass
 pass
 def testMultipleLayers(layersNumber,loopNumber):
+    # create report folder
+    reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers")
+    makedirs(reportFolder)
     # initialize perceptron
     layerHeights = generateLayerHeights(layersNumber)
     perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-    name = "test"+str(layersNumber)+"Layers"
+    #name = "test"+str(layersNumber)+"Layers"
     # train perceptron
-    trainPerceptron(name, perceptron, loopNumber)
+    trainPerceptron(layersNumber, perceptron, loopNumber)
     # map neurons activation
-    testMapNeuronsActivation(name, perceptron)
+    testMapNeuronsActivation(layersNumber, perceptron)
     # search convolutions
-    testSearchConvolution(name, perceptron)
+    testSearchConvolution(layersNumber, perceptron)
     pass
 # empty output folder
 if exists(OUTPUT_DIRECTORY):
