@@ -212,4 +212,4 @@ class TestBackPropagationDigits(unittest.TestCase):
     pass
 pass
 # TODO : blur each digit bit by bit and mesure errors evolution
-# TODO : save each figure and file in output folder
+# TODO : test loop for all layers & replace test class by a main method
