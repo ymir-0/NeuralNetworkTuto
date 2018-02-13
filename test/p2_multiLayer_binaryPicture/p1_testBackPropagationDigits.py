@@ -93,34 +93,19 @@ def trainPerceptron(name, perceptron, loopNumber, metaParametersUpdate=((MetaPar
     legend()
     saveFigure(outputFile)
     pass
-def testMultipleLayers(layersNumber,loopNumber):
-    # initialize perceptron
-    layerHeights = generateLayerHeights(layersNumber)
-    perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-    # train perceptron
-    trainPerceptron("test"+str(layersNumber)+"Layers", perceptron, loopNumber)
-    pass
-def addNodesToGraph(graph,layerIndex, layerValues):
-    # for each layer value
-    for nodeIndex, layerValue in enumerate(layerValues):
-        # set node property
-        # INFO : 'y' axis is reversed to read network from top to bottom
-        position = (layerIndex, -nodeIndex)
-        approximativeLayerValue=round(layerValue,2)
-        label = "L"+str(layerIndex)+"N"+str(nodeIndex)+"V"+str(approximativeLayerValue)
-        # add node
-        # INFO : position is also key
-        graph.add_node(position, position=position,label=label,intensity=approximativeLayerValue)
-        pass
-    pass
 def writeReport(name,report):
     filePath = join(OUTPUT_DIRECTORY, name + ".txt")
     file = open(filePath, "wt")
     file.write(report)
     file.close()
-def saveFigure(name):
-    figurePath = join(OUTPUT_DIRECTORY, name + ".png")
-    savefig(figurePath)
+def testMapNeuronsActivation(name, perceptron):
+    for inputOutput, expectedOutput in DIGITS.items():
+        # get related digit
+        digit = expectedOutput.index(1)
+        # wite report
+        writeNeuronsActivationReport(name, perceptron, inputOutput, digit)
+        pass
+    pass
 def writeNeuronsActivationReport(reportName,perceptron,inputOutput,expectedOutput):
     # initialize graph
     graph = Graph()
@@ -142,6 +127,32 @@ def writeNeuronsActivationReport(reportName,perceptron,inputOutput,expectedOutpu
     ylim(-31, 2)
     saveFigure("neuronActivation_" + str(reportName) + "#" + str(expectedOutput))
 pass
+def addNodesToGraph(graph,layerIndex, layerValues):
+    # for each layer value
+    for nodeIndex, layerValue in enumerate(layerValues):
+        # set node property
+        # INFO : 'y' axis is reversed to read network from top to bottom
+        position = (layerIndex, -nodeIndex)
+        approximativeLayerValue=round(layerValue,2)
+        label = "L"+str(layerIndex)+"N"+str(nodeIndex)+"V"+str(approximativeLayerValue)
+        # add node
+        # INFO : position is also key
+        graph.add_node(position, position=position,label=label,intensity=approximativeLayerValue)
+        pass
+    pass
+def saveFigure(name):
+    figurePath = join(OUTPUT_DIRECTORY, name + ".png")
+    savefig(figurePath)
+def testMultipleLayers(layersNumber,loopNumber):
+    # initialize perceptron
+    layerHeights = generateLayerHeights(layersNumber)
+    perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
+    name = "test"+str(layersNumber)+"Layers"
+    # train perceptron
+    trainPerceptron(name, perceptron, loopNumber)
+    # map neurons activation
+    testMapNeuronsActivation(name, perceptron)
+    pass
 # empty output folder
 if exists(OUTPUT_DIRECTORY):
     rmtree(OUTPUT_DIRECTORY)
@@ -170,21 +181,6 @@ class TestBackPropagationDigits(unittest.TestCase):
         testMultipleLayers(20, int(1e4))
         pass
     pass
-    def testMapNeuronsActivation(self):
-        # train without report
-        layerHeights = generateLayerHeights(4)
-        perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-        perceptron.train(DIGITS, int(5e2))
-        # for each input
-        # INFO : output of a layer is also output for the next one
-        for inputOutput, expectedOutput in DIGITS.items():
-            # get related digit
-            digit = expectedOutput.index(1)
-            # wite report
-            writeNeuronsActivationReport("digit", perceptron, inputOutput, digit)
-            pass
-        pass
-    pass
     def testSearchConvolution(self):
         # initialize perceptron
         layerHeights = generateLayerHeights(7)
@@ -196,6 +192,9 @@ class TestBackPropagationDigits(unittest.TestCase):
             # wite report
             writeNeuronsActivationReport("part", perceptron, inputOutput, expectedOutput)
             pass
+        pass
+    def testErrorsEvolution(self):
+        # INFO : from p1_binary_no_deterministic.py l.117 drawErrorsEvolution
         pass
     pass
 pass
