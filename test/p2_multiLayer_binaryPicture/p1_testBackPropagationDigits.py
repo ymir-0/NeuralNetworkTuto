@@ -17,7 +17,7 @@ from statistics import mean
 from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, show
 from networkx import Graph, get_node_attributes, draw, draw_networkx_labels
 from matplotlib import cm
-from matplotlib.pyplot import text, xlim, ylim
+from matplotlib.pyplot import text, xlim, ylim, close
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
@@ -103,6 +103,7 @@ def writeTrainingReport(name,report):
 def saveFigure(name):
     figurePath = name + ".png"
     savefig(figurePath)
+    close()
 def testMapNeuronsActivation(layersNumber, perceptron):
     # set report folder
     reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers", "neuronsActivations", "digits")
