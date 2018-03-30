@@ -20,6 +20,7 @@ from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, gri
 # sigmoid
 # TODO : create an abstract class for all future functions
 # TODO : compute with spark each method
+# TODO : add pre/post run fct° to normalize or scale I/O
 class Sigmoid():
     @staticmethod
     def value(variables, uncertainties=1, dilatations=1, offsets=0):
