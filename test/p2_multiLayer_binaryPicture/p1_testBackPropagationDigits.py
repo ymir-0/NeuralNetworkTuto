@@ -1,23 +1,14 @@
 #!/usr/bin/env python3
 # PY test script file name must start with "test" to allow automatic recognition by PyCharm
 # import
-import unittest
 from neuralnetworktuto.p1_perceptron.p2_multiLayer_binaryPicture.p1_testBackPropagation import Perceptron, MetaParameters
-from numpy import exp, newaxis, zeros, array, sum
-from numpy.ma import size
-from numpy.random import rand
 from os import linesep, sep, listdir, makedirs
 from os.path import realpath, join, exists
-from random import shuffle
 from shutil import rmtree
-from collections import Iterable
-from enum import Enum, unique
-from copy import deepcopy
-from statistics import mean
-from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, show
+from matplotlib.pyplot import plot, title , xlabel , ylabel, grid, figure, legend, savefig
 from networkx import Graph, get_node_attributes, draw, draw_networkx_labels
 from matplotlib import cm
-from matplotlib.pyplot import text, xlim, ylim, close
+from matplotlib.pyplot import text, ylim, close
 from random import shuffle
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]

@@ -5,18 +5,13 @@
  - http://www.anyflo.com/bret/cours/rn/rn5.htm#exemple
 '''
 # imports
-from numpy import exp, newaxis, zeros, array, sum
+from numpy import exp, array, sum
 from numpy.ma import size
 from numpy.random import rand
-from os import linesep, sep, listdir, makedirs
-from os.path import realpath, join, exists
 from random import shuffle
-from shutil import rmtree
 from collections import Iterable
 from enum import Enum, unique
-from copy import deepcopy
 from statistics import mean
-from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, grid, figure, legend, tick_params, savefig, show
 # sigmoid
 # TODO : create an abstract class for all future functions
 # TODO : compute with spark each method
