@@ -18,6 +18,7 @@ from matplotlib.pyplot import plot, xticks, yticks, title , xlabel , ylabel, gri
 from networkx import Graph, get_node_attributes, draw, draw_networkx_labels
 from matplotlib import cm
 from matplotlib.pyplot import text, xlim, ylim, close
+from random import shuffle
 # contants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY = join(CURRENT_DIRECTORY,"input")
@@ -116,7 +117,7 @@ def testMapNeuronsActivation(layersNumber, perceptron):
         writeNeuronsActivationReport(layersNumber, perceptron, inputOutput, digit, reportFolder)
         pass
     pass
-def writeNeuronsActivationReport(layersNumber,perceptron,inputOutput,expectedOutput, reportFolder):
+def writeNeuronsActivationReport(perceptron,inputOutput,expectedOutput, reportFolder):
     # initialize graph
     graph = Graph()
     addNodesToGraph(graph, 0, inputOutput)
@@ -167,6 +168,61 @@ def testErrorsEvolution():
     # INFO : from p1_binary_no_deterministic.py l.117 drawErrorsEvolution
     pass
 pass
+def testDigitBluring(layersNumber, perceptron,maximumTrialNumber=100):
+    # revert input digit map
+    originalImages=dict()
+    images=tuple(DIGITS.keys())
+    for image in images :
+        digit=DIGITS[image]
+        originalImages[digit]=image
+    # initialize image size
+    imageSize=len(images[0])
+    # for each number
+    for digit in originalImages.keys():
+        # get associated number
+        expectedNumber=digit.index(1)
+        # initialize relive errors list
+        relativeErrors=list()
+        # for each pixel
+        for deltaPixel in range(0,imageSize):
+            # initialize error counter
+            errorCounter=0
+            # for each trial
+            for trialNumber in range(0,maximumTrialNumber):
+                # initialize blured image
+                bluredImage=list(originalImages[digit])
+                # randomly revert delta pixel
+                pixelsToInvert=list(range(0,imageSize))
+                shuffle(pixelsToInvert)
+                pixelsToInvert=frozenset(pixelsToInvert[:deltaPixel+1])
+                for pixel in pixelsToInvert:
+                    bluredImage[pixel]=0 if bluredImage[pixel]==1 else 1
+                    pass
+                bluredImage=tuple(bluredImage)
+                # try to recognize image with perceptron
+                rawResult=perceptron.passForward(bluredImage)
+                actualNumber=rawResult.index(max(rawResult))
+                if actualNumber!=expectedNumber : errorCounter+=1
+                pass
+            # compute relative error
+            relativeError=errorCounter/maximumTrialNumber*100
+            relativeErrors.append(relativeError)
+            pass
+        # set output file
+        reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers")
+        if not exists(reportFolder) : makedirs(reportFolder)
+        reportFile = join(reportFolder, "blurringErrorEvolution")
+        # plot graph
+        plot(list(range(0,imageSize)), relativeErrors, label="digit blured pixels")
+        title("errors evolution ( " + str(layersNumber) + " layers)")
+        xlabel("blured pixels")
+        ylabel("relative error (%)")
+        grid(linestyle="-.")
+        legend()
+        saveFigure(reportFile)
+        pass
+    pass
+pass
 def testMultipleLayers(layersNumber,loopNumber):
     # create report folder
     reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers")
@@ -174,13 +230,14 @@ def testMultipleLayers(layersNumber,loopNumber):
     # initialize perceptron
     layerHeights = generateLayerHeights(layersNumber)
     perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
-    #name = "test"+str(layersNumber)+"Layers"
     # train perceptron
     trainPerceptron(layersNumber, perceptron, loopNumber)
     # map neurons activation
     testMapNeuronsActivation(layersNumber, perceptron)
     # search convolutions
     testSearchConvolution(layersNumber, perceptron)
+    # test digit bluring
+    testDigitBluring(layersNumber, perceptron)
     pass
 # empty output folder
 if exists(OUTPUT_DIRECTORY):
@@ -211,5 +268,4 @@ class TestBackPropagationDigits(unittest.TestCase):
         pass
     pass
 pass
-# TODO : blur each digit bit by bit and mesure errors evolution
 # TODO : test loop for all layers & replace test class by a main method
