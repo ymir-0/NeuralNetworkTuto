@@ -155,10 +155,6 @@ def testSearchConvolution(layersNumber,perceptron):
         writeNeuronsActivationReport(perceptron, inputOutput, expectedOutput, reportFolder)
         pass
     pass
-def testErrorsEvolution():
-    # INFO : from p1_binary_no_deterministic.py l.117 drawErrorsEvolution
-    pass
-pass
 def testDigitBluring(layersNumber, perceptron,maximumTrialNumber=100):
     # revert input digit map
     originalImages=dict()
