@@ -114,7 +114,7 @@ def testMapNeuronsActivation(layersNumber, perceptron):
         # get related digit
         digit = expectedOutput.index(1)
         # wite report
-        writeNeuronsActivationReport(layersNumber, perceptron, inputOutput, digit, reportFolder)
+        writeNeuronsActivationReport(perceptron, inputOutput, digit, reportFolder)
         pass
     pass
 def writeNeuronsActivationReport(perceptron,inputOutput,expectedOutput, reportFolder):
@@ -161,7 +161,7 @@ def testSearchConvolution(layersNumber,perceptron):
     parts = readInputs("part", readParts)
     for inputOutput, expectedOutput in parts.items():
         # wite report
-        writeNeuronsActivationReport(layersNumber, perceptron, inputOutput, expectedOutput, reportFolder)
+        writeNeuronsActivationReport(perceptron, inputOutput, expectedOutput, reportFolder)
         pass
     pass
 def testErrorsEvolution():
@@ -244,28 +244,22 @@ if exists(OUTPUT_DIRECTORY):
     rmtree(OUTPUT_DIRECTORY)
 makedirs(OUTPUT_DIRECTORY)
 # define test
-class TestBackPropagationDigits(unittest.TestCase):
-    def test2Layers(self):
-        testMultipleLayers(2, int(1e3))
-        pass
-    pass
-    def test3Layers(self):
-        testMultipleLayers(3, int(5e2))
-        pass
-    def test4Layers(self):
-        testMultipleLayers(4, int(5e2))
-        pass
-    def test10Layers(self):
-        testMultipleLayers(10, int(5e3))
-        pass
-    pass
-    def test11Layers(self):
-        testMultipleLayers(11, int(1e4))
-        pass
-    pass
-    def test20Layers(self):
-        testMultipleLayers(20, int(1e4))
-        pass
+if __name__ == "__main__":
+    testParameters={
+        2: int(1e3),
+        3: int(5e2),
+        4: int(5e2),
+        5: int(5e2),
+        6: int(5e2),
+        7: int(5e3),
+        8: int(5e3),
+        9: int(5e3),
+        10: int(1e4),
+        15: int(1e4),
+        20: int(1e4),
+    }
+    for layersNumber,loopNumber in testParameters.items():
+        testMultipleLayers(layersNumber,loopNumber)
     pass
 pass
 # TODO : test loop for all layers & replace test class by a main method
