@@ -195,19 +195,20 @@ def testDigitBluring(layersNumber, perceptron,maximumTrialNumber=100):
             relativeError=errorCounter/maximumTrialNumber*100
             relativeErrors.append(relativeError)
             pass
-        # set output file
-        reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers")
-        if not exists(reportFolder) : makedirs(reportFolder)
-        reportFile = join(reportFolder, "blurringErrorEvolution")
-        # plot graph
-        plot(list(range(0,imageSize)), relativeErrors, label="digit blured pixels")
-        title("errors evolution ( " + str(layersNumber) + " layers)")
-        xlabel("blured pixels")
-        ylabel("relative error (%)")
-        grid(linestyle="-.")
-        legend()
-        saveFigure(reportFile)
+        # prepare graph
+        plot(list(range(0, imageSize)), relativeErrors, label=str(expectedNumber))
         pass
+    # set output file
+    reportFolder = join(OUTPUT_DIRECTORY, str(layersNumber) + "layers", )
+    if not exists(reportFolder): makedirs(reportFolder)
+    reportFile = join(reportFolder, "blurringErrorEvolution")
+    # plot graph
+    title("errors evolution ( " + str(layersNumber) + " layers)")
+    xlabel("blured pixels")
+    ylabel("relative error (%)")
+    grid(linestyle="-.")
+    legend()
+    saveFigure(reportFile)
     pass
 pass
 def testMultipleLayers(layersNumber,loopNumber):
@@ -233,17 +234,17 @@ makedirs(OUTPUT_DIRECTORY)
 # define test
 if __name__ == "__main__":
     testParameters={
-        2: int(1e3),
-        3: int(5e2),
-        4: int(5e2),
+        #2: int(1e3),
+        #3: int(5e2),
+        #4: int(5e2),
         5: int(5e2),
-        6: int(5e2),
-        7: int(5e3),
-        8: int(5e3),
-        9: int(5e3),
-        10: int(1e4),
-        15: int(1e4),
-        20: int(1e4),
+        #6: int(5e2),
+        #7: int(5e3),
+        #8: int(5e3),
+        #9: int(5e3),
+        #10: int(1e4),
+        #15: int(1e4),
+        #20: int(1e4),
     }
     for layersNumber,loopNumber in testParameters.items():
         testMultipleLayers(layersNumber,loopNumber)
