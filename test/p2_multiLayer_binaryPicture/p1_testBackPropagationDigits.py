@@ -249,4 +249,3 @@ if __name__ == "__main__":
         testMultipleLayers(layersNumber,loopNumber)
     pass
 pass
-# TODO : test loop for all layers & replace test class by a main method
