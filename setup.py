@@ -5,6 +5,8 @@ from os.path import join, dirname, isdir
 from setuptools import setup
 from importlib import import_module
 from pkgutil import walk_packages
+# constants
+YGGDRASIL_REP="http://91.121.9.53:81/"
 # parse recursively a module
 # this code is an adaptation from https://stackoverflow.com/questions/3365740/how-to-import-all-submodules
 def import_submodules(package):
