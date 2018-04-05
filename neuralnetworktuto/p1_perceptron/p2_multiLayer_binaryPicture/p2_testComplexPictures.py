@@ -11,6 +11,9 @@ from numpy.random import rand
 from random import shuffle
 from collections import Iterable
 from enum import Enum, unique
+from time import time
+from os import remove
+from os.path import exists
 # sigmoid
 # TODO : create an abstract class for all future functions
 # TODO : compute with spark each method
@@ -146,6 +149,7 @@ class Perceptron():
     SEQUENCE_LENGTH = ""
     GLOBAL_MAXIMUN_LOOP_NUMBER = ""
     GLOBAL_LOOP_NUMBER = ""
+    TRAINING_LOG = ""
     # TODO : add methods to manipulate perceptron : remove weight between 2 neurons, remove specific neuron, edit specific neuron meta parameter
     def __init__(self,**parameters):
         # layerHeights,weights=None,weightLimit=0.125,biasLimit=1,uncertainties=1,dilatations=1,offsets=0
@@ -196,17 +200,33 @@ class Perceptron():
         for layer in self.layers:
             inputOutput = layer.passForward(inputOutput,training)
         return inputOutput
-    def train(self,sequences,maximumLoopNumber=int(1e5),minimumMeanError=1e-10):
+    # INFO : maximumTime in seconds. 86400 secods = 1 day
+    def train(self,sequences,trainingLog,maximumLoopNumber=int(1e5),maximumTime=86400,minimumMeanError=1e-10):
+        # initialize log data
         Perceptron.SEQUENCE_LENGTH=str(len(sequences))
         Perceptron.GLOBAL_MAXIMUN_LOOP_NUMBER=str(maximumLoopNumber)
+        Perceptron.TRAINING_LOG = trainingLog
+        # initialize & open log file
+        if exists(trainingLog):
+            remove(trainingLog)
+        Perceptron.TRAINING_LOG = open(trainingLog,'a')
+        # get stat time
+        startTime=time()
         # train has necessary
         for loopNumber in range(maximumLoopNumber):
             Perceptron.GLOBAL_LOOP_NUMBER = str(loopNumber)
             currentErrors = self.trainRandomized(sequences)
+            # test if time is up
+            currentTime=time()
+            deltaTime=currentTime-startTime
+            if deltaTime>=maximumTime : break
+            Perceptron.TRAINING_LOG.write("training evolution : deltaTime "+ str(deltaTime) + "\n")
             # test if error is sufficient
             meanError = mean(currentErrors)
-            print("training evolution : meanError ", str(meanError))
+            Perceptron.TRAINING_LOG.write("training evolution : meanError "+ str(meanError) + "\n")
             if meanError <= minimumMeanError : break
+        # initialize & open log file
+        Perceptron.TRAINING_LOG.close()
     def trainRandomized(self,sequences):
         # initialize errors
         errors = list()
@@ -216,13 +236,13 @@ class Perceptron():
         randomizedSequence = tuple(randomizedSequence)
         # run forward & backward for each training input / expected output
         for index,data in enumerate(randomizedSequence):
-            print("training evolution : loop ", Perceptron.GLOBAL_LOOP_NUMBER, "/", Perceptron.GLOBAL_MAXIMUN_LOOP_NUMBER, " | data ", str(index), "/", Perceptron.SEQUENCE_LENGTH)
+            Perceptron.TRAINING_LOG.write("training evolution : loop "+ Perceptron.GLOBAL_LOOP_NUMBER+ "/"+ Perceptron.GLOBAL_MAXIMUN_LOOP_NUMBER+ " | data "+ str(index)+ "/"+ Perceptron.SEQUENCE_LENGTH + "\n")
             input=data["image"]
             expectedOutput = data["label"]
             error = self.passForwardBackward(input, expectedOutput)
             errors.append(error)
         # return
-        print("training evolution : errors ", str(errors))
+        Perceptron.TRAINING_LOG.write("training evolution : errors "+ str(errors) + "\n")
         return errors
     def passForwardBackward(self,input,expectedOutput):
         # pass forward
