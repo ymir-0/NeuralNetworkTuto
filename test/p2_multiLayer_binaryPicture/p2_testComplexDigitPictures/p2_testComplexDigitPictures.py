@@ -29,6 +29,8 @@ def loadGlobalImages(file):
     pass
 pass
 def testPerceptron(perceptron):
+    # initialize test number
+    testNumber=str(len(TEST_DATA))
     # initialize & open log file
     if exists(TEST_LOG):
         remove(TEST_LOG)
@@ -47,11 +49,17 @@ def testPerceptron(perceptron):
         ,"DIGIT_9_POTENTIAL"
         ,"MOST_POTENTIAL_DIGIT"
         ,"EXPECTED_POTENTIAL_DIGIT"
+        ,"TEST_VALIDITY"
+        ,""
+        ,"TOTAL_TESTS"
+        ,"VALID_TESTS"
+        ,"TRAINING_EFFICIENCY_%"
         ]
     measures=list()
     measures.append(header)
+    totalValidTests=0
     # test each image
-    for testData in TEST_DATA:
+    for testIndex,testData in enumerate(TEST_DATA):
         # parse test data
         image=testData["image"]
         expectedDigitVector=testData["label"]
@@ -60,20 +68,19 @@ def testPerceptron(perceptron):
         actualDigitVector=perceptron.passForward(image)
         actualMostPotentialDigit=actualDigitVector.index(max(actualDigitVector))
         expectedDigitPotential=actualDigitVector[expectedDigit]
+        testValidity = 1 if actualMostPotentialDigit==expectedDigit else 0
+        if testValidity==1 : totalValidTests+=1
         # print log
-        testLogFile.write(
-            "expectedDigit : " + str(expectedDigit) +
-            " | actualDigitVector : " + str(actualDigitVector) +
-            " | actualMostPotentialDigit : " + str(actualMostPotentialDigit) +
-            " | expectedDigitPotential : " + str(expectedDigitPotential) +
-            "\n")
+        testLogFile.write( "test # : " + str(testIndex) + " / " + testNumber + "\n")
         # store measure
-        measure=tuple([expectedDigit]+list(actualDigitVector)+[actualMostPotentialDigit,expectedDigitPotential])
+        measure=[expectedDigit]+list(actualDigitVector)+[actualMostPotentialDigit,expectedDigitPotential,testValidity]
         measures.append(measure)
         pass
     # close log file
     testLogFile.close()
     # write measures
+    trainingEfficiency=testValidity/len(TEST_DATA)*100
+    measures[1]=measures[1]+["",testNumber,testValidity,trainingEfficiency]
     with open(TEST_MEASURES, 'w') as testMeasuresReport:
         reportWriter = writer(testMeasuresReport, delimiter=';')
         reportWriter.writerows(measures)
@@ -104,6 +111,5 @@ if __name__ == "__main__":
         rmtree(OUTPUT_DIRECTORY)
     # train perceptron
     testMultipleLayers(4,1*60)
-    print ("")
     pass
 pass
