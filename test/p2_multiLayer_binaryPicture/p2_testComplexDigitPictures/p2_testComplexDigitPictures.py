@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # imports
-from neuralnetworktuto.p1_perceptron.p2_multiLayer_binaryPicture.p2_testComplexPictures import Perceptron, MetaParameters
+from neuralnetworktuto.p1_perceptron.p2_multiLayer_binaryPicture.p2_testComplexPictures import Perceptron
 from os import sep, makedirs
 from os.path import join, isfile, realpath, exists
 from shutil import rmtree
-from json import loads, dumps
+from json import loads
 # constants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY=join(CURRENT_DIRECTORY,"input")
