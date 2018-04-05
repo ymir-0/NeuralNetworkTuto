@@ -5,6 +5,8 @@ from os import sep, makedirs, remove
 from os.path import join, isfile, realpath, exists
 from shutil import rmtree
 from json import loads
+from csv import writer
+import csv
 # constants
 CURRENT_DIRECTORY = realpath(__file__).rsplit(sep, 1)[0]
 INPUT_DIRECTORY=join(CURRENT_DIRECTORY,"input")
@@ -31,6 +33,23 @@ def testPerceptron(perceptron):
     if exists(TEST_LOG):
         remove(TEST_LOG)
     testLogFile = open(TEST_LOG, 'a')
+    # initialize measures
+    header=["EXPECTED_DIGIT"
+        ,"DIGIT_0_POTENTIAL"
+        ,"DIGIT_1_POTENTIAL"
+        ,"DIGIT_2_POTENTIAL"
+        ,"DIGIT_3_POTENTIAL"
+        ,"DIGIT_4_POTENTIAL"
+        ,"DIGIT_5_POTENTIAL"
+        ,"DIGIT_6_POTENTIAL"
+        ,"DIGIT_7_POTENTIAL"
+        ,"DIGIT_8_POTENTIAL"
+        ,"DIGIT_9_POTENTIAL"
+        ,"MOST_POTENTIAL_DIGIT"
+        ,"EXPECTED_POTENTIAL_DIGIT"
+        ]
+    measures=list()
+    measures.append(header)
     # test each image
     for testData in TEST_DATA:
         # parse test data
@@ -48,9 +67,16 @@ def testPerceptron(perceptron):
             " | actualMostPotentialDigit : " + str(actualMostPotentialDigit) +
             " | expectedDigitPotential : " + str(expectedDigitPotential) +
             "\n")
+        # store measure
+        measure=tuple([expectedDigit]+list(actualDigitVector)+[actualMostPotentialDigit,expectedDigitPotential])
+        measures.append(measure)
         pass
     # close log file
     testLogFile.close()
+    # write measures
+    with open(TEST_MEASURES, 'w') as testMeasuresReport:
+        reportWriter = writer(testMeasuresReport, delimiter=';')
+        reportWriter.writerows(measures)
     pass
 def testMultipleLayers(layersNumber,maximumTime):
     # create report folder
@@ -59,7 +85,7 @@ def testMultipleLayers(layersNumber,maximumTime):
     layerHeights = generateLayerHeights(layersNumber)
     perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
     # train perceptron
-    #perceptron.train(TRAINING_DATA,TRAINING_LOG, maximumTime=maximumTime)
+    perceptron.train(TRAINING_DATA,TRAINING_LOG, maximumTime=maximumTime)
     # test perceptron
     testPerceptron(perceptron)
     pass
