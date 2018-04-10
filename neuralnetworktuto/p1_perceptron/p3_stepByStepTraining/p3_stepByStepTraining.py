@@ -203,15 +203,16 @@ class Perceptron():
         # write report
         with open(trainingReportName, 'a') as trainingReportFile:
             reportWriter = writer(trainingReportFile, delimiter=';')
-            reportWriter.writerow((("IMAGES_NUMBER", "LOOP_COUNTER", "MEAN_ERROR")))
+            reportWriter.writerow((("IMAGES_NUMBER", "LOOP_COUNTER", "MEAN_ERROR","IMAGES_ERROR_NUMBER")))
             # train as many as necessary
             while not trained:
                 # train once
                 currentErrors = self.trainRandomized(sequences)
-                trained=sum(currentErrors)==0.
+                imagesErrorNumber=self.checkTraining(sequences)
+                trained=imagesErrorNumber==0
                 # fill report
                 meanError = mean(currentErrors)
-                reportWriter.writerow(((imagesNumber,loopCounter,meanError)))
+                reportWriter.writerow(((imagesNumber,loopCounter,meanError,imagesErrorNumber)))
                 # next loop
                 loopCounter+=1
                 pass
@@ -251,5 +252,20 @@ class Perceptron():
         for hiddenLayerIndex in range(2, len(self.layers)+1):
             layer = self.layers[-hiddenLayerIndex]
             differentialErrorWeightsBiasInput, previousLayerWeights = layer.passBackward(differentialErrorWeightsBiasInput=differentialErrorWeightsBiasInput,previousLayerWeights=previousLayerWeights)
+    def checkTraining(self,sequences):
+        # initialize errors
+        errors = 0
+        # run forward & backward for each training input / expected output
+        for index,data in enumerate(sequences):
+            input=data["image"]
+            expectedOutput = data["label"]
+            expectedDigit = expectedOutput.index(1)
+            actualOutput = self.passForward(input)
+            actualDigit = actualOutput.index(max(actualOutput))
+            error = 0 if expectedDigit==actualDigit else 1
+            errors+=error
+        # return
+        return errors
+        pass
     pass
 pass
