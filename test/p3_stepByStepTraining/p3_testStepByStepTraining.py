@@ -30,7 +30,7 @@ def testMultipleLayers(layersNumber,trainingImageNumer):
     layerHeights = generateLayerHeights(layersNumber)
     perceptron = Perceptron(layerHeights=layerHeights, weightLimit=1, uncertainties=.99)
     # train perceptron
-    perceptron.train(TRAINING_DATA[:trainingImageNumer],TRAINING_REPORT_NAME)
+    perceptron.trainCompleteSequence(TRAINING_DATA,TRAINING_REPORT_NAME)
     pass
 def generateLayerHeights(layersNumber):
     layerHeights =[int(layerHeight * (IMAGE_SIZE-DIGITS_NUMBER) / (layersNumber-1) + DIGITS_NUMBER) for layerHeight in range(0, layersNumber)]

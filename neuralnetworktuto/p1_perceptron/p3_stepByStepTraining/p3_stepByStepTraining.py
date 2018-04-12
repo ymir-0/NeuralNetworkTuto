@@ -194,8 +194,29 @@ class Perceptron():
         for layer in self.layers:
             inputOutput = layer.passForward(inputOutput,training)
         return inputOutput
-    # INFO : maximumTime in seconds. 86400 secods = 1 day
-    def train(self,sequences,trainingReportName):
+    # TODO : check chunk size > 0
+    def trainCompleteSequence(self,sequences,trainingReportName, chunckSize=5):
+        ''' randomize sequence
+        INFO :
+         - same as trainRandomized
+         - we want to be sure training order is never the same '''
+        randomizedSequence = list(sequences)
+        shuffle(randomizedSequence)
+        randomizedSequence = tuple(randomizedSequence)
+        # train step by step over complete sequence
+        completeSequenceSize=len(sequences)
+        subSequenceSize=chunckSize if chunckSize<=completeSequenceSize else completeSequenceSize
+        while subSequenceSize<=completeSequenceSize:
+            # train current sub sequence
+            # INFO : current sub sequence contains previous elements to avoid lossing previous training
+            self.trainSubSequence(randomizedSequence[:subSequenceSize], trainingReportName)
+            # increase sub sequence
+            subSequenceSize+=chunckSize
+            if subSequenceSize>completeSequenceSize : subSequenceSize=completeSequenceSize
+            pass
+        pass
+    pass
+    def trainSubSequence(self,sequences,trainingReportName):
         # initialize training context
         trained=False
         loopCounter=0
@@ -222,7 +243,10 @@ class Perceptron():
     def trainRandomized(self,sequences):
         # initialize errors
         errors = list()
-        # randomize sequence
+        ''' randomize sequence
+        INFO :
+         - same as trainCompleteSequence
+         - we want to be sure training order is never the same '''
         randomizedSequence = list(sequences)
         shuffle(randomizedSequence)
         randomizedSequence = tuple(randomizedSequence)
